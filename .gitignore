@@ -1,7 +1,16 @@
-.vscode/
+﻿.vscode/
 .idea/
-*.log
 *.bak
 *.tmp
-.DS_Store
-Thumbs.db
+
+# Readable source - NEVER commit this. The pre-commit hook obfuscates it
+# into JurassicBlockyFramework.lua before each commit.
+source.lua
+
+# Local build tools - kept off GitHub for cleanliness
+obfuscate.js
+.darklua.json
+.obfuscate-log.txt
+.obfuscate-temp.lua
+.tools/
+node_modules/

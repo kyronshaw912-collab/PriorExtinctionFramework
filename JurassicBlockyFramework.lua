@@ -1,38 +1,38 @@
---!nonstrict
---[[
-==============================================================================
-    JurassicBlockyFramework.lua
-    Roblox automation & utility framework for Jurassic Blocky.
-    UI rendered with the bundled JBUI library.
 
-    Author : Framework Template
-    Version: v0.1.1
-    Build  : 20260529-jb-placeid-guard
-    Style  : Modular sections, Luau-native, single-file distributable.
 
-    Ported from DinoFramework (Dinosaur Simulator) with:
-      - DS-specific anti-cheat bypass removed (kept as optional generic path)
-      - Aqua/SwimSpeed/Underwater CFrame TP removed
-      - Farm targets and stat aliases re-keyworded for Jurassic Blocky
-      - Code-review fixes applied (connection tracking, orphan-loop kill flag,
-        cached remote lookups, noclip part cache, randomized instance names)
-==============================================================================
---]]
-local JB_BUILD = "v0.1.1 NameHub (jurassic-blocky-placeid-guard)"
 
-------------------------------------------------------------------------------
--- 0a. PLACE-ID GUARD
---    Refuses to run in any game other than Jurassic Blocky. Defense in depth
---    in case someone gets the raw URL and pastes it in the wrong game --
---    they'll see a clear error instead of a confusing deep failure.
-------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+local a = "v0.1.1 NameHub (jurassic-blocky-placeid-guard)"
+
+
+
+
+
+
+
 do
-    local SUPPORTED_PLACES = { [11653088948] = true }   -- Jurassic Blocky
-    local pid = game.PlaceId
-    if not SUPPORTED_PLACES[pid] then
-        local msg = ("[NameHub Jurassic Blocky] Wrong game (PlaceId=%d). "
-                  .. "Use the NameHub Universal Loader from the Discord panel."):format(pid)
-        warn(msg)
+    local b = { [11653088948] = true }   
+    local c = game.PlaceId
+    if not b[c] then
+        local d = ("[NameHub Jurassic Blocky] Wrong game (PlaceId=%d). "
+                  .. "Use the NameHub Universal Loader from the Discord panel."):format(c)
+        warn(d)
         if type(StarterGui) ~= "userdata" then
             pcall(function()
                 game:GetService("StarterGui"):SetCore("SendNotification", {
@@ -40,92 +40,92 @@ do
                 })
             end)
         end
-        error(msg, 0)
+        error(d, 0)
     end
 end
 
-------------------------------------------------------------------------------
--- 0. EXECUTOR GLOBAL POLYFILLS
---    These run before anything else so later code can rely on the helpers
---    even on executors that don't expose them. Polyfilled functions are
---    deliberately weak so we know "real" capability via _findExecFn below.
-------------------------------------------------------------------------------
+
+
+
+
+
+
 getgenv = getgenv or function() return _G end
 
-local _RAND_SUFFIX = tostring(math.random(100000, 999999))  -- per-session salt
-                                                            -- for instance names
+local b = tostring(math.random(100000, 999999))  
+                                                            
 
-------------------------------------------------------------------------------
--- 1. SERVICES
-------------------------------------------------------------------------------
-local Players           = game:GetService("Players")
-local RunService        = game:GetService("RunService")
-local UserInputService  = game:GetService("UserInputService")
-local TweenService      = game:GetService("TweenService")
-local Workspace         = game:GetService("Workspace")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local StarterGui        = game:GetService("StarterGui")
-local VirtualUser       = game:GetService("VirtualUser")
-local HttpService       = game:GetService("HttpService")
-local CoreGui           = game:GetService("CoreGui")
-local Lighting          = game:GetService("Lighting")
-local TeleportService   = game:GetService("TeleportService")
 
-------------------------------------------------------------------------------
--- 1b. CLEAN SLATE -- wipe any leftover GUIs / events / connections from a
---     previous load of this script. Match anchored at the START of the
---     ScreenGui name only, so unrelated GUIs that happen to contain
---     "JurassicBlocky" mid-name are left alone.
-------------------------------------------------------------------------------
+
+
+local c           = game:GetService("Players")
+local d        = game:GetService("RunService")
+local e  = game:GetService("UserInputService")
+local f      = game:GetService("TweenService")
+local g         = game:GetService("Workspace")
+local h = game:GetService("ReplicatedStorage")
+local i        = game:GetService("StarterGui")
+local j       = game:GetService("VirtualUser")
+local k       = game:GetService("HttpService")
+local l           = game:GetService("CoreGui")
+local m          = game:GetService("Lighting")
+local n   = game:GetService("TeleportService")
+
+
+
+
+
+
+
 do
     if type(_G.JurassicBlocky_Shutdown) == "function" then
         pcall(_G.JurassicBlocky_Shutdown)
     end
     _G.JurassicBlocky_Shutdown = nil
 
-    local roots: {Instance} = {}
-    local g: any = _G
-    if type(g.gethui) == "function" then
-        local ok, h = pcall(g.gethui); if ok and h then table.insert(roots, h) end
+    local o= {}
+    local p= _G
+    if type(p.gethui) == "function" then
+        local q, r = pcall(p.gethui); if q and r then table.insert(o, r) end
     end
-    pcall(function() table.insert(roots, CoreGui) end)
-    local lp = Players.LocalPlayer
-    if lp then
-        local pg = lp:FindFirstChildOfClass("PlayerGui")
-        if pg then table.insert(roots, pg) end
+    pcall(function() table.insert(o, l) end)
+    local q = c.LocalPlayer
+    if q then
+        local r = q:FindFirstChildOfClass("PlayerGui")
+        if r then table.insert(o, r) end
     end
 
-    local PURGE_PREFIXES = { "JurassicBlocky", "NameHub_JB" }
-    local function killStale(root)
-        for _, d in ipairs(root:GetDescendants()) do
-            if d:IsA("ScreenGui") then
-                local n = d.Name or ""
-                for _, prefix in ipairs(PURGE_PREFIXES) do
-                    if n:sub(1, #prefix) == prefix then
-                        pcall(function() d:Destroy() end)
+    local r = { "JurassicBlocky", "NameHub_JB" }
+local s=function(s)        
+for t, u in ipairs(s:GetDescendants()) do
+            if u:IsA("ScreenGui") then
+                local v = u.Name or ""
+                for w, x in ipairs(r) do
+                    if v:sub(1, #x) == x then
+                        pcall(function() u:Destroy() end)
                         break
                     end
                 end
             end
         end
-    end
-    for _ = 1, 3 do
-        for _, r in ipairs(roots) do pcall(killStale, r) end
+end    
+for t = 1, 3 do
+        for u, v in ipairs(o) do pcall(s, v) end
     end
 end
 
-------------------------------------------------------------------------------
--- 2. CONFIGURATION
---    Jurassic Blocky is a much smaller game than DS with (as far as we know)
---    no aggressive anti-cheat. Defaults are tuned for "just work" rather than
---    "evade detection". Speed/jump caps are looser, TP is plain CFrame.
-------------------------------------------------------------------------------
-local CONFIG = {
-    -- General
+
+
+
+
+
+
+local o = {
+    
     DebugMode             = false,
     NotifyDuration        = 4,
 
-    -- Player / Character
+    
     DefaultWalkSpeed      = 16,
     DefaultJumpPower      = 50,
     BoostedWalkSpeed      = 80,
@@ -133,7 +133,7 @@ local CONFIG = {
     FlySpeed              = 50,
     TweenTeleportSeconds  = 0.8,
 
-    -- Auto-survival
+    
     AutoEatThreshold      = 35,
     AutoDrinkThreshold    = 35,
     AutoSleepThreshold    = 25,
@@ -145,47 +145,47 @@ local CONFIG = {
     RespawnDelay          = 0,
     AutofarmSpawnDelay    = 10,
 
-    -- Auto farming
+    
     AutoFarmRadius        = 1500,
     AutoFarmInterval      = 0.35,
-    -- JB has no known speed-check kick. Defaults are still reasonable so the
-    -- character doesn't visually warp absurdly fast (which gets you reported
-    -- by other players). Crank these freely if your server doesn't kick.
+    
+    
+    
     SafeFarmSpeed         = 250,
     SafeFarmSpeedMax      = 1000,
     SafeFarmHopCap        = 120,
     SafeFarmHopCapMax     = 300,
     SafeFarmInterHop      = 0.02,
-    InstantFarmTP         = true,    -- JB default ON: plain CFrame TP works
-    InstantTPMaxJump      = 80,      -- bigger hops fine without DS-style AC
+    InstantFarmTP         = true,    
+    InstantTPMaxJump      = 80,      
     InstantTPInterJump    = 0.05,
     InstantTPSettleTime   = 0.15,
     InstantTPPostDelay    = 0.10,
     InstantTPBurstMode    = false,
     InstantTPBurstStuds   = 50,
 
-    ------------------------------------------------------------------------
-    -- TARGET LANDING OPTIONS
-    ------------------------------------------------------------------------
+    
+    
+    
     TargetLandingYOffset  = 4,
     TargetLandingXOffset  = 0,
     TargetLandingZOffset  = 0,
     TargetLandingJitter   = 0,
     TargetMinDistance     = 0,
-    TargetTargetPriority  = "Closest",   -- Closest | Furthest | Largest | Random
+    TargetTargetPriority  = "Closest",   
     TargetSkipOccupied    = false,
     TargetOccupiedRadius  = 25,
     TargetMaxStuckHops    = 60,
     TargetPickupRetries   = 4,
-    TargetPickupMethod    = "All",       -- All | ProximityPrompt | Touch | Click | Remote
+    TargetPickupMethod    = "All",       
     TargetPostCollectStep = 5,
     TargetHoverClearance  = 4,
 
-    -- Game-specific defaults (Jurassic Blocky)
+    
     FarmTarget            = "Berry",
     MinimumDay            = 0,
 
-    -- Combat
+    
     CombatOffsetX         = 0,
     CombatOffsetY         = -3,
     CombatRange           = 40,
@@ -193,34 +193,34 @@ local CONFIG = {
     MinTargetHP           = 0,
     DisengageAtHP         = 25,
 
-    -- Visuals / Camera
+    
     DefaultFOV            = 70,
     FreecamSpeed          = 10,
     LocalPlayerTransparency = 0,
     PlayerTransparency    = 0,
 
-    -- Teleport
+    
     TweenSpeed            = 40,
-    TeleportLocations     = {} :: {[string]: Vector3},
+    TeleportLocations     = {} ,
 
-    -- Server hop
+    
     HopOnPlayerCount      = 0,
 
-    -- Misc
+    
     PriceLimit            = 100000,
     MissionClaimDelay     = 0,
     AdminKickOnDetection  = true,
     AntiAFKEnabled        = true,
 
-    -- Webhook (BLANK by default - user must paste their own)
+    
     WebhookLink           = "",
     DiscordWebhook        = "",
     WebhookIntervalMin    = 10,
     EmbedColor            = Color3.fromRGB(85, 200, 110),
 
-    -- Remote / game-specific identifiers. JB names are guesses; the
-    -- keyword-based discovery in Util.findRemoteByKeywords will find the
-    -- real ones if these are wrong.
+    
+    
+    
     Remotes = {
         Eat       = "Eat",
         Drink     = "Drink",
@@ -234,15 +234,15 @@ local CONFIG = {
         Pickup    = "Pickup",
     },
 
-    -- GUI
+    
     GUIName               = "JurassicBlocky",
     GUIToggleKey          = "RightControl",
-    GUIAccentColor        = Color3.fromRGB(85, 200, 110),    -- jungle green
+    GUIAccentColor        = Color3.fromRGB(85, 200, 110),    
     GUIBackgroundColor    = Color3.fromRGB(22, 26, 24),
     ShowCustomCursor      = true,
     NotifySide            = "Right",
 
-    -- Keybinds
+    
     Keybinds = {
         InfHunger        = "Eight",
         InfThirst        = "Nine",
@@ -260,17 +260,17 @@ local CONFIG = {
     },
 }
 
-------------------------------------------------------------------------------
--- 3. STATE
-------------------------------------------------------------------------------
-local State = {
-    -- Main / Farm
+
+
+
+local p = {
+    
     AutoFarm              = false,
     AutoCollectAll        = false,
     AutoFindBerries       = false,
     ResourceESP           = false,
 
-    -- Player / Survival
+    
     AutoEat         = false,
     AutoDrink       = false,
     AutoSleep       = false,
@@ -285,7 +285,7 @@ local State = {
     StopEatInCombat = false,
     AutoRespawn     = false,
 
-    -- Player / Movement
+    
     SpeedBoost   = false,
     JumpBoost    = false,
     InfiniteJump = false,
@@ -294,17 +294,17 @@ local State = {
     AutoAttack   = false,
     AutoSpawn    = false,
 
-    -- Player / Combat
+    
     AutoHeal          = false,
     TargetPOV         = false,
     AutoAttackPlayers = false,
     AutoAttackNPCs    = false,
 
-    -- Player / Keybinds
+    
     EnableKeybinds        = false,
     EnableSpecialKeybinds = false,
 
-    -- Visuals
+    
     ESP                = false,
     SelfESP            = false,
     InfoText           = false,
@@ -321,1079 +321,1079 @@ local State = {
     NoclipCamera       = false,
     InfiniteZoom       = false,
 
-    -- Misc
+    
     AccurateGrowth  = false,
     FPSBoost        = false,
     KickOnAdmin     = true,
     MenuOnAdmin     = false,
     SpawnAfterAdmin = false,
 
-    -- Missions
+    
     AutoMission = false,
 
-    -- Teleport
+    
     HopOnFriendDetect = false,
 
-    -- Webhook
+    
     AnonymousMode = false,
 
-    -- General
+    
     StatMonitor = false,
     AntiAFK     = true,
 }
 
-------------------------------------------------------------------------------
--- 4. LIFECYCLE TRACKER + ALIVE FLAG
---    `Alive.value` is the single source of truth for "is the framework
---    still loaded?" Every long-running task.spawn loop checks it so unload
---    actually stops them instead of leaving orphan threads forever.
-------------------------------------------------------------------------------
-local LocalPlayer  = Players.LocalPlayer
-local Character    : Model?
-local Humanoid     : Humanoid?
-local RootPart     : BasePart?
 
-local Connections : {[string]: RBXScriptConnection} = {}
-local Alive = { value = true }
 
-local function trackConnection(name: string, conn: RBXScriptConnection)
-    if Connections[name] then Connections[name]:Disconnect() end
-    Connections[name] = conn
-end
 
-local function disconnectAll()
-    for name, conn in pairs(Connections) do
-        if conn.Connected then conn:Disconnect() end
-        Connections[name] = nil
+
+
+
+local q  = c.LocalPlayer
+local r    
+local s     
+local t     
+
+local u = {}
+local v = { value = true }
+local w=function(
+w, x)    
+if u[w] then u[w]:Disconnect() end
+    u[w] = x
+end local x=function()    
+
+
+for x, y in pairs(u) do
+        if y.Connected then y:Disconnect() end
+        u[x] = nil
     end
 end
 
-------------------------------------------------------------------------------
--- 5. UTILITIES
-------------------------------------------------------------------------------
-local Util = {}
 
-function Util.debug(...: any)
-    if CONFIG.DebugMode then print("[JurassicBlocky]", ...) end
+
+
+local y = {}
+
+function y.debug(...)
+    if o.DebugMode then print("[JurassicBlocky]", ...) end
 end
 
-function Util.safe(fn: () -> (), label: string?)
-    local ok, err = pcall(fn)
-    if not ok then Util.debug("Error in", label or "anonymous", "->", err) end
+function y.safe(z, A)
+    local B, C = pcall(z)
+    if not B then y.debug("Error in", A or "anonymous", "->", C) end
 end
 
-local _Library: any = nil
-function Util.setLibrary(lib: any) _Library = lib end
+local z
+function y.setLibrary(A) z = A end
 
-function Util.notify(title: string, text: string)
-    if _Library and _Library.Notify then
-        Util.safe(function()
-            _Library:Notify({
-                Title       = title,
-                Description = text,
-                Time        = CONFIG.NotifyDuration,
+function y.notify(A, B)
+    if z and z.Notify then
+        y.safe(function()
+            z:Notify({
+                Title       = A,
+                Description = B,
+                Time        = o.NotifyDuration,
             })
         end, "libNotify")
         return
     end
-    Util.safe(function()
-        StarterGui:SetCore("SendNotification", {
-            Title    = title,
-            Text     = text,
-            Duration = CONFIG.NotifyDuration,
+    y.safe(function()
+        i:SetCore("SendNotification", {
+            Title    = A,
+            Text     = B,
+            Duration = o.NotifyDuration,
         })
     end, "notify")
 end
 
-function Util.waitForCharacter(): (Model, Humanoid, BasePart)
-    local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-    local hum  = char:WaitForChild("Humanoid", 10) :: Humanoid
-    local root = char:WaitForChild("HumanoidRootPart", 10) :: BasePart
-    return char, hum, root
+function y.waitForCharacter()    
+local A = q.Character or q.CharacterAdded:Wait()
+    local B  = (A:WaitForChild("Humanoid", 10) )    
+local C = (A:WaitForChild("HumanoidRootPart", 10) )    
+return A, B, C
 end
 
-function Util.distance(a: Vector3, b: Vector3): number
-    return (a - b).Magnitude
+function y.distance(A, B)    
+return (A - B).Magnitude
 end
 
-function Util.tweenTo(targetCFrame: CFrame, seconds: number?)
-    if not RootPart then return end
-    local duration = seconds or CONFIG.TweenTeleportSeconds
-    local info = TweenInfo.new(duration, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-    local tween = TweenService:Create(RootPart, info, {CFrame = targetCFrame})
-    tween:Play()
-    -- Watchdog: never wait longer than 2x the tween duration.
-    local done = false
-    tween.Completed:Connect(function() done = true end)
-    local started = os.clock()
-    while not done and (os.clock() - started) < (duration * 2 + 0.5) do
+function y.tweenTo(A, B)
+    if not t then return end
+    local C = B or o.TweenTeleportSeconds
+    local D = TweenInfo.new(C, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+    local E = f:Create(t, D, {CFrame = A})
+    E:Play()
+    
+    local F = false
+    E.Completed:Connect(function() F = true end)
+    local G = os.clock()
+    while not F and (os.clock() - G) < (C * 2 + 0.5) do
         task.wait(0.05)
     end
 end
+local A=function(
 
--- Robust executor-function lookup. Different executors expose globals in
--- different places: script env (getfenv(0)), _G, shared, or via getgenv().
-local function _findExecFn(name: string): (any?, string?)
-    local ok1, env0 = pcall(function() return getfenv and getfenv(0) or _ENV end)
-    if ok1 and type(env0) == "table" then
-        local v = (env0 :: any)[name]
-        if type(v) == "function" then return v, "getfenv(0)" end
+
+A)    
+local B, C = pcall(function() return getfenv and getfenv(0) or _ENV end)
+    if B and type(C) == "table" then
+        local D = (C )[A]
+        if type(D) == "function" then return D, "getfenv(0)" end
     end
-    local v2 = (_G :: any)[name]
-    if type(v2) == "function" then return v2, "_G" end
+    local D = (_G )[A]
+    if type(D) == "function" then return D, "_G" end
     if type(shared) == "table" then
-        local v3 = (shared :: any)[name]
-        if type(v3) == "function" then return v3, "shared" end
+        local E = (shared )[A]
+        if type(E) == "function" then return E, "shared" end
     end
-    local genvFn = ok1 and (env0 :: any).getgenv or (_G :: any).getgenv
-    if type(genvFn) == "function" then
-        local okg, env = pcall(genvFn)
-        if okg and type(env) == "table" then
-            local g = (env :: any)[name]
-            if type(g) == "function" then return g, "getgenv()" end
+    local E = B and (C ).getgenv or (_G ).getgenv
+    if type(E) == "function" then
+        local F, G = pcall(E)
+        if F and type(G) == "table" then
+            local H = (G )[A]
+            if type(H) == "function" then return H, "getgenv()" end
         end
     end
     return nil, nil
 end
 
--- Named-remote cache (key: remote name). `false` = known miss.
-local _namedRemoteCache: {[string]: any} = {}
-local function findRemoteByName(remoteName: string): Instance?
-    local cached = _namedRemoteCache[remoteName]
-    if cached == false then return nil end
-    if cached and (cached :: Instance).Parent then return cached end
-    local rem = ReplicatedStorage:FindFirstChild(remoteName, true)
-    _namedRemoteCache[remoteName] = rem or false
-    return rem
+
+local B= {}
+local C=function(C)    
+local D = B[C]
+    if D == false then return nil end
+    if D and (D ).Parent then return D end
+    local E = h:FindFirstChild(C, true)
+    B[C] = E or false
+    return E
 end
 
-function Util.fireRemote(remoteName: string, ...)
-    local remote = findRemoteByName(remoteName)
-    if not remote then Util.debug("Remote not found:", remoteName); return end
-    local args = table.pack(...)
-    if remote:IsA("RemoteEvent") then
-        Util.safe(function() remote:FireServer(table.unpack(args, 1, args.n)) end, "fire:"..remoteName)
-    elseif remote:IsA("RemoteFunction") then
-        Util.safe(function() remote:InvokeServer(table.unpack(args, 1, args.n)) end, "invoke:"..remoteName)
+function y.fireRemote(D, ...)
+    local E = C(D)
+    if not E then y.debug("Remote not found:", D); return end
+    local F = table.pack(...)
+    if E:IsA("RemoteEvent") then
+        y.safe(function() E:FireServer(table.unpack(F, 1, F.n)) end, "fire:"..D)
+    elseif E:IsA("RemoteFunction") then
+        y.safe(function() E:InvokeServer(table.unpack(F, 1, F.n)) end, "invoke:"..D)
     end
 end
 
--- Keyword-based remote discovery. Cached on first hit (and on first miss).
-local _remoteCache: {[string]: any} = {}
-local function findRemoteByKeywords(keywords: {string}): Instance?
-    local key = table.concat(keywords, "|")
-    local cached = _remoteCache[key]
-    if cached == false then return nil end
-    if cached and (cached :: Instance).Parent then return cached end
-    for _, d in ipairs(ReplicatedStorage:GetDescendants()) do
-        if d:IsA("RemoteEvent") or d:IsA("RemoteFunction") then
-            local lname = d.Name:lower()
-            for _, kw in ipairs(keywords) do
-                if lname:find(kw, 1, true) then
-                    _remoteCache[key] = d
-                    return d
+
+local D= {}
+local E=function(E)    
+local F = table.concat(E, "|")
+    local G = D[F]
+    if G == false then return nil end
+    if G and (G ).Parent then return G end
+    for H, I in ipairs(h:GetDescendants()) do
+        if I:IsA("RemoteEvent") or I:IsA("RemoteFunction") then
+            local J = I.Name:lower()
+            for K, L in ipairs(E) do
+                if J:find(L, 1, true) then
+                    D[F] = I
+                    return I
                 end
             end
         end
     end
-    _remoteCache[key] = false
+    D[F] = false
     return nil
-end
+end local F=function(
 
-local function fireRemoteOrInvoke(remote: Instance)
-    if remote:IsA("RemoteEvent") then
-        Util.safe(function() (remote :: RemoteEvent):FireServer() end, "fire:"..remote.Name)
-    elseif remote:IsA("RemoteFunction") then
-        Util.safe(function() (remote :: RemoteFunction):InvokeServer() end, "invoke:"..remote.Name)
+F)    
+if F:IsA("RemoteEvent") then
+        y.safe(function() (F ):FireServer() end, "fire:"..F.Name)
+    elseif F:IsA("RemoteFunction") then
+        y.safe(function() (F ):InvokeServer() end, "invoke:"..F.Name)
     end
-end
+end local G=function(
 
-------------------------------------------------------------------------------
--- 6. CHARACTER LIFECYCLE
-------------------------------------------------------------------------------
-local function bindCharacter(char: Model)
-    Character = char
-    Humanoid  = char:WaitForChild("Humanoid", 10) :: Humanoid
-    RootPart  = char:WaitForChild("HumanoidRootPart", 10) :: BasePart
-    if Humanoid then
-        Humanoid.WalkSpeed = State.SpeedBoost and CONFIG.BoostedWalkSpeed or CONFIG.DefaultWalkSpeed
-        Humanoid.JumpPower = State.JumpBoost  and CONFIG.BoostedJumpPower  or CONFIG.DefaultJumpPower
+
+
+
+G)    
+r = G
+    s  = (G:WaitForChild("Humanoid", 10) )    
+t  = (G:WaitForChild("HumanoidRootPart", 10) )    
+if s then
+        s.WalkSpeed = p.SpeedBoost and o.BoostedWalkSpeed or o.DefaultWalkSpeed
+        s.JumpPower = p.JumpBoost  and o.BoostedJumpPower  or o.DefaultJumpPower
     end
-    Util.debug("Character bound:", char.Name)
+    y.debug("Character bound:", G.Name)
 end
 
-if LocalPlayer.Character then bindCharacter(LocalPlayer.Character) end
-trackConnection("CharacterAdded", LocalPlayer.CharacterAdded:Connect(bindCharacter))
+if q.Character then G(q.Character) end
+w("CharacterAdded", q.CharacterAdded:Connect(G))
 
-------------------------------------------------------------------------------
--- 7. ANTI-AFK
-------------------------------------------------------------------------------
-trackConnection("AntiAFK", LocalPlayer.Idled:Connect(function()
-    if not State.AntiAFK then return end
-    Util.safe(function()
-        VirtualUser:CaptureController()
-        VirtualUser:ClickButton2(Vector2.new())
-        Util.debug("Anti-AFK ping fired")
+
+
+
+w("AntiAFK", q.Idled:Connect(function()
+    if not p.AntiAFK then return end
+    y.safe(function()
+        j:CaptureController()
+        j:ClickButton2(Vector2.new())
+        y.debug("Anti-AFK ping fired")
     end, "AntiAFK")
 end))
 
-------------------------------------------------------------------------------
--- 8. INFINITE JUMP
-------------------------------------------------------------------------------
-trackConnection("InfiniteJump", UserInputService.JumpRequest:Connect(function()
-    if State.InfiniteJump and Humanoid then
-        Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+
+
+
+w("InfiniteJump", e.JumpRequest:Connect(function()
+    if p.InfiniteJump and s then
+        s:ChangeState(Enum.HumanoidStateType.Jumping)
     end
 end))
 
-------------------------------------------------------------------------------
--- 9. NOCLIP (cached BasePart list, rebuilt on character change)
-------------------------------------------------------------------------------
-local NoclipParts: {BasePart} = {}
-local function rebuildNoclipParts()
-    NoclipParts = {}
-    if not Character then return end
-    for _, p in ipairs(Character:GetDescendants()) do
-        if p:IsA("BasePart") then table.insert(NoclipParts, p) end
+
+
+
+local H= {}
+local I=function()    
+H = {}
+    if not r then return end
+    for I, J in ipairs(r:GetDescendants()) do
+        if J:IsA("BasePart") then table.insert(H, J) end
     end
 end
 
-trackConnection("CharacterAddedNoclipRebuild",
-    LocalPlayer.CharacterAdded:Connect(function(c)
-        c:WaitForChild("HumanoidRootPart", 5)
-        rebuildNoclipParts()
+w("CharacterAddedNoclipRebuild",
+    q.CharacterAdded:Connect(function(J)
+        J:WaitForChild("HumanoidRootPart", 5)
+        I()
     end))
-if Character then rebuildNoclipParts() end
+if r then I() end
 
-trackConnection("Noclip", RunService.Stepped:Connect(function()
-    if not State.Noclip then return end
-    for _, part in ipairs(NoclipParts) do
-        if part.Parent and part.CanCollide then part.CanCollide = false end
+w("Noclip", d.Stepped:Connect(function()
+    if not p.Noclip then return end
+    for J, K in ipairs(H) do
+        if K.Parent and K.CanCollide then K.CanCollide = false end
     end
 end))
 
-------------------------------------------------------------------------------
--- 10. AUTO SURVIVAL LOOP
---    Stat-name aliases tuned for JB. The lookup is keyword-based so if JB
---    uses slightly different names than guessed, the script auto-adapts.
-------------------------------------------------------------------------------
-local STAT_ALIASES = {
+
+
+
+
+
+local J = {
     Hunger = { "Hunger", "Food", "Fullness", "Satiety", "Belly", "Stomach" },
     Thirst = { "Thirst", "Water", "Hydration", "Drink" },
     Oxygen = { "Oxygen", "Breath", "Breathe", "Air", "AirSupply", "Lungs", "Lung", "OxygenLevel" },
     Breath = { "Breath", "Oxygen", "Air" },
     Energy = { "Energy", "Sleep", "Stamina", "Rest", "Fatigue", "Sleepiness" },
     Health = { "Health", "HP", "Life" },
-    -- Currency-ish; used by Session stats
+    
     Coins  = { "Coins", "Cash", "Gold", "Money", "Credits", "Currency" },
     XP     = { "XP", "Experience", "EXP" },
     Level  = { "Level", "Lvl", "Lv" },
 }
+local K=function()    
 
-local function statContainers(): {Instance}
-    local out: {Instance} = { LocalPlayer }
-    for _, n in ipairs({"PlayerStats","Stats","Data","leaderstats","Status","Vitals","PlayerData","Survival"}) do
-        local f = LocalPlayer:FindFirstChild(n)
-        if f then table.insert(out, f) end
+local K= { q }
+    for L, M in ipairs({"PlayerStats","Stats","Data","leaderstats","Status","Vitals","PlayerData","Survival"}) do
+        local N = q:FindFirstChild(M)
+        if N then table.insert(K, N) end
     end
-    if Character then
-        table.insert(out, Character)
-        for _, n in ipairs({"Stats","PlayerStats","Status","Vitals"}) do
-            local f = Character:FindFirstChild(n)
-            if f then table.insert(out, f) end
+    if r then
+        table.insert(K, r)
+        for L, M in ipairs({"Stats","PlayerStats","Status","Vitals"}) do
+            local N = r:FindFirstChild(M)
+            if N then table.insert(K, N) end
         end
     end
-    return out
+    return K
 end
 
-local _statCache: {[string]: any} = {}
-
-local function _findStatUncached(statName: string): (NumberValue | IntValue)?
-    local aliases = STAT_ALIASES[statName] or { statName }
-    for _, container in ipairs(statContainers()) do
-        for _, alias in ipairs(aliases) do
-            local v = container:FindFirstChild(alias)
-            if v and (v:IsA("NumberValue") or v:IsA("IntValue")) then return v :: any end
+local L= {}
+local M=function(
+M)    
+local N = J[M] or { M }
+    for O, P in ipairs(K()) do
+        for Q, R in ipairs(N) do
+            local S = P:FindFirstChild(R)
+            if S and (S:IsA("NumberValue") or S:IsA("IntValue")) then return S end
         end
     end
-    local function scan(root: Instance, depth: number): (NumberValue | IntValue)?
-        if depth > 4 then return nil end
-        for _, child in ipairs(root:GetChildren()) do
-            for _, alias in ipairs(aliases) do
-                if child.Name == alias and (child:IsA("NumberValue") or child:IsA("IntValue")) then
-                    return child :: any
-                end
+    local function scan(O, P)        
+if P > 4 then return nil end
+        for Q, R in ipairs(O:GetChildren()) do
+            for S, T in ipairs(N) do
+                if R.Name == T and (R:IsA("NumberValue") or R:IsA("IntValue")) then
+                    return R                 
+end
             end
-            if not child:IsA("BasePart") and not child:IsA("Script") and not child:IsA("LocalScript") then
-                local hit = scan(child, depth + 1); if hit then return hit end
+            if not R:IsA("BasePart") and not R:IsA("Script") and not R:IsA("LocalScript") then
+                local S = scan(R, P + 1); if S then return S end
             end
         end
         return nil
     end
-    local hit = scan(LocalPlayer, 0); if hit then return hit end
-    if Character then return scan(Character, 0) end
+    local O = scan(q, 0); if O then return O end
+    if r then return scan(r, 0) end
     return nil
+end local N=function(
+
+N)    
+local O = L[N]
+    if O and O.Parent then return O end
+    local P = M(N)
+    L[N] = P
+    return P
 end
 
-local function findStat(statName: string): (NumberValue | IntValue)?
-    local cached = _statCache[statName]
-    if cached and cached.Parent then return cached end
-    local v = _findStatUncached(statName)
-    _statCache[statName] = v
-    return v
-end
+w("CharacterAddedStatCacheReset",
+    q.CharacterAdded:Connect(function() L = {} end))
+local O=function()    
 
-trackConnection("CharacterAddedStatCacheReset",
-    LocalPlayer.CharacterAdded:Connect(function() _statCache = {} end))
-
-local function listAllStats(): {{name: string, value: number, path: string}}
-    local out = {}
-    local function visit(root: Instance, prefix: string, depth: number)
-        if depth > 5 then return end
-        for _, child in ipairs(root:GetChildren()) do
-            local p = prefix .. "." .. child.Name
-            if child:IsA("NumberValue") or child:IsA("IntValue") then
-                table.insert(out, {name = child.Name, value = child.Value, path = p})
-            elseif not child:IsA("BasePart") and not child:IsA("Script") and not child:IsA("LocalScript") then
-                visit(child, p, depth + 1)
+local O = {}
+    local function visit(P, Q, R)
+        if R > 5 then return end
+        for S, T in ipairs(P:GetChildren()) do
+            local U = Q .. "." .. T.Name
+            if T:IsA("NumberValue") or T:IsA("IntValue") then
+                table.insert(O, {name = T.Name, value = T.Value, path = U})
+            elseif not T:IsA("BasePart") and not T:IsA("Script") and not T:IsA("LocalScript") then
+                visit(T, U, R + 1)
             end
         end
     end
-    visit(LocalPlayer, "Players.LocalPlayer", 0)
-    if Character then visit(Character, "workspace." .. Character.Name, 0) end
-    return out
-end
+    visit(q, "Players.LocalPlayer", 0)
+    if r then visit(r, "workspace." .. r.Name, 0) end
+    return O
+end local P=function()    
 
-local function listAllRemotes(): {{name: string, class: string, path: string}}
-    local out = {}
-    for _, d in ipairs(ReplicatedStorage:GetDescendants()) do
-        if d:IsA("RemoteEvent") or d:IsA("RemoteFunction") then
-            table.insert(out, {name = d.Name, class = d.ClassName, path = d:GetFullName()})
+
+local P = {}
+    for Q, R in ipairs(h:GetDescendants()) do
+        if R:IsA("RemoteEvent") or R:IsA("RemoteFunction") then
+            table.insert(P, {name = R.Name, class = R.ClassName, path = R:GetFullName()})
         end
     end
-    return out
-end
+    return P
+end local Q=function(
 
-local function getStat(name: string): number?
-    local v = findStat(name); return v and v.Value or nil
-end
+Q)    
+local R = N(Q); return R and R.Value or nil
+end local R=function()    
 
-local function inCombat(): boolean
-    if Humanoid and Humanoid.Health < Humanoid.MaxHealth * 0.9 then return true end
+
+if s and s.Health < s.MaxHealth * 0.9 then return true end
     return false
 end
 
--- Burst-fire refill for Inf Hunger / Inf Thirst.
-local _burstActive = { Hunger = false, Thirst = false }
-local _BURST_INTERVAL = 0.05
-local _BURST_MAX      = 200
 
-local function startBurstRefill(statKey: string, remoteName: string, keywords: {string})
-    if _burstActive[statKey] then return end
-    _burstActive[statKey] = true
+local S = { Hunger = false, Thirst = false }
+local T = 0.05
+local U      = 200
+local aa=function(
+V, W, X)    
+if S[V] then return end
+    S[V] = true
     task.spawn(function()
-        local fires = 0
-        local startedAt = os.clock()
-        while fires < _BURST_MAX and Alive.value do
-            local stateOn = (statKey == "Hunger" and State.InfHunger)
-                         or (statKey == "Thirst" and State.InfThirst)
-            if not stateOn then break end
-            if not (Character and Humanoid and Humanoid.Health > 0) then break end
-            local v = findStat(statKey)
-            local cap = CONFIG.StopInfHungerAt > 0 and CONFIG.StopInfHungerAt or 100
-            if not v then break end
-            if v.Value >= cap - 1 then break end
-            Util.fireRemote(remoteName)
-            local r = findRemoteByKeywords(keywords)
-            if r then fireRemoteOrInvoke(r) end
-            fires += 1
-            task.wait(_BURST_INTERVAL)
+        local Y = 0
+        local Z = os.clock()
+        while Y < U and v.value do
+            local _ = (V == "Hunger" and p.InfHunger)
+                         or (V == "Thirst" and p.InfThirst)
+            if not _ then break end
+            if not (r and s and s.Health > 0) then break end
+            local aa = N(V)
+            local ab = o.StopInfHungerAt > 0 and o.StopInfHungerAt or 100
+            if not aa then break end
+            if aa.Value >= ab - 1 then break end
+            y.fireRemote(W)
+            local ac = E(X)
+            if ac then F(ac) end
+            Y += 1
+            task.wait(T)
         end
-        Util.debug(("[InfStat] %s burst ended after %d fires in %.2fs"):format(statKey, fires, os.clock() - startedAt))
-        _burstActive[statKey] = false
+        y.debug(("[InfStat] %s burst ended after %d fires in %.2fs"):format(V, Y, os.clock() - Z))
+        S[V] = false
     end)
 end
 
--- Inf Oxygen: cheap remote ping + client clamp + emergency surface-lift.
-local _lastO2Lift     = 0
-local _O2_LIFT_COOL   = 1.0
-local _O2_LIFT_STUDS  = 60
-local _O2_THRESHOLD   = 30
-local _o2RemoteCache: any = nil
 
-local function tryRefillOxygen(cap: number)
-    local v = findStat("Oxygen")
-    if not v then return end
-    if _o2RemoteCache == nil then
-        _o2RemoteCache = findRemoteByKeywords({"breath","oxygen","air","surface","lung"}) or false
+local ab     = 0
+local ac   = 1.0
+local V  = 60
+local W   = 30
+local X local ad=function(
+
+Y)    
+local Z = N("Oxygen")
+    if not Z then return end
+    if X == nil then
+        X = E({"breath","oxygen","air","surface","lung"}) or false
     end
-    if _o2RemoteCache and (_o2RemoteCache :: Instance).Parent then
-        fireRemoteOrInvoke(_o2RemoteCache :: Instance)
+    if X and (X ).Parent then
+        F(X )
     end
-    local target = math.max(cap, v.Value)
-    if v.Value < target then v.Value = target end
-    if v.Value >= _O2_THRESHOLD then return end
-    if tick() - _lastO2Lift < _O2_LIFT_COOL then return end
-    if not RootPart then return end
-    _lastO2Lift = tick()
+    local _ = math.max(Y, Z.Value)
+    if Z.Value < _ then Z.Value = _ end
+    if Z.Value >= W then return end
+    if tick() - ab < ac then return end
+    if not t then return end
+    ab = tick()
     pcall(function()
-        RootPart.CFrame = RootPart.CFrame + Vector3.new(0, _O2_LIFT_STUDS, 0)
-        if RootPart.AssemblyLinearVelocity then
-            local vel = RootPart.AssemblyLinearVelocity
-            RootPart.AssemblyLinearVelocity = Vector3.new(vel.X, math.max(vel.Y, 0), vel.Z)
+        t.CFrame = t.CFrame + Vector3.new(0, V, 0)
+        if t.AssemblyLinearVelocity then
+            local ad = t.AssemblyLinearVelocity
+            t.AssemblyLinearVelocity = Vector3.new(ad.X, math.max(ad.Y, 0), ad.Z)
         end
     end)
 end
 
--- High-frequency burst trigger loop.
+
 task.spawn(function()
-    while Alive.value and task.wait(0.25) do
-        if not (Character and Humanoid and Humanoid.Health > 0) then continue end
-        local cap = CONFIG.StopInfHungerAt > 0 and CONFIG.StopInfHungerAt or 100
-        local combat = inCombat()
-        if State.InfHunger and not (State.StopEatInCombat and combat) then
-            local v = findStat("Hunger")
-            if v and v.Value < cap - 1 and not _burstActive.Hunger then
-                startBurstRefill("Hunger", CONFIG.Remotes.Eat, {"eat","feed","hunger","food","consume"})
+    while v.value and task.wait(0.25) do
+        if not (r and s and s.Health > 0) then continue end
+        local Y = o.StopInfHungerAt > 0 and o.StopInfHungerAt or 100
+        local Z = R()
+        if p.InfHunger and not (p.StopEatInCombat and Z) then
+            local _ = N("Hunger")
+            if _ and _.Value < Y - 1 and not S.Hunger then
+                aa("Hunger", o.Remotes.Eat, {"eat","feed","hunger","food","consume"})
             end
         end
-        if State.InfThirst then
-            local v = findStat("Thirst")
-            if v and v.Value < cap - 1 and not _burstActive.Thirst then
-                startBurstRefill("Thirst", CONFIG.Remotes.Drink, {"drink","thirst","hydrate","water"})
+        if p.InfThirst then
+            local _ = N("Thirst")
+            if _ and _.Value < Y - 1 and not S.Thirst then
+                aa("Thirst", o.Remotes.Drink, {"drink","thirst","hydrate","water"})
             end
         end
-        if State.InfOxygen then tryRefillOxygen(cap) end
+        if p.InfOxygen then ad(Y) end
     end
 end)
 
--- Threshold-driven auto-eat / drink / sleep / breath / heal.
-task.spawn(function()
-    while Alive.value and task.wait(CONFIG.SurvivalLoopInterval) do
-        if not (Character and Humanoid and Humanoid.Health > 0) then continue end
-        local combat = inCombat()
-        if State.AutoEat then
-            local hunger = getStat("Hunger")
-            if hunger and hunger <= CONFIG.AutoEatThreshold and not (State.StopEatInCombat and combat) then
-                if CONFIG.HungerDelay > 0 then task.wait(CONFIG.HungerDelay) end
-                local r = findRemoteByKeywords({"eat","feed","hunger","food","consume"})
-                if r then fireRemoteOrInvoke(r) end
-            end
-        end
-        if State.AutoDrink then
-            local thirst = getStat("Thirst")
-            if thirst and thirst <= CONFIG.AutoDrinkThreshold then
-                if CONFIG.ThirstDelay > 0 then task.wait(CONFIG.ThirstDelay) end
-                local r = findRemoteByKeywords({"drink","thirst","hydrate","water"})
-                if r then fireRemoteOrInvoke(r) end
-            end
-        end
-        if State.AutoSleep then
-            local energy = getStat("Energy")
-            if energy and energy <= CONFIG.AutoSleepThreshold then
-                local r = findRemoteByKeywords({"sleep","rest","energy","nap"})
-                if r then fireRemoteOrInvoke(r) end
-            end
-        end
-        if State.AutoBreath then
-            local breath = getStat("Breath")
-            if breath and breath <= CONFIG.AutoBreathThreshold and RootPart then
-                RootPart.CFrame = RootPart.CFrame + Vector3.new(0, 30, 0)
-            end
-        end
-        if State.AutoHeal and Humanoid.Health <= CONFIG.DisengageAtHP then
-            local r = findRemoteByKeywords({"heal","health","regen","cure"})
-            if r then fireRemoteOrInvoke(r) end
-        end
-    end
-end)
 
-------------------------------------------------------------------------------
--- 10b. AUTO RESPAWN
-------------------------------------------------------------------------------
 task.spawn(function()
-    while Alive.value and task.wait(0.5) do
-        if not State.AutoRespawn then continue end
-        if Humanoid and Humanoid.Health <= 0 then
-            if CONFIG.RespawnDelay > 0 then task.wait(CONFIG.RespawnDelay) end
-            Util.fireRemote(CONFIG.Remotes.Respawn)
-            local r = findRemoteByKeywords({"respawn","reload","revive","spawn"})
-            if r then fireRemoteOrInvoke(r) end
+    while v.value and task.wait(o.SurvivalLoopInterval) do
+        if not (r and s and s.Health > 0) then continue end
+        local Y = R()
+        if p.AutoEat then
+            local Z = Q("Hunger")
+            if Z and Z <= o.AutoEatThreshold and not (p.StopEatInCombat and Y) then
+                if o.HungerDelay > 0 then task.wait(o.HungerDelay) end
+                local _ = E({"eat","feed","hunger","food","consume"})
+                if _ then F(_) end
+            end
+        end
+        if p.AutoDrink then
+            local Z = Q("Thirst")
+            if Z and Z <= o.AutoDrinkThreshold then
+                if o.ThirstDelay > 0 then task.wait(o.ThirstDelay) end
+                local _ = E({"drink","thirst","hydrate","water"})
+                if _ then F(_) end
+            end
+        end
+        if p.AutoSleep then
+            local Z = Q("Energy")
+            if Z and Z <= o.AutoSleepThreshold then
+                local _ = E({"sleep","rest","energy","nap"})
+                if _ then F(_) end
+            end
+        end
+        if p.AutoBreath then
+            local Z = Q("Breath")
+            if Z and Z <= o.AutoBreathThreshold and t then
+                t.CFrame = t.CFrame + Vector3.new(0, 30, 0)
+            end
+        end
+        if p.AutoHeal and s.Health <= o.DisengageAtHP then
+            local Z = E({"heal","health","regen","cure"})
+            if Z then F(Z) end
         end
     end
 end)
 
-------------------------------------------------------------------------------
--- 10c. AUTO ATTACK (players / NPCs)
-------------------------------------------------------------------------------
-local function isValidCombatTarget(model: Model): boolean
-    local hum = model:FindFirstChildOfClass("Humanoid")
-    if not hum or hum.Health <= 0 then return false end
-    if CONFIG.MaxTargetHP > 0 and hum.MaxHealth > CONFIG.MaxTargetHP then return false end
-    if hum.Health < CONFIG.MinTargetHP then return false end
+
+
+
+task.spawn(function()
+    while v.value and task.wait(0.5) do
+        if not p.AutoRespawn then continue end
+        if s and s.Health <= 0 then
+            if o.RespawnDelay > 0 then task.wait(o.RespawnDelay) end
+            y.fireRemote(o.Remotes.Respawn)
+            local Y = E({"respawn","reload","revive","spawn"})
+            if Y then F(Y) end
+        end
+    end
+end)
+local Y=function(
+
+
+
+Y)    
+local Z = Y:FindFirstChildOfClass("Humanoid")
+    if not Z or Z.Health <= 0 then return false end
+    if o.MaxTargetHP > 0 and Z.MaxHealth > o.MaxTargetHP then return false end
+    if Z.Health < o.MinTargetHP then return false end
     return true
 end
 
 task.spawn(function()
-    while Alive.value and task.wait(0.25) do
-        if not (State.AutoAttack or State.AutoAttackPlayers or State.AutoAttackNPCs) then continue end
-        if not (Character and RootPart and Humanoid and Humanoid.Health > 0) then continue end
-        local best, bestDist = nil :: Model?, math.huge
-        local scanRoots: {Model} = {}
-        if State.AutoAttackPlayers then
-            for _, p in ipairs(Players:GetPlayers()) do
-                if p ~= LocalPlayer and p.Character then table.insert(scanRoots, p.Character) end
+    while v.value and task.wait(0.25) do
+        if not (p.AutoAttack or p.AutoAttackPlayers or p.AutoAttackNPCs) then continue end
+        if not (r and t and s and s.Health > 0) then continue end
+        local Z ,_=(math.huge
+)        local ae= {}
+        if p.AutoAttackPlayers then
+            for af, ag in ipairs(c:GetPlayers()) do
+                if ag ~= q and ag.Character then table.insert(ae, ag.Character) end
             end
         end
-        if State.AutoAttackNPCs then
-            for _, m in ipairs(Workspace:GetChildren()) do
-                if m:IsA("Model") and m:FindFirstChildOfClass("Humanoid") and not Players:GetPlayerFromCharacter(m) then
-                    table.insert(scanRoots, m)
+        if p.AutoAttackNPCs then
+            for af, ag in ipairs(g:GetChildren()) do
+                if ag:IsA("Model") and ag:FindFirstChildOfClass("Humanoid") and not c:GetPlayerFromCharacter(ag) then
+                    table.insert(ae, ag)
                 end
             end
         end
-        for _, m in ipairs(scanRoots) do
-            local r = m:FindFirstChild("HumanoidRootPart") or m.PrimaryPart
-            if r and r:IsA("BasePart") and isValidCombatTarget(m) then
-                local d = (r.Position - RootPart.Position).Magnitude
-                if d <= CONFIG.CombatRange and d < bestDist then best, bestDist = m, d end
+        for af, ag in ipairs(ae) do
+            local ah = ag:FindFirstChild("HumanoidRootPart") or ag.PrimaryPart
+            if ah and ah:IsA("BasePart") and Y(ag) then
+                local ai = (ah.Position - t.Position).Magnitude
+                if ai <= o.CombatRange and ai < Z then _, Z = ag, ai end
             end
         end
-        if best then
-            Util.fireRemote(CONFIG.Remotes.Attack, best)
-            local r = findRemoteByKeywords({"attack","damage","bite","strike","hit"})
-            if r then
-                if r:IsA("RemoteEvent") then Util.safe(function() r:FireServer(best) end, "attack")
-                elseif r:IsA("RemoteFunction") then Util.safe(function() r:InvokeServer(best) end, "attack") end
+        if _ then
+            y.fireRemote(o.Remotes.Attack, _)
+            local af = E({"attack","damage","bite","strike","hit"})
+            if af then
+                if af:IsA("RemoteEvent") then y.safe(function() af:FireServer(_) end, "attack")
+                elseif af:IsA("RemoteFunction") then y.safe(function() af:InvokeServer(_) end, "attack") end
             end
-            if State.TargetPOV and Workspace.CurrentCamera then
-                Workspace.CurrentCamera.CameraSubject = best:FindFirstChildOfClass("Humanoid")
+            if p.TargetPOV and g.CurrentCamera then
+                g.CurrentCamera.CameraSubject = _:FindFirstChildOfClass("Humanoid")
             end
         end
     end
 end)
 
-------------------------------------------------------------------------------
--- 11. AUTO FARM (Jurassic Blocky--aware target keyword list)
---     The keyword list is the single most game-specific knob. Once you run
---     "Dump Workspace Names" in-game, replace these with the real ones.
-------------------------------------------------------------------------------
-local FARM_TARGETS: {[string]: {string}} = {
-    -- Food
+
+
+
+
+
+local ae= {
+    
     Berry        = { "berry","berries","fruit","fruits","plant","bush" },
     Meat         = { "meat","steak","flesh","carcass","drumstick" },
     Fish         = { "fish","tuna","salmon","cod","trout","catfish","fishing" },
-    -- Crafting / building
+    
     Wood         = { "wood","log","logs","branch","stick","twig","plank","timber" },
     Stone        = { "stone","rock","cobble","boulder","pebble" },
-    -- Collectibles
+    
     Fossil       = { "fossil","bone","skeleton","skull","tooth" },
     Egg          = { "egg","eggs","nest","clutch" },
-    -- Liquids / drinkable
+    
     Water        = { "water","pond","river","stream","puddle","spring" },
-    -- Mining / rare
+    
     Iron         = { "iron","ironore","ore","metal","copper","tin" },
     Gold         = { "gold","goldore","nugget" },
     Diamond      = { "diamond","gem","crystal","ruby","sapphire","emerald" },
-    -- Plants / saplings
+    
     Sapling      = { "sapling","seedling","seed","seeds" },
     Mushroom     = { "mushroom","fungus","shroom","cap" },
-    -- Generic loot bags / drops
+    
     Loot         = { "loot","bag","drop","pickup","crate","chest" },
 }
 
--- Cached Workspace descendants snapshot (refresh every 0.5s).
-local _wsCache: {Instance} = {}
-local _wsCacheTime = 0
-local function workspaceSnapshot(): {Instance}
-    if tick() - _wsCacheTime > 0.5 then
-        _wsCache = Workspace:GetDescendants()
-        _wsCacheTime = tick()
+
+local af= {}
+local ag = 0
+local ah=function()    
+if tick() - ag > 0.5 then
+        af = g:GetDescendants()
+        ag = tick()
     end
-    return _wsCache
+    return af
 end
 
-local UnreachableTargets: {[BasePart]: number} = {}
-local function isUnreachable(part: BasePart): boolean
-    local expiry = UnreachableTargets[part]
-    if not expiry then return false end
-    if tick() >= expiry then UnreachableTargets[part] = nil; return false end
+local ai= {}
+local Z=function(Z)    
+local _ = ai[Z]
+    if not _ then return false end
+    if tick() >= _ then ai[Z] = nil; return false end
     return true
-end
+end local aj=function(
 
-local function findFarmTargets(typeName: string): {BasePart}
-    local results: {BasePart} = {}
-    local seenOwner: {[Instance]: true} = {}
-    local keywords = FARM_TARGETS[typeName]
-    if not keywords then keywords = { typeName:lower() } end
-    local function pickPart(model: Model): BasePart?
-        return model.PrimaryPart
-            or model:FindFirstChild("HumanoidRootPart") :: BasePart?
-            or model:FindFirstChildWhichIsA("BasePart")
-    end
-    local function matches(name: string): boolean
-        local lower = name:lower()
-        for _, kw in ipairs(keywords) do
-            if lower:find(kw, 1, true) then return true end
+_)    
+local aj= {}
+    local ak= {}
+    local al = ae[_]
+    if not al then al = { _:lower() } end
+local am=function(am)        
+return am.PrimaryPart
+            or (am:FindFirstChild("HumanoidRootPart") )            
+or am:FindFirstChildWhichIsA("BasePart")
+end local an=function(
+an)        
+local ao = an:lower()
+        for ap, aq in ipairs(al) do
+            if ao:find(aq, 1, true) then return true end
         end
         return false
-    end
-    for _, inst in ipairs(workspaceSnapshot()) do
-        if matches(inst.Name) then
-            if inst:IsA("BasePart") then
-                local owner: Instance = inst.Parent or inst
-                if owner:IsA("Model") then
-                    if not seenOwner[owner] then
-                        seenOwner[owner] = true
-                        table.insert(results, inst)
+end    
+for ao, ap in ipairs(ah()) do
+        if an(ap.Name) then
+            if ap:IsA("BasePart") then
+                local aq= ap.Parent or ap
+                if aq:IsA("Model") then
+                    if not ak[aq] then
+                        ak[aq] = true
+                        table.insert(aj, ap)
                     end
                 else
-                    table.insert(results, inst)
+                    table.insert(aj, ap)
                 end
-            elseif inst:IsA("Model") then
-                if not seenOwner[inst] then
-                    seenOwner[inst] = true
-                    local p = pickPart(inst)
-                    if p then table.insert(results, p) end
+            elseif ap:IsA("Model") then
+                if not ak[ap] then
+                    ak[ap] = true
+                    local aq = am(ap)
+                    if aq then table.insert(aj, aq) end
                 end
             end
         end
     end
-    return results
+    return aj
 end
 
-local Options : any = nil   -- populated after UI builds
-local function getSelectedFarmTargets(): {string}
-    local picked: {string} = {}
-    local seen: {[string]: boolean} = {}
-    local function add(name: string)
-        if not name or name == "" or seen[name] then return end
-        seen[name] = true; table.insert(picked, name)
-    end
-    local sel = (Options and Options.FarmTargets and Options.FarmTargets.Value) or CONFIG.FarmTarget
-    if type(sel) == "string" then add(sel) end
-    if Options and Options.FarmPriority and type(Options.FarmPriority.Value) == "table" then
-        for k, v in pairs(Options.FarmPriority.Value) do
-            if v and type(k) == "string" then add(k) end
+local ak local al=function()    
+
+local al= {}
+    local am= {}
+local an=function(an)        
+if not an or an == "" or am[an] then return end
+        am[an] = true; table.insert(al, an)
+end    
+local ao = (ak and ak.FarmTargets and ak.FarmTargets.Value) or o.FarmTarget
+    if type(ao) == "string" then an(ao) end
+    if ak and ak.FarmPriority and type(ak.FarmPriority.Value) == "table" then
+        for ap, aq in pairs(ak.FarmPriority.Value) do
+            if aq and type(ap) == "string" then an(ap) end
         end
     end
-    return picked
+    return al
 end
 
-local _collectRemoteCache: any = nil
-local function getCollectRemote(): Instance?
-    if _collectRemoteCache and (_collectRemoteCache :: Instance).Parent then return _collectRemoteCache end
-    _collectRemoteCache = findRemoteByKeywords({"collect","pickup","claim","harvest","gather","interact","grab"})
-    return _collectRemoteCache
-end
+local am local an=function()    
 
-local function ownerOf(part: BasePart): Instance
-    local cur: Instance = part
-    while cur and not cur:IsA("Model") and cur.Parent and cur.Parent ~= Workspace do
-        cur = cur.Parent
+if am and (am ).Parent then return am end
+    am = E({"collect","pickup","claim","harvest","gather","interact","grab"})
+    return am
+end local ao=function(
+
+ao)    
+local ap= ao
+    while ap and not ap:IsA("Model") and ap.Parent and ap.Parent ~= g do
+        ap = ap.Parent
     end
-    return cur or part
-end
+    return ap or ao
+end local ap=function(
 
-local function topSnapPosition(target: BasePart, owner: Instance): Vector3
-    local clearance = math.max(CONFIG.TargetHoverClearance or 4, 1)
-    if owner:IsA("Model") then
-        local ok, cf, size = pcall(function() return (owner :: Model):GetBoundingBox() end)
-        if ok and cf and size then
-            local center = cf.Position
-            local topY = center.Y + size.Y * 0.5
-            return Vector3.new(center.X, topY + clearance, center.Z)
+ap, aq)    
+local _ = math.max(o.TargetHoverClearance or 4, 1)
+    if aq:IsA("Model") then
+        local ar, as, at = pcall(function() return (aq ):GetBoundingBox() end)
+        if ar and as and at then
+            local au = as.Position
+            local av = au.Y + at.Y * 0.5
+            return Vector3.new(au.X, av + _, au.Z)
         end
     end
-    return target.Position + Vector3.new(0, target.Size.Y * 0.5 + clearance, 0)
+    return ap.Position + Vector3.new(0, ap.Size.Y * 0.5 + _, 0)
 end
 
--- Cache executor pickup primitives once.
-local _fireProx: ((p: ProximityPrompt) -> ())? = nil
-local _fireTouch: any = nil
-local _fireClick: any = nil
+
+local aq
+local ar
+local as
 do
-    local g: any = _G
-    local function pick(...)
-        for _, n in ipairs({...}) do
-            local v = g[n]; if type(v) == "function" then return v end
-            local syn = g.Synapse
-            if type(syn) == "table" and type(syn[n]) == "function" then return syn[n] end
+    local at= _G
+local au=function(...)        
+for au, av in ipairs({...}) do
+            local _ = at[av]; if type(_) == "function" then return _ end
+            local aw = at.Synapse
+            if type(aw) == "table" and type(aw[av]) == "function" then return aw[av] end
         end
         return nil
-    end
-    _fireProx  = pick("fireproximityprompt","fireProximityPrompt")
-    _fireTouch = pick("firetouchinterest","fireTouchInterest")
-    _fireClick = pick("fireclickdetector","fireClickDetector")
+end    
+aq  = au("fireproximityprompt","fireProximityPrompt")
+    ar = au("firetouchinterest","fireTouchInterest")
+    as = au("fireclickdetector","fireClickDetector")
 end
 
-if _fireProx then print("[JurassicBlocky] fireproximityprompt available") end
+if aq then print("[JurassicBlocky] fireproximityprompt available") end
+local at=function(
+at)    
+local au = ao(at)
+    local av = r and ((r:FindFirstChild("HumanoidRootPart") )) or nil
+    local aw = o.TargetPickupMethod or "All"
+    local _ = (aw == "All" or aw == "ProximityPrompt")
+    local ax  = (aw == "All" or aw == "Touch")
+    local ay  = (aw == "All" or aw == "Click")
+    local az = (aw == "All" or aw == "Remote")
 
-local function fireAllPickups(target: BasePart)
-    local owner = ownerOf(target)
-    local root = Character and (Character:FindFirstChild("HumanoidRootPart") :: BasePart?) or nil
-    local method = CONFIG.TargetPickupMethod or "All"
-    local usePrompt = (method == "All" or method == "ProximityPrompt")
-    local useTouch  = (method == "All" or method == "Touch")
-    local useClick  = (method == "All" or method == "Click")
-    local useRemote = (method == "All" or method == "Remote")
-
-    -- One-shot diagnostic per target name (bounded - won't grow forever
-    -- because we only ever store the names we've seen, which is a fixed
-    -- set in any given server).
+    
+    
+    
     if not _G.JBPickupDiag then _G.JBPickupDiag = {} end
-    if not _G.JBPickupDiag[target.Name] then
-        _G.JBPickupDiag[target.Name] = true
-        local descs = owner:GetDescendants()
-        local nPrompts, nClick, nParts, nTools = 0, 0, 0, 0
-        for _, d in ipairs(descs) do
-            if d:IsA("ProximityPrompt") then nPrompts += 1 end
-            if d:IsA("ClickDetector") then nClick += 1 end
-            if d:IsA("BasePart") then nParts += 1 end
-            if d:IsA("Tool") then nTools += 1 end
+    if not _G.JBPickupDiag[at.Name] then
+        _G.JBPickupDiag[at.Name] = true
+        local aA = au:GetDescendants()
+        local aB, aC, aD, aE = 0, 0, 0, 0
+        for aF, aG in ipairs(aA) do
+            if aG:IsA("ProximityPrompt") then aB += 1 end
+            if aG:IsA("ClickDetector") then aC += 1 end
+            if aG:IsA("BasePart") then aD += 1 end
+            if aG:IsA("Tool") then aE += 1 end
         end
-        local dist = root and (root.Position - target.Position).Magnitude or -1
+        local aF = av and (av.Position - at.Position).Magnitude or -1
         print(("[PickupDiag] %s: prompts=%d, clickdetectors=%d, parts=%d, tools=%d, dist=%.1f"):format(
-            target.Name, nPrompts, nClick, nParts, nTools, dist))
+            at.Name, aB, aC, aD, aE, aF))
     end
 
-    if usePrompt then
-        for _, d in ipairs(owner:GetDescendants()) do
-            if d:IsA("ProximityPrompt") and d.Enabled then
-                if _fireProx then
-                    Util.safe(function() _fireProx(d) end, "fireProx")
+    if _ then
+        for aA, aB in ipairs(au:GetDescendants()) do
+            if aB:IsA("ProximityPrompt") and aB.Enabled then
+                if aq then
+                    y.safe(function() aq(aB) end, "fireProx")
                 else
-                    Util.safe(function()
-                        local prev = d.HoldDuration
-                        d.HoldDuration = 0
-                        d:InputHoldBegin(); task.wait(0.05); d:InputHoldEnd()
-                        d.HoldDuration = prev
+                    y.safe(function()
+                        local aC = aB.HoldDuration
+                        aB.HoldDuration = 0
+                        aB:InputHoldBegin(); task.wait(0.05); aB:InputHoldEnd()
+                        aB.HoldDuration = aC
                     end, "prompt")
                 end
             end
         end
     end
-    if useTouch and _fireTouch and root then
-        for _, d in ipairs(owner:IsA("Model") and owner:GetDescendants() or {target}) do
-            if d:IsA("BasePart") then
-                Util.safe(function() _fireTouch(root, d, 0); task.wait(); _fireTouch(root, d, 1) end, "touch")
+    if ax and ar and av then
+        for aA, aB in ipairs(au:IsA("Model") and au:GetDescendants() or {at}) do
+            if aB:IsA("BasePart") then
+                y.safe(function() ar(av, aB, 0); task.wait(); ar(av, aB, 1) end, "touch")
             end
         end
     end
-    if useClick and _fireClick then
-        for _, d in ipairs(owner:GetDescendants()) do
-            if d:IsA("ClickDetector") then
-                Util.safe(function() _fireClick(d, 0); _fireClick(d) end, "click")
+    if ay and as then
+        for aA, aB in ipairs(au:GetDescendants()) do
+            if aB:IsA("ClickDetector") then
+                y.safe(function() as(aB, 0); as(aB) end, "click")
             end
         end
     end
-    if useRemote then
-        local remote = getCollectRemote()
-        if remote then
-            Util.safe(function()
-                if remote:IsA("RemoteEvent") then remote:FireServer(target, owner)
-                elseif remote:IsA("RemoteFunction") then remote:InvokeServer(target, owner) end
+    if az then
+        local aA = an()
+        if aA then
+            y.safe(function()
+                if aA:IsA("RemoteEvent") then aA:FireServer(at, au)
+                elseif aA:IsA("RemoteFunction") then aA:InvokeServer(at, au) end
             end, "collectRemote")
         end
     end
-end
+end local au=function(
 
--- Plain chunked CFrame TP. JB has no known teleport-check so we can use
--- larger hops, but small chunks still help with collision/snap behavior.
-local function instantTeleportToTarget(target: BasePart, owner: Instance): boolean
-    if not RootPart then return false end
-    local destPos: Vector3 = target.Position
-    destPos = destPos + Vector3.new(
-        CONFIG.TargetLandingXOffset,
-        CONFIG.TargetLandingYOffset,
-        CONFIG.TargetLandingZOffset)
-    if CONFIG.TargetLandingJitter > 0 then
-        local j = CONFIG.TargetLandingJitter
-        destPos = destPos + Vector3.new(
-            (math.random() - 0.5) * 2 * j, 0,
-            (math.random() - 0.5) * 2 * j)
+
+
+au, av)    
+if not t then return false end
+    local aw= au.Position
+    aw = aw + Vector3.new(
+        o.TargetLandingXOffset,
+        o.TargetLandingYOffset,
+        o.TargetLandingZOffset)
+    if o.TargetLandingJitter > 0 then
+        local ax = o.TargetLandingJitter
+        aw = aw + Vector3.new(
+            (math.random() - 0.5) * 2 * ax, 0,
+            (math.random() - 0.5) * 2 * ax)
     end
-    local burst   = CONFIG.InstantTPBurstMode
-    local maxJump = burst and math.max(CONFIG.InstantTPBurstStuds, 5)
-                          or math.max(CONFIG.InstantTPMaxJump, 5)
-    local pause   = math.max(CONFIG.InstantTPInterJump, 0)
-    local hops = 0
-    local startDist = (destPos - RootPart.Position).Magnitude
-    local stuckCheckDist = startDist
-    local stuckCheckHops = 0
-    local maxStuckHops = math.max(CONFIG.TargetMaxStuckHops, 10)
+    local ax   = o.InstantTPBurstMode
+    local ay = ax and math.max(o.InstantTPBurstStuds, 5)
+                          or math.max(o.InstantTPMaxJump, 5)
+    local az   = math.max(o.InstantTPInterJump, 0)
+    local aA = 0
+    local aB = (aw - t.Position).Magnitude
+    local aC = aB
+    local aD = 0
+    local aE = math.max(o.TargetMaxStuckHops, 10)
 
-    while RootPart and Alive.value do
-        if not State.AutoFarm then return false end
-        local from = RootPart.Position
-        local dist = (destPos - from).Magnitude
-        if dist < maxJump then
-            Util.safe(function() RootPart.CFrame = CFrame.new(destPos) end, "finalHop")
+    while t and v.value do
+        if not p.AutoFarm then return false end
+        local aF = t.Position
+        local aG = (aw - aF).Magnitude
+        if aG < ay then
+            y.safe(function() t.CFrame = CFrame.new(aw) end, "finalHop")
             return true
         end
-        local step = from + (destPos - from).Unit * maxJump
-        Util.safe(function() RootPart.CFrame = CFrame.new(step) end, "hop")
-        hops += 1
-        if hops % 5 == 0 then
-            local expectedProgress = maxJump * 5 * 0.3
-            if (stuckCheckDist - dist) < expectedProgress then
-                stuckCheckHops += 1
-                if stuckCheckHops >= 3 then
-                    Util.debug("[InstantTP] STUCK - bailing")
+        local _ = aF + (aw - aF).Unit * ay
+        y.safe(function() t.CFrame = CFrame.new(_) end, "hop")
+        aA += 1
+        if aA % 5 == 0 then
+            local aH = ay * 5 * 0.3
+            if (aC - aG) < aH then
+                aD += 1
+                if aD >= 3 then
+                    y.debug("[InstantTP] STUCK - bailing")
                     return false
                 end
-            else stuckCheckHops = 0 end
-            stuckCheckDist = dist
+            else aD = 0 end
+            aC = aG
         end
-        if hops >= maxStuckHops then
-            Util.debug("[InstantTP] hop cap hit")
+        if aA >= aE then
+            y.debug("[InstantTP] hop cap hit")
             return false
         end
-        if burst then RunService.Heartbeat:Wait()
-        elseif pause > 0 then task.wait(pause) end
+        if ax then d.Heartbeat:Wait()
+        elseif az > 0 then task.wait(az) end
     end
     return false
-end
+end local av=function(
 
-local function instantCollect(target: BasePart, maxAttempts: number?): boolean
-    local owner = ownerOf(target)
-    local attempts = maxAttempts or CONFIG.TargetPickupRetries or 3
-    for i = 1, attempts do
-        if not target.Parent or not owner.Parent then return true end
-        if not State.AutoFarm then return false end
-        instantTeleportToTarget(target, owner)
-        if RootPart and target.Parent then
-            local snap = topSnapPosition(target, owner)
-            Util.safe(function() RootPart.CFrame = CFrame.new(snap) end, "snap1")
+av, aw)    
+local ax = ao(av)
+    local ay = aw or o.TargetPickupRetries or 3
+    for az = 1, ay do
+        if not av.Parent or not ax.Parent then return true end
+        if not p.AutoFarm then return false end
+        au(av, ax)
+        if t and av.Parent then
+            local aA = ap(av, ax)
+            y.safe(function() t.CFrame = CFrame.new(aA) end, "snap1")
         end
-        task.wait(CONFIG.InstantTPSettleTime)
-        fireAllPickups(target)
+        task.wait(o.InstantTPSettleTime)
+        at(av)
         task.wait(0.08)
-        if not target.Parent or not owner.Parent then return true end
-        if RootPart and target.Parent then
-            local snap = topSnapPosition(target, owner)
-            Util.safe(function() RootPart.CFrame = CFrame.new(snap) end, "snap2")
+        if not av.Parent or not ax.Parent then return true end
+        if t and av.Parent then
+            local aA = ap(av, ax)
+            y.safe(function() t.CFrame = CFrame.new(aA) end, "snap2")
         end
-        fireAllPickups(target)
+        at(av)
         task.wait(0.05)
-        if not target.Parent or not owner.Parent then return true end
+        if not av.Parent or not ax.Parent then return true end
     end
-    if RootPart and CONFIG.TargetPostCollectStep > 0 then
-        local backDir = (RootPart.Position - target.Position)
-        if backDir.Magnitude > 0.1 then
-            local backStep = RootPart.Position + backDir.Unit * CONFIG.TargetPostCollectStep
-            Util.safe(function() RootPart.CFrame = CFrame.new(backStep) end, "postCollectStep")
+    if t and o.TargetPostCollectStep > 0 then
+        local az = (t.Position - av.Position)
+        if az.Magnitude > 0.1 then
+            local aA = t.Position + az.Unit * o.TargetPostCollectStep
+            y.safe(function() t.CFrame = CFrame.new(aA) end, "postCollectStep")
         end
     end
     return false
-end
+end local aw=function(
 
-local function tryCollect(target: BasePart, maxAttempts: number?): boolean
-    local owner = ownerOf(target)
-    local attempts = maxAttempts or 6
-    for i = 1, attempts do
-        if not target.Parent or not owner.Parent then return true end
-        fireAllPickups(target)
-        if RootPart then
-            local wiggle = Vector3.new(((i % 2) == 0 and 1 or -1) * 2, 0, ((i % 2) == 0 and -1 or 1) * 2)
-            Util.safe(function() Util.tweenTo(RootPart.CFrame + wiggle, 0.08) end, "wiggle")
+aw, ax)    
+local ay = ao(aw)
+    local az = ax or 6
+    for aA = 1, az do
+        if not aw.Parent or not ay.Parent then return true end
+        at(aw)
+        if t then
+            local aB = Vector3.new(((aA % 2) == 0 and 1 or -1) * 2, 0, ((aA % 2) == 0 and -1 or 1) * 2)
+            y.safe(function() y.tweenTo(t.CFrame + aB, 0.08) end, "wiggle")
         end
         task.wait(0.12)
-        if not target.Parent or not owner.Parent then return true end
+        if not aw.Parent or not ay.Parent then return true end
     end
     return false
-end
+end local ax=function(
 
-local function safeWalkTo(goal: CFrame)
-    if not RootPart then return end
-    local speed  = math.clamp(CONFIG.SafeFarmSpeed,  20, CONFIG.SafeFarmSpeedMax)
-    local hopCap = math.clamp(CONFIG.SafeFarmHopCap, 10, CONFIG.SafeFarmHopCapMax)
-    local pause  = math.max(CONFIG.SafeFarmInterHop, 0)
-    if not State.SafeFarmSpeed then
-        local dist = (RootPart.Position - goal.Position).Magnitude
-        Util.tweenTo(goal, math.clamp(dist / 300, 0.2, 1.5))
+ax)    
+if not t then return end
+    local ay  = math.clamp(o.SafeFarmSpeed,  20, o.SafeFarmSpeedMax)
+    local az = math.clamp(o.SafeFarmHopCap, 10, o.SafeFarmHopCapMax)
+    local aA  = math.max(o.SafeFarmInterHop, 0)
+    if not p.SafeFarmSpeed then
+        local aB = (t.Position - ax.Position).Magnitude
+        y.tweenTo(ax, math.clamp(aB / 300, 0.2, 1.5))
         return
     end
-    while RootPart and Alive.value do
-        if not State.AutoFarm then return end
-        local from = RootPart.Position
-        local to   = goal.Position
-        local d    = (to - from).Magnitude
-        if d < 4 then return end
-        if d <= hopCap then
-            Util.tweenTo(goal, d / speed); return
+    while t and v.value do
+        if not p.AutoFarm then return end
+        local aB = t.Position
+        local aC   = ax.Position
+        local aD    = (aC - aB).Magnitude
+        if aD < 4 then return end
+        if aD <= az then
+            y.tweenTo(ax, aD / ay); return
         end
-        local step = from + (to - from).Unit * hopCap
-        Util.tweenTo(CFrame.new(step), hopCap / speed)
-        if pause > 0 then task.wait(pause) end
+        local aE = aB + (aC - aB).Unit * az
+        y.tweenTo(CFrame.new(aE), az / ay)
+        if aA > 0 then task.wait(aA) end
     end
 end
 
-local _lastFarmLog = 0
-local function farmDebug(msg: string)
-    if not CONFIG.DebugMode then return end
-    if tick() - _lastFarmLog < 1.5 then return end
-    _lastFarmLog = tick()
-    Util.debug("[Autofarm] " .. msg)
+local ay = 0
+local az=function(az)    
+if not o.DebugMode then return end
+    if tick() - ay < 1.5 then return end
+    ay = tick()
+    y.debug("[Autofarm] " .. az)
 end
 
 _G.JBAutoFarmHeartbeat = _G.JBAutoFarmHeartbeat or 0
 
 task.spawn(function()
-    while Alive.value and task.wait(CONFIG.AutoFarmInterval) do
+    while v.value and task.wait(o.AutoFarmInterval) do
         _G.JBAutoFarmHeartbeat = (_G.JBAutoFarmHeartbeat or 0) + 1
         if _G.JBAutoFarmHeartbeat % 60 == 0 then
-            Util.debug(("[AutoFarm] heartbeat %d, AutoFarm=%s, InstantTP=%s"):format(
-                _G.JBAutoFarmHeartbeat, tostring(State.AutoFarm), tostring(State.InstantFarmTP)))
+            y.debug(("[AutoFarm] heartbeat %d, AutoFarm=%s, InstantTP=%s"):format(
+                _G.JBAutoFarmHeartbeat, tostring(p.AutoFarm), tostring(p.InstantFarmTP)))
         end
-        local ok, err = pcall(function()
-            if not State.AutoFarm then return end
-            if not (Character and RootPart) then return end
-            local targetTypes = getSelectedFarmTargets()
-            if #targetTypes == 0 then farmDebug("no target selected"); return end
+        local aA, aB = pcall(function()
+            if not p.AutoFarm then return end
+            if not (r and t) then return end
+            local aA = al()
+            if #aA == 0 then az("no target selected"); return end
 
-            local otherPlayers: {BasePart} = {}
-            if CONFIG.TargetSkipOccupied then
-                for _, pl in ipairs(Players:GetPlayers()) do
-                    if pl ~= LocalPlayer and pl.Character then
-                        local hrp = pl.Character:FindFirstChild("HumanoidRootPart")
-                        if hrp and hrp:IsA("BasePart") then table.insert(otherPlayers, hrp) end
+            local aB= {}
+            if o.TargetSkipOccupied then
+                for aC, aD in ipairs(c:GetPlayers()) do
+                    if aD ~= q and aD.Character then
+                        local aE = aD.Character:FindFirstChild("HumanoidRootPart")
+                        if aE and aE:IsA("BasePart") then table.insert(aB, aE) end
                     end
                 end
             end
-            local function isOccupied(p: BasePart): boolean
-                if #otherPlayers == 0 then return false end
-                local r = CONFIG.TargetOccupiedRadius
-                for _, hrp in ipairs(otherPlayers) do
-                    if (hrp.Position - p.Position).Magnitude <= r then return true end
+local aC=function(aC)                
+if #aB == 0 then return false end
+                local aD = o.TargetOccupiedRadius
+                for aE, aF in ipairs(aB) do
+                    if (aF.Position - aC.Position).Magnitude <= aD then return true end
                 end
                 return false
-            end
-
-            local candidates: {{part: BasePart, dist: number, vol: number}} = {}
-            local totalFound, skippedUnreach, skippedClose, skippedOcc = 0, 0, 0, 0
-            for _, t in ipairs(targetTypes) do
-                local parts = findFarmTargets(t)
-                for _, p in ipairs(parts) do
-                    totalFound += 1
-                    if isUnreachable(p) then skippedUnreach += 1; continue end
-                    local d = (p.Position - RootPart.Position).Magnitude
-                    if d < CONFIG.TargetMinDistance then skippedClose += 1; continue end
-                    if d > CONFIG.AutoFarmRadius then continue end
-                    if CONFIG.TargetSkipOccupied and isOccupied(p) then skippedOcc += 1; continue end
-                    local vol = p.Size.X * p.Size.Y * p.Size.Z
-                    table.insert(candidates, { part = p, dist = d, vol = vol })
+end
+            
+local aD= {}
+            local aE, aF, aG, aH = 0, 0, 0, 0
+            for _, aI in ipairs(aA) do
+                local aJ = aj(aI)
+                for aK, aL in ipairs(aJ) do
+                    aE += 1
+                    if Z(aL) then aF += 1; continue end
+                    local aM = (aL.Position - t.Position).Magnitude
+                    if aM < o.TargetMinDistance then aG += 1; continue end
+                    if aM > o.AutoFarmRadius then continue end
+                    if o.TargetSkipOccupied and aC(aL) then aH += 1; continue end
+                    local aN = aL.Size.X * aL.Size.Y * aL.Size.Z
+                    table.insert(aD, { part = aL, dist = aM, vol = aN })
                 end
             end
 
-            local best: BasePart? = nil
-            local bestDist = math.huge
-            if #candidates > 0 then
-                local mode = CONFIG.TargetTargetPriority
-                if mode == "Furthest" then
-                    table.sort(candidates, function(a, b) return a.dist > b.dist end)
-                    best = candidates[1].part; bestDist = candidates[1].dist
-                elseif mode == "Largest" then
-                    table.sort(candidates, function(a, b) return a.vol > b.vol end)
-                    best = candidates[1].part; bestDist = candidates[1].dist
-                elseif mode == "Random" then
-                    local pick = candidates[math.random(1, #candidates)]
-                    best = pick.part; bestDist = pick.dist
+            local aI            
+local aJ = math.huge
+            if #aD > 0 then
+                local aK = o.TargetTargetPriority
+                if aK == "Furthest" then
+                    table.sort(aD, function(aL, aM) return aL.dist > aM.dist end)
+                    aI = aD[1].part; aJ = aD[1].dist
+                elseif aK == "Largest" then
+                    table.sort(aD, function(aL, aM) return aL.vol > aM.vol end)
+                    aI = aD[1].part; aJ = aD[1].dist
+                elseif aK == "Random" then
+                    local aL = aD[math.random(1, #aD)]
+                    aI = aL.part; aJ = aL.dist
                 else
-                    table.sort(candidates, function(a, b) return a.dist < b.dist end)
-                    best = candidates[1].part; bestDist = candidates[1].dist
+                    table.sort(aD, function(aL, aM) return aL.dist < aM.dist end)
+                    aI = aD[1].part; aJ = aD[1].dist
                 end
             end
 
-            if totalFound == 0 then
+            if aE == 0 then
                 if tick() - (_G.JBAutoFarmNoTargetLog or 0) > 4 then
                     _G.JBAutoFarmNoTargetLog = tick()
-                    print(("[AutoFarm] 0 in workspace for: %s"):format(table.concat(targetTypes, ", ")))
+                    print(("[AutoFarm] 0 in workspace for: %s"):format(table.concat(aA, ", ")))
                 end
                 return
             end
-            if not best then
+            if not aI then
                 if tick() - (_G.JBAutoFarmAllFilteredLog or 0) > 4 then
                     _G.JBAutoFarmAllFilteredLog = tick()
                     print(("[AutoFarm] %d found, all filtered (range=%d). Raise Farm Range or move closer."):format(
-                        totalFound, CONFIG.AutoFarmRadius))
+                        aE, o.AutoFarmRadius))
                 end
                 return
             end
 
-            local owner = ownerOf(best)
-            if State.InstantFarmTP then
-                farmDebug(("INSTANT TP %d studs"):format(math.floor(bestDist)))
-                local got = instantCollect(best, CONFIG.TargetPickupRetries or 3)
-                if not got then UnreachableTargets[best] = tick() + 6 end
-                task.wait(CONFIG.InstantTPPostDelay)
+            local aK = ao(aI)
+            if p.InstantFarmTP then
+                az(("INSTANT TP %d studs"):format(math.floor(aJ)))
+                local aL = av(aI, o.TargetPickupRetries or 3)
+                if not aL then ai[aI] = tick() + 6 end
+                task.wait(o.InstantTPPostDelay)
             else
-                farmDebug(("walking %d studs"):format(math.floor(bestDist)))
-                local landCF = CFrame.new(topSnapPosition(best, owner))
-                safeWalkTo(landCF)
-                if best.Parent and owner.Parent then
-                    local got = tryCollect(best, 6)
-                    if not got then UnreachableTargets[best] = tick() + 10 end
+                az(("walking %d studs"):format(math.floor(aJ)))
+                local aL = CFrame.new(ap(aI, aK))
+                ax(aL)
+                if aI.Parent and aK.Parent then
+                    local aM = aw(aI, 6)
+                    if not aM then ai[aI] = tick() + 10 end
                 end
                 task.wait(0.1)
             end
         end)
-        if not ok then
-            _G.JBAutoFarmLastError = tostring(err)
-            warn("[JurassicBlocky] [AutoFarm] loop error: " .. tostring(err))
+        if not aA then
+            _G.JBAutoFarmLastError = tostring(aB)
+            warn("[JurassicBlocky] [AutoFarm] loop error: " .. tostring(aB))
         end
     end
 end)
 
-------------------------------------------------------------------------------
--- 12. AUTO QUEST
-------------------------------------------------------------------------------
+
+
+
 task.spawn(function()
-    while Alive.value and task.wait(5) do
-        if not State.AutoQuest then continue end
-        Util.fireRemote(CONFIG.Remotes.Quest)
-        local r = findRemoteByKeywords({"quest","mission","claim","reward","complete"})
-        if r then fireRemoteOrInvoke(r) end
+    while v.value and task.wait(5) do
+        if not p.AutoQuest then continue end
+        y.fireRemote(o.Remotes.Quest)
+        local aA = E({"quest","mission","claim","reward","complete"})
+        if aA then F(aA) end
     end
 end)
+local aA=function(
 
-------------------------------------------------------------------------------
--- 13. ESP (Instance-based, executor-agnostic)
-------------------------------------------------------------------------------
-local function isCreatureModel(inst: Instance): boolean
-    if not inst:IsA("Model") then return false end
-    local hum = inst:FindFirstChildOfClass("Humanoid")
-    if not hum or hum.Health <= 0 then return false end
-    return inst.PrimaryPart ~= nil
-        or inst:FindFirstChild("HumanoidRootPart") ~= nil
-        or inst:FindFirstChildWhichIsA("BasePart") ~= nil
+
+
+aA)    
+if not aA:IsA("Model") then return false end
+    local aB = aA:FindFirstChildOfClass("Humanoid")
+    if not aB or aB.Health <= 0 then return false end
+    return aA.PrimaryPart ~= nil
+        or aA:FindFirstChild("HumanoidRootPart") ~= nil
+        or aA:FindFirstChildWhichIsA("BasePart") ~= nil
 end
 
-local SCAN_MAX_DEPTH = 6
-local function collectCreatureModels(): {[Model]: true}
-    local found: {[Model]: true} = {}
-    local function walk(parent: Instance, depth: number)
-        if depth > SCAN_MAX_DEPTH then return end
-        for _, child in ipairs(parent:GetChildren()) do
-            if child:IsA("Model") then
-                if isCreatureModel(child) then found[child :: Model] = true end
-            elseif child:IsA("Folder") or child:IsA("Configuration") or child == Workspace then
-                walk(child, depth + 1)
+local aB = 6
+local aC=function()    
+local aC= {}
+    local function walk(aD, aE)
+        if aE > aB then return end
+        for aF, aG in ipairs(aD:GetChildren()) do
+            if aG:IsA("Model") then
+                if aA(aG) then aC[aG ] = true end
+            elseif aG:IsA("Folder") or aG:IsA("Configuration") or aG == g then
+                walk(aG, aE + 1)
             end
         end
     end
-    walk(Workspace, 0)
-    for _, p in ipairs(Players:GetPlayers()) do
-        local c = p.Character
-        if c and isCreatureModel(c) then found[c] = true end
+    walk(g, 0)
+    for aD, aE in ipairs(c:GetPlayers()) do
+        local aF = aE.Character
+        if aF and aA(aF) then aC[aF] = true end
     end
-    return found
+    return aC
 end
 
-local ESP = {
-    Active = false, Entries = {} :: {[Model]: any},
+local aD = {
+    Active = false, Entries = {} ,
     LastScan = 0, ScanInterval = 0.75, LastScanCount = 0,
-    TracerGui = nil :: ScreenGui?,
+    TracerGui = nil ,
     Settings = {
         Enabled = false, ShowSelf = false, ShowPlayers = true, ShowNPCs = true,
         ShowOwner = true, ShowTeam = true, TeamCheck = false, MaxDistance = 2000,
@@ -1425,432 +1425,432 @@ local ESP = {
         BoxFillTransparency = 0.5, ChamsFillTransparency = 0.5, ChamsOutlineTransparency = 0,
     },
 }
+local aE=function(
+aE, aF)    
+local aG = aE.PrimaryPart
+        or aE:FindFirstChild("HumanoidRootPart")
+        or aE:FindFirstChildWhichIsA("BasePart")
+    if not aG or not aG:IsA("BasePart") then return false end
+    local aH = aF.CFrame.Position
+    local aI = aG.Position - aH
+    if aI.Magnitude < 1 then return true end
+    local aJ = RaycastParams.new()
+    aJ.FilterType = Enum.RaycastFilterType.Exclude
+    aJ.FilterDescendantsInstances = { aE, r or q.Character or aE }
+    aJ.IgnoreWater = true
+    return g:Raycast(aH, aI, aJ) == nil
+end local aF=function(
 
-local function modelInLOS(model: Model, cam: Camera): boolean
-    local target = model.PrimaryPart
-        or model:FindFirstChild("HumanoidRootPart")
-        or model:FindFirstChildWhichIsA("BasePart")
-    if not target or not target:IsA("BasePart") then return false end
-    local origin = cam.CFrame.Position
-    local dir = target.Position - origin
-    if dir.Magnitude < 1 then return true end
-    local params = RaycastParams.new()
-    params.FilterType = Enum.RaycastFilterType.Exclude
-    params.FilterDescendantsInstances = { model, Character or LocalPlayer.Character or model }
-    params.IgnoreWater = true
-    return Workspace:Raycast(origin, dir, params) == nil
-end
-
-local function getAnchorPart(model: Model): BasePart?
-    local p = model:FindFirstChild("Head")
-        or model.PrimaryPart
-        or model:FindFirstChild("HumanoidRootPart")
-        or model:FindFirstChild("Torso")
-        or model:FindFirstChild("UpperTorso")
-        or model:FindFirstChildWhichIsA("BasePart")
-    if p and p:IsA("BasePart") then return p end
+aF)    
+local aG = aF:FindFirstChild("Head")
+        or aF.PrimaryPart
+        or aF:FindFirstChild("HumanoidRootPart")
+        or aF:FindFirstChild("Torso")
+        or aF:FindFirstChild("UpperTorso")
+        or aF:FindFirstChildWhichIsA("BasePart")
+    if aG and aG:IsA("BasePart") then return aG end
     return nil
-end
+end local aG=function()    
 
-local function ensureTracerGui(): ScreenGui
-    if ESP.TracerGui and ESP.TracerGui.Parent then return ESP.TracerGui end
-    local gui = Instance.new("ScreenGui")
-    gui.Name = "JurassicBlocky_Tracers_" .. _RAND_SUFFIX
-    gui.ResetOnSpawn = false; gui.IgnoreGuiInset = true
-    gui.DisplayOrder = 9; gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    local g: any = _G
-    local parented = false
-    if type(g.gethui) == "function" then
-        local ok, h = pcall(g.gethui); if ok and h then gui.Parent = h; parented = true end
+
+if aD.TracerGui and aD.TracerGui.Parent then return aD.TracerGui end
+    local aG = Instance.new("ScreenGui")
+    aG.Name = "JurassicBlocky_Tracers_" .. b
+    aG.ResetOnSpawn = false; aG.IgnoreGuiInset = true
+    aG.DisplayOrder = 9; aG.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    local aH= _G
+    local aI = false
+    if type(aH.gethui) == "function" then
+        local aJ, aK = pcall(aH.gethui); if aJ and aK then aG.Parent = aK; aI = true end
     end
-    if not parented then
-        local ok, c = pcall(function() return CoreGui end)
-        if ok and c then gui.Parent = c; parented = true end
+    if not aI then
+        local aJ, aK = pcall(function() return l end)
+        if aJ and aK then aG.Parent = aK; aI = true end
     end
-    if not parented then gui.Parent = LocalPlayer:WaitForChild("PlayerGui") end
-    ESP.TracerGui = gui
-    return gui
-end
+    if not aI then aG.Parent = q:WaitForChild("PlayerGui") end
+    aD.TracerGui = aG
+    return aG
+end local aH=function(
 
-local function createEntry(model: Model): any
-    local e: any = {}
-    local anchor = getAnchorPart(model)
-    if not anchor then return e end
+aH)    
+local aI= {}
+    local aJ = aF(aH)
+    if not aJ then return aI end
 
-    local bb = Instance.new("BillboardGui")
-    bb.Name = "JB_ESP"; bb.Adornee = anchor; bb.AlwaysOnTop = true
-    bb.LightInfluence = 0; bb.Size = UDim2.new(0, 240, 0, 70)
-    bb.StudsOffset = Vector3.new(0, 6, 0); bb.MaxDistance = 5000; bb.Parent = anchor
-    e.billboard = bb
+    local aK = Instance.new("BillboardGui")
+    aK.Name = "JB_ESP"; aK.Adornee = aJ; aK.AlwaysOnTop = true
+    aK.LightInfluence = 0; aK.Size = UDim2.new(0, 240, 0, 70)
+    aK.StudsOffset = Vector3.new(0, 6, 0); aK.MaxDistance = 5000; aK.Parent = aJ
+    aI.billboard = aK
+local aL=function(
+aL, aM, aN, _, aO, aP)        
+local aQ = Instance.new("TextLabel")
+        aQ.Name = aL; aQ.BackgroundTransparency = 1; aQ.Size = aM; aQ.Position = aP
+        aQ.Font = aN; aQ.TextSize = _; aQ.TextColor3 = aO
+        aQ.TextStrokeTransparency = 0.3; aQ.TextStrokeColor3 = Color3.new(0, 0, 0)
+        aQ.Text = ""; aQ.Parent = aK
+        return aQ
+end    
+aI.nameLabel = aL("Name",     UDim2.new(1,0,0,20), Enum.Font.GothamBold, aD.Settings.TextSize, aD.Settings.Colors.Name,     UDim2.fromOffset(0,0))
+    aI.nameLabel.Text = aH.Name
+    aI.distLabel = aL("Distance", UDim2.new(1,0,0,14), Enum.Font.Gotham,     math.max(10, aD.Settings.TextSize - 2), aD.Settings.Colors.Distance, UDim2.fromOffset(0,20))
 
-    local function mkLabel(name, sz, font, fontSize, color, pos)
-        local l = Instance.new("TextLabel")
-        l.Name = name; l.BackgroundTransparency = 1; l.Size = sz; l.Position = pos
-        l.Font = font; l.TextSize = fontSize; l.TextColor3 = color
-        l.TextStrokeTransparency = 0.3; l.TextStrokeColor3 = Color3.new(0, 0, 0)
-        l.Text = ""; l.Parent = bb
-        return l
+    local aM = Instance.new("Frame")
+    aM.Name = "HpBg"; aM.BackgroundColor3 = Color3.new(0,0,0); aM.BackgroundTransparency = 0.3
+    aM.BorderSizePixel = 0; aM.Size = UDim2.new(1,-40,0,5); aM.Position = UDim2.new(0,20,0,38); aM.Parent = aK
+    Instance.new("UICorner", aM).CornerRadius = UDim.new(0,2)
+    aI.hpBg = aM
+    local aN = Instance.new("Frame")
+    aN.Name = "HpBar"; aN.BackgroundColor3 = aD.Settings.Colors.HealthHi
+    aN.BorderSizePixel = 0; aN.Size = UDim2.fromScale(1,1); aN.Parent = aM
+    Instance.new("UICorner", aN).CornerRadius = UDim.new(0,2)
+    aI.hpBar = aN
+    aI.hpText = aL("HpText", UDim2.new(1,0,0,14), Enum.Font.Gotham, math.max(10, aD.Settings.TextSize - 2), Color3.new(1,1,1), UDim2.fromOffset(0,46))
+
+    local aO = Instance.new("Part")
+    aO.Name = "JB_BoxAnchor"; aO.Anchored = true; aO.CanCollide = false
+    aO.CanQuery = false; aO.CanTouch = false; aO.Massless = true
+    aO.Transparency = 1; aO.Size = Vector3.new(4,6,4); aO.Parent = aH
+    aI.boxPart = aO
+    local aP = Instance.new("SelectionBox")
+    aP.Adornee = aO; aP.LineThickness = 0.05
+    aP.Color3 = aD.Settings.Colors.Box; aP.SurfaceTransparency = 1
+    aP.SurfaceColor3 = aD.Settings.Colors.Box; aP.Visible = false; aP.Parent = aO
+    aI.boxSel = aP
+
+    local aQ = aH:FindFirstChild("Head") or aH.PrimaryPart or aJ
+    if aQ and aQ:IsA("BasePart") then
+        local _ = Instance.new("BillboardGui")
+        _.Name = "JB_HeadDot"; _.Adornee = aQ; _.AlwaysOnTop = true
+        _.LightInfluence = 0; _.Size = UDim2.fromOffset(12,12); _.Enabled = false
+        _.MaxDistance = 5000; _.Parent = aQ
+        local aR = Instance.new("Frame")
+        aR.Name = "Dot"; aR.BackgroundColor3 = aD.Settings.Colors.HeadDot
+        aR.Size = UDim2.fromScale(1,1); aR.BorderSizePixel = 0; aR.Parent = _
+        Instance.new("UICorner", aR).CornerRadius = UDim.new(0.5,0)
+        aI.headBb = _; aI.headDot = aR
     end
-    e.nameLabel = mkLabel("Name",     UDim2.new(1,0,0,20), Enum.Font.GothamBold, ESP.Settings.TextSize, ESP.Settings.Colors.Name,     UDim2.fromOffset(0,0))
-    e.nameLabel.Text = model.Name
-    e.distLabel = mkLabel("Distance", UDim2.new(1,0,0,14), Enum.Font.Gotham,     math.max(10, ESP.Settings.TextSize - 2), ESP.Settings.Colors.Distance, UDim2.fromOffset(0,20))
 
-    local hpBg = Instance.new("Frame")
-    hpBg.Name = "HpBg"; hpBg.BackgroundColor3 = Color3.new(0,0,0); hpBg.BackgroundTransparency = 0.3
-    hpBg.BorderSizePixel = 0; hpBg.Size = UDim2.new(1,-40,0,5); hpBg.Position = UDim2.new(0,20,0,38); hpBg.Parent = bb
-    Instance.new("UICorner", hpBg).CornerRadius = UDim.new(0,2)
-    e.hpBg = hpBg
-    local hpBar = Instance.new("Frame")
-    hpBar.Name = "HpBar"; hpBar.BackgroundColor3 = ESP.Settings.Colors.HealthHi
-    hpBar.BorderSizePixel = 0; hpBar.Size = UDim2.fromScale(1,1); hpBar.Parent = hpBg
-    Instance.new("UICorner", hpBar).CornerRadius = UDim.new(0,2)
-    e.hpBar = hpBar
-    e.hpText = mkLabel("HpText", UDim2.new(1,0,0,14), Enum.Font.Gotham, math.max(10, ESP.Settings.TextSize - 2), Color3.new(1,1,1), UDim2.fromOffset(0,46))
+    local aR = aG()
+    local _ = Instance.new("Frame")
+    _.Name = "JB_Tracer"; _.AnchorPoint = Vector2.new(0,0.5)
+    _.BackgroundColor3 = aD.Settings.Colors.Tracer; _.BorderSizePixel = 0
+    _.Size = UDim2.fromOffset(0,1); _.Position = UDim2.fromOffset(0,0)
+    _.Visible = false; _.ZIndex = 1; _.Parent = aR
+    local aS = Instance.new("UIGradient"); aS.Color = ColorSequence.new(aD.Settings.Colors.Tracer); aS.Enabled = false; aS.Parent = _
+    local aT = Instance.new("UIStroke"); aT.Color = aD.Settings.Colors.Tracer; aT.Thickness = 2; aT.Transparency = 0.4; aT.Enabled = false; aT.Parent = _
+    local aU = Instance.new("Frame"); aU.AnchorPoint = Vector2.new(0.5,0.5); aU.Size = UDim2.fromOffset(6,6); aU.BackgroundColor3 = aD.Settings.Colors.Tracer; aU.BorderSizePixel = 0; aU.Visible = false; aU.ZIndex = 2; aU.Parent = aR
+    Instance.new("UICorner", aU).CornerRadius = UDim.new(0.5,0)
+    local aV = aU:Clone(); aV.Parent = aR
 
-    local boxPart = Instance.new("Part")
-    boxPart.Name = "JB_BoxAnchor"; boxPart.Anchored = true; boxPart.CanCollide = false
-    boxPart.CanQuery = false; boxPart.CanTouch = false; boxPart.Massless = true
-    boxPart.Transparency = 1; boxPart.Size = Vector3.new(4,6,4); boxPart.Parent = model
-    e.boxPart = boxPart
-    local boxSel = Instance.new("SelectionBox")
-    boxSel.Adornee = boxPart; boxSel.LineThickness = 0.05
-    boxSel.Color3 = ESP.Settings.Colors.Box; boxSel.SurfaceTransparency = 1
-    boxSel.SurfaceColor3 = ESP.Settings.Colors.Box; boxSel.Visible = false; boxSel.Parent = boxPart
-    e.boxSel = boxSel
+    aI.tracer = _; aI.tracerGrad = aS; aI.tracerGlow = aT
+    aI.tracerEndDot = aU; aI.tracerOriginDot = aV
+    aI.highlight = nil
+    return aI
+end local aI=function(
 
-    local head = model:FindFirstChild("Head") or model.PrimaryPart or anchor
-    if head and head:IsA("BasePart") then
-        local headBb = Instance.new("BillboardGui")
-        headBb.Name = "JB_HeadDot"; headBb.Adornee = head; headBb.AlwaysOnTop = true
-        headBb.LightInfluence = 0; headBb.Size = UDim2.fromOffset(12,12); headBb.Enabled = false
-        headBb.MaxDistance = 5000; headBb.Parent = head
-        local dot = Instance.new("Frame")
-        dot.Name = "Dot"; dot.BackgroundColor3 = ESP.Settings.Colors.HeadDot
-        dot.Size = UDim2.fromScale(1,1); dot.BorderSizePixel = 0; dot.Parent = headBb
-        Instance.new("UICorner", dot).CornerRadius = UDim.new(0.5,0)
-        e.headBb = headBb; e.headDot = dot
-    end
+aI)    
+if not aI then return end
+    if aI.billboard then aI.billboard:Destroy() end
+    if aI.headBb    then aI.headBb:Destroy()    end
+    if aI.boxPart   then aI.boxPart:Destroy()   end
+    if aI.tracer    then aI.tracer:Destroy()    end
+    if aI.tracerEndDot    then aI.tracerEndDot:Destroy()    end
+    if aI.tracerOriginDot then aI.tracerOriginDot:Destroy() end
+    if aI.highlight then aI.highlight:Destroy() end
+end local aJ=function(
 
-    local tracerGui = ensureTracerGui()
-    local tracer = Instance.new("Frame")
-    tracer.Name = "JB_Tracer"; tracer.AnchorPoint = Vector2.new(0,0.5)
-    tracer.BackgroundColor3 = ESP.Settings.Colors.Tracer; tracer.BorderSizePixel = 0
-    tracer.Size = UDim2.fromOffset(0,1); tracer.Position = UDim2.fromOffset(0,0)
-    tracer.Visible = false; tracer.ZIndex = 1; tracer.Parent = tracerGui
-    local tracerGrad = Instance.new("UIGradient"); tracerGrad.Color = ColorSequence.new(ESP.Settings.Colors.Tracer); tracerGrad.Enabled = false; tracerGrad.Parent = tracer
-    local tracerGlow = Instance.new("UIStroke"); tracerGlow.Color = ESP.Settings.Colors.Tracer; tracerGlow.Thickness = 2; tracerGlow.Transparency = 0.4; tracerGlow.Enabled = false; tracerGlow.Parent = tracer
-    local endDot = Instance.new("Frame"); endDot.AnchorPoint = Vector2.new(0.5,0.5); endDot.Size = UDim2.fromOffset(6,6); endDot.BackgroundColor3 = ESP.Settings.Colors.Tracer; endDot.BorderSizePixel = 0; endDot.Visible = false; endDot.ZIndex = 2; endDot.Parent = tracerGui
-    Instance.new("UICorner", endDot).CornerRadius = UDim.new(0.5,0)
-    local originDot = endDot:Clone(); originDot.Parent = tracerGui
+aJ)    
+if not aJ then return end
+    if aJ.billboard then aJ.billboard.Enabled = false end
+    if aJ.headBb    then aJ.headBb.Enabled    = false end
+    if aJ.boxSel    then aJ.boxSel.Visible    = false end
+    if aJ.tracer    then aJ.tracer.Visible    = false end
+    if aJ.tracerEndDot    then aJ.tracerEndDot.Visible    = false end
+    if aJ.tracerOriginDot then aJ.tracerOriginDot.Visible = false end
+end local aK=function(
 
-    e.tracer = tracer; e.tracerGrad = tracerGrad; e.tracerGlow = tracerGlow
-    e.tracerEndDot = endDot; e.tracerOriginDot = originDot
-    e.highlight = nil
-    return e
-end
+aK)    
+return c:GetPlayerFromCharacter(aK)
+end local aL=function(
 
-local function destroyEntry(entry: any)
-    if not entry then return end
-    if entry.billboard then entry.billboard:Destroy() end
-    if entry.headBb    then entry.headBb:Destroy()    end
-    if entry.boxPart   then entry.boxPart:Destroy()   end
-    if entry.tracer    then entry.tracer:Destroy()    end
-    if entry.tracerEndDot    then entry.tracerEndDot:Destroy()    end
-    if entry.tracerOriginDot then entry.tracerOriginDot:Destroy() end
-    if entry.highlight then entry.highlight:Destroy() end
-end
-
-local function hideEntry(entry: any)
-    if not entry then return end
-    if entry.billboard then entry.billboard.Enabled = false end
-    if entry.headBb    then entry.headBb.Enabled    = false end
-    if entry.boxSel    then entry.boxSel.Visible    = false end
-    if entry.tracer    then entry.tracer.Visible    = false end
-    if entry.tracerEndDot    then entry.tracerEndDot.Visible    = false end
-    if entry.tracerOriginDot then entry.tracerOriginDot.Visible = false end
-end
-
-local function modelOwner(model: Model): Player?
-    return Players:GetPlayerFromCharacter(model)
-end
-
-local function colorForModel(model: Model): Color3
-    local s = ESP.Settings
-    local owner = modelOwner(model)
-    if owner then
-        if s.TeamCheck and owner.Team and LocalPlayer.Team then
-            if owner.Team == LocalPlayer.Team then return s.Colors.Friendly else return s.Colors.Enemy end
+aL)    
+local aM = aD.Settings
+    local aN = aK(aL)
+    if aN then
+        if aM.TeamCheck and aN.Team and q.Team then
+            if aN.Team == q.Team then return aM.Colors.Friendly else return aM.Colors.Enemy end
         end
-        return s.Colors.Player
+        return aM.Colors.Player
     end
-    return s.Colors.NPC
-end
+    return aM.Colors.NPC
+end local aM=function()    
 
-local function updateESP()
-    if not ESP.Active then return end
-    local s = ESP.Settings
-    local cam = Workspace.CurrentCamera
-    if not cam then return end
-    local camPos = cam.CFrame.Position
 
-    if tick() - ESP.LastScan >= ESP.ScanInterval then
-        ESP.LastScan = tick()
-        local seen = collectCreatureModels()
-        for m in pairs(seen) do
-            if not ESP.Entries[m] then ESP.Entries[m] = createEntry(m) end
+if not aD.Active then return end
+    local aM = aD.Settings
+    local aN = g.CurrentCamera
+    if not aN then return end
+    local aO = aN.CFrame.Position
+
+    if tick() - aD.LastScan >= aD.ScanInterval then
+        aD.LastScan = tick()
+        local aP = aC()
+        for aQ in pairs(aP) do
+            if not aD.Entries[aQ] then aD.Entries[aQ] = aH(aQ) end
         end
-        for model, entry in pairs(ESP.Entries) do
-            if not seen[model] or not model.Parent then
-                destroyEntry(entry); ESP.Entries[model] = nil
+        for aQ, aR in pairs(aD.Entries) do
+            if not aP[aQ] or not aQ.Parent then
+                aI(aR); aD.Entries[aQ] = nil
             end
         end
-        local n = 0; for _ in pairs(ESP.Entries) do n += 1 end
-        ESP.LastScanCount = n
+        local aQ = 0; for aR in pairs(aD.Entries) do aQ += 1 end
+        aD.LastScanCount = aQ
     end
 
-    for model, entry in pairs(ESP.Entries) do
-        local hum   = model:FindFirstChildOfClass("Humanoid")
-        local owner = modelOwner(model)
-        local isPlayer = owner ~= nil
-        local skip = false
-        if not (hum and hum.Health > 0 and model.Parent) then skip = true end
-        if not skip and not s.ShowSelf and model == Character then skip = true end
-        if not skip and isPlayer and not s.ShowPlayers then skip = true end
-        if not skip and not isPlayer and not s.ShowNPCs then skip = true end
-        if not skip and owner and not s.ShowTeam
-           and owner.Team and LocalPlayer.Team and owner.Team == LocalPlayer.Team then skip = true end
-        if skip then hideEntry(entry); if entry.highlight then entry.highlight.Enabled = false end; continue end
+    for aP, aQ in pairs(aD.Entries) do
+        local aR   = aP:FindFirstChildOfClass("Humanoid")
+        local aS = aK(aP)
+        local aT = aS ~= nil
+        local aU = false
+        if not (aR and aR.Health > 0 and aP.Parent) then aU = true end
+        if not aU and not aM.ShowSelf and aP == r then aU = true end
+        if not aU and aT and not aM.ShowPlayers then aU = true end
+        if not aU and not aT and not aM.ShowNPCs then aU = true end
+        if not aU and aS and not aM.ShowTeam
+           and aS.Team and q.Team and aS.Team == q.Team then aU = true end
+        if aU then aJ(aQ); if aQ.highlight then aQ.highlight.Enabled = false end; continue end
 
-        local ok, cf, size = pcall(function() local c, sz = model:GetBoundingBox(); return c, sz end)
-        if not ok or not cf or not size then hideEntry(entry); continue end
-        local distance = (cf.Position - camPos).Magnitude
-        if distance > s.MaxDistance then hideEntry(entry); if entry.highlight then entry.highlight.Enabled = false end; continue end
+        local aV, _, aW = pcall(function() local aV, _ = aP:GetBoundingBox(); return aV, _ end)
+        if not aV or not _ or not aW then aJ(aQ); continue end
+        local aX = (_.Position - aO).Magnitude
+        if aX > aM.MaxDistance then aJ(aQ); if aQ.highlight then aQ.highlight.Enabled = false end; continue end
 
-        local color = colorForModel(model)
-        local nameTxt = ""
-        if s.Names then nameTxt = model.Name end
-        if s.ShowOwner and owner then nameTxt = (nameTxt ~= "" and nameTxt .. " " or "") .. "[" .. owner.Name .. "]" end
+        local aY = aL(aP)
+        local aZ = ""
+        if aM.Names then aZ = aP.Name end
+        if aM.ShowOwner and aS then aZ = (aZ ~= "" and aZ .. " " or "") .. "[" .. aS.Name .. "]" end
 
-        if entry.billboard then
-            entry.billboard.Enabled = s.Names or s.ShowOwner or s.Distance or s.HealthText or s.HealthBar
-            entry.nameLabel.Visible = (s.Names or s.ShowOwner) and nameTxt ~= ""
-            if entry.nameLabel.Visible then
-                entry.nameLabel.Text = nameTxt; entry.nameLabel.TextColor3 = s.Colors.Name; entry.nameLabel.TextSize = s.TextSize
+        if aQ.billboard then
+            aQ.billboard.Enabled = aM.Names or aM.ShowOwner or aM.Distance or aM.HealthText or aM.HealthBar
+            aQ.nameLabel.Visible = (aM.Names or aM.ShowOwner) and aZ ~= ""
+            if aQ.nameLabel.Visible then
+                aQ.nameLabel.Text = aZ; aQ.nameLabel.TextColor3 = aM.Colors.Name; aQ.nameLabel.TextSize = aM.TextSize
             end
-            entry.distLabel.Visible = s.Distance
-            if s.Distance then
-                entry.distLabel.Text = ("%d studs"):format(math.floor(distance))
-                entry.distLabel.TextColor3 = s.Colors.Distance
-                entry.distLabel.TextSize = math.max(10, s.TextSize - 2)
+            aQ.distLabel.Visible = aM.Distance
+            if aM.Distance then
+                aQ.distLabel.Text = ("%d studs"):format(math.floor(aX))
+                aQ.distLabel.TextColor3 = aM.Colors.Distance
+                aQ.distLabel.TextSize = math.max(10, aM.TextSize - 2)
             end
-            local hh = hum :: Humanoid
-            local pct = math.clamp(hh.Health / math.max(1, hh.MaxHealth), 0, 1)
-            local healthColor = s.Colors.HealthLo:Lerp(s.Colors.HealthHi, pct)
-            if entry.hpBg and entry.hpBar then
-                entry.hpBg.Visible = s.HealthBar; entry.hpBar.Visible = s.HealthBar
-                if s.HealthBar then entry.hpBar.Size = UDim2.new(pct, 0, 1, 0); entry.hpBar.BackgroundColor3 = healthColor end
+            local a_ = aR             
+local a0 = math.clamp(a_.Health / math.max(1, a_.MaxHealth), 0, 1)
+            local a1 = aM.Colors.HealthLo:Lerp(aM.Colors.HealthHi, a0)
+            if aQ.hpBg and aQ.hpBar then
+                aQ.hpBg.Visible = aM.HealthBar; aQ.hpBar.Visible = aM.HealthBar
+                if aM.HealthBar then aQ.hpBar.Size = UDim2.new(a0, 0, 1, 0); aQ.hpBar.BackgroundColor3 = a1 end
             end
-            if entry.hpText then
-                entry.hpText.Visible = s.HealthText
-                if s.HealthText then
-                    entry.hpText.Text = ("%d / %d"):format(math.floor(hh.Health), math.floor(hh.MaxHealth))
-                    entry.hpText.TextColor3 = healthColor
-                    entry.hpText.TextSize = math.max(10, s.TextSize - 2)
+            if aQ.hpText then
+                aQ.hpText.Visible = aM.HealthText
+                if aM.HealthText then
+                    aQ.hpText.Text = ("%d / %d"):format(math.floor(a_.Health), math.floor(a_.MaxHealth))
+                    aQ.hpText.TextColor3 = a1
+                    aQ.hpText.TextSize = math.max(10, aM.TextSize - 2)
                 end
             end
         end
 
-        if entry.boxPart and entry.boxSel then
-            if s.Boxes then
-                entry.boxPart.CFrame = cf; entry.boxPart.Size = size
-                entry.boxSel.Visible = true; entry.boxSel.Color3 = color
-                entry.boxSel.LineThickness = 0.02 + s.BoxThickness * 0.04
-                if s.BoxType == "Filled" then
-                    entry.boxSel.SurfaceTransparency = 1 - s.BoxFillTransparency
-                    entry.boxSel.SurfaceColor3 = color
-                else entry.boxSel.SurfaceTransparency = 1 end
-            else entry.boxSel.Visible = false end
+        if aQ.boxPart and aQ.boxSel then
+            if aM.Boxes then
+                aQ.boxPart.CFrame = _; aQ.boxPart.Size = aW
+                aQ.boxSel.Visible = true; aQ.boxSel.Color3 = aY
+                aQ.boxSel.LineThickness = 0.02 + aM.BoxThickness * 0.04
+                if aM.BoxType == "Filled" then
+                    aQ.boxSel.SurfaceTransparency = 1 - aM.BoxFillTransparency
+                    aQ.boxSel.SurfaceColor3 = aY
+                else aQ.boxSel.SurfaceTransparency = 1 end
+            else aQ.boxSel.Visible = false end
         end
 
-        if entry.tracer then
-            local showTracer = s.Tracers and ((isPlayer and s.TracerOnPlayers) or (not isPlayer and s.TracerOnNPCs))
-            if showTracer then
-                local targetWorld = cf.Position
-                if s.TracerToHead then
-                    local head = model:FindFirstChild("Head")
-                    if head and head:IsA("BasePart") then targetWorld = head.Position end
+        if aQ.tracer then
+            local a_ = aM.Tracers and ((aT and aM.TracerOnPlayers) or (not aT and aM.TracerOnNPCs))
+            if a_ then
+                local a0 = _.Position
+                if aM.TracerToHead then
+                    local a1 = aP:FindFirstChild("Head")
+                    if a1 and a1:IsA("BasePart") then a0 = a1.Position end
                 end
-                local screenPos: Vector3 = cam:WorldToViewportPoint(targetWorld)
-                local view = cam.ViewportSize
-                local onScreen = screenPos.Z > 0 and screenPos.X >= 0 and screenPos.X <= view.X and screenPos.Y >= 0 and screenPos.Y <= view.Y
-                local passOffscreen = (not s.TracerOffscreenOnly) or (not onScreen)
-                if screenPos.Z > 0 and passOffscreen then
-                    local target = Vector2.new(screenPos.X, screenPos.Y)
-                    local origin: Vector2
-                    if s.TracerOrigin == "Top" then origin = Vector2.new(view.X * 0.5, 0)
-                    elseif s.TracerOrigin == "Center" then origin = Vector2.new(view.X * 0.5, view.Y * 0.5)
-                    elseif s.TracerOrigin == "Mouse" then local m = UserInputService:GetMouseLocation(); origin = Vector2.new(m.X, m.Y)
-                    else origin = Vector2.new(view.X * 0.5, view.Y) end
-                    local dv = target - origin
-                    local len = dv.Magnitude
-                    local angle = math.deg(math.atan2(dv.Y, dv.X))
-                    local thick = math.max(1, s.TracerThickness)
-                    local col = s.Colors.Tracer
-                    if s.TracerRainbow then col = Color3.fromHSV((tick() * s.TracerRainbowSpeed) % 1, 1, 1)
-                    elseif s.TracerHealthColor and hum then
-                        local hh = hum :: Humanoid
-                        local pct = math.clamp(hh.Health / math.max(1, hh.MaxHealth), 0, 1)
-                        col = s.Colors.HealthLo:Lerp(s.Colors.HealthHi, pct)
-                    elseif s.TracerTeamColor and owner and owner.Team and LocalPlayer.Team then
-                        col = (owner.Team == LocalPlayer.Team) and s.Colors.Friendly or s.Colors.Enemy
+                local a1= aN:WorldToViewportPoint(a0)
+                local a2 = aN.ViewportSize
+                local a3 = a1.Z > 0 and a1.X >= 0 and a1.X <= a2.X and a1.Y >= 0 and a1.Y <= a2.Y
+                local a4 = (not aM.TracerOffscreenOnly) or (not a3)
+                if a1.Z > 0 and a4 then
+                    local a5 = Vector2.new(a1.X, a1.Y)
+                    local a6                    
+if aM.TracerOrigin == "Top" then a6 = Vector2.new(a2.X * 0.5, 0)
+                    elseif aM.TracerOrigin == "Center" then a6 = Vector2.new(a2.X * 0.5, a2.Y * 0.5)
+                    elseif aM.TracerOrigin == "Mouse" then local a7 = e:GetMouseLocation(); a6 = Vector2.new(a7.X, a7.Y)
+                    else a6 = Vector2.new(a2.X * 0.5, a2.Y) end
+                    local a7 = a5 - a6
+                    local a8 = a7.Magnitude
+                    local a9 = math.deg(math.atan2(a7.Y, a7.X))
+                    local ba = math.max(1, aM.TracerThickness)
+                    local bb = aM.Colors.Tracer
+                    if aM.TracerRainbow then bb = Color3.fromHSV((tick() * aM.TracerRainbowSpeed) % 1, 1, 1)
+                    elseif aM.TracerHealthColor and aR then
+                        local bc = aR                         
+local bd = math.clamp(bc.Health / math.max(1, bc.MaxHealth), 0, 1)
+                        bb = aM.Colors.HealthLo:Lerp(aM.Colors.HealthHi, bd)
+                    elseif aM.TracerTeamColor and aS and aS.Team and q.Team then
+                        bb = (aS.Team == q.Team) and aM.Colors.Friendly or aM.Colors.Enemy
                     end
-                    local transparency = s.TracerTransparency
-                    if s.TracerDistanceFade and s.MaxDistance > 0 then
-                        transparency = math.clamp(transparency + math.clamp(distance / s.MaxDistance, 0, 1) * 0.75, 0, 1)
+                    local bc = aM.TracerTransparency
+                    if aM.TracerDistanceFade and aM.MaxDistance > 0 then
+                        bc = math.clamp(bc + math.clamp(aX / aM.MaxDistance, 0, 1) * 0.75, 0, 1)
                     end
-                    local t = entry.tracer
-                    t.Visible = true; t.Position = UDim2.fromOffset(origin.X, origin.Y)
-                    t.Size = UDim2.fromOffset(math.max(len, 1), thick); t.Rotation = angle
-                    t.BackgroundColor3 = col; t.BackgroundTransparency = transparency
-                    local style = s.TracerStyle
-                    if style == "Glow" then
-                        entry.tracerGrad.Enabled = false; entry.tracerGlow.Enabled = true
-                        entry.tracerGlow.Color = col; entry.tracerGlow.Transparency = math.min(transparency + 0.3, 0.9)
-                    elseif style == "Dashed" then
-                        entry.tracerGlow.Enabled = false; entry.tracerGrad.Enabled = true
-                        entry.tracerGrad.Color = ColorSequence.new(col)
-                        local kps = {}
-                        for i = 0, 11 do
-                            table.insert(kps, NumberSequenceKeypoint.new(i / 11, (i % 2 == 0) and 0 or 1))
+                    local bd = aQ.tracer
+                    bd.Visible = true; bd.Position = UDim2.fromOffset(a6.X, a6.Y)
+                    bd.Size = UDim2.fromOffset(math.max(a8, 1), ba); bd.Rotation = a9
+                    bd.BackgroundColor3 = bb; bd.BackgroundTransparency = bc
+                    local be = aM.TracerStyle
+                    if be == "Glow" then
+                        aQ.tracerGrad.Enabled = false; aQ.tracerGlow.Enabled = true
+                        aQ.tracerGlow.Color = bb; aQ.tracerGlow.Transparency = math.min(bc + 0.3, 0.9)
+                    elseif be == "Dashed" then
+                        aQ.tracerGlow.Enabled = false; aQ.tracerGrad.Enabled = true
+                        aQ.tracerGrad.Color = ColorSequence.new(bb)
+                        local bf = {}
+                        for bg = 0, 11 do
+                            table.insert(bf, NumberSequenceKeypoint.new(bg / 11, (bg % 2 == 0) and 0 or 1))
                         end
-                        entry.tracerGrad.Transparency = NumberSequence.new(kps)
-                    elseif style == "Gradient" then
-                        entry.tracerGlow.Enabled = false; entry.tracerGrad.Enabled = true
-                        entry.tracerGrad.Color = ColorSequence.new(col)
-                        entry.tracerGrad.Transparency = NumberSequence.new({
+                        aQ.tracerGrad.Transparency = NumberSequence.new(bf)
+                    elseif be == "Gradient" then
+                        aQ.tracerGlow.Enabled = false; aQ.tracerGrad.Enabled = true
+                        aQ.tracerGrad.Color = ColorSequence.new(bb)
+                        aQ.tracerGrad.Transparency = NumberSequence.new({
                             NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(1, 0),
                         })
                     else
-                        entry.tracerGlow.Enabled = false; entry.tracerGrad.Enabled = false
+                        aQ.tracerGlow.Enabled = false; aQ.tracerGrad.Enabled = false
                     end
-                    if entry.tracerEndDot then
-                        entry.tracerEndDot.Visible = s.TracerEndDot
-                        if s.TracerEndDot then
-                            entry.tracerEndDot.Position = UDim2.fromOffset(target.X, target.Y)
-                            entry.tracerEndDot.Size = UDim2.fromOffset(thick + 4, thick + 4)
-                            entry.tracerEndDot.BackgroundColor3 = col
-                            entry.tracerEndDot.BackgroundTransparency = transparency
+                    if aQ.tracerEndDot then
+                        aQ.tracerEndDot.Visible = aM.TracerEndDot
+                        if aM.TracerEndDot then
+                            aQ.tracerEndDot.Position = UDim2.fromOffset(a5.X, a5.Y)
+                            aQ.tracerEndDot.Size = UDim2.fromOffset(ba + 4, ba + 4)
+                            aQ.tracerEndDot.BackgroundColor3 = bb
+                            aQ.tracerEndDot.BackgroundTransparency = bc
                         end
                     end
-                    if entry.tracerOriginDot then
-                        entry.tracerOriginDot.Visible = s.TracerOriginDot
-                        if s.TracerOriginDot then
-                            entry.tracerOriginDot.Position = UDim2.fromOffset(origin.X, origin.Y)
-                            entry.tracerOriginDot.Size = UDim2.fromOffset(thick + 4, thick + 4)
-                            entry.tracerOriginDot.BackgroundColor3 = col
-                            entry.tracerOriginDot.BackgroundTransparency = transparency
+                    if aQ.tracerOriginDot then
+                        aQ.tracerOriginDot.Visible = aM.TracerOriginDot
+                        if aM.TracerOriginDot then
+                            aQ.tracerOriginDot.Position = UDim2.fromOffset(a6.X, a6.Y)
+                            aQ.tracerOriginDot.Size = UDim2.fromOffset(ba + 4, ba + 4)
+                            aQ.tracerOriginDot.BackgroundColor3 = bb
+                            aQ.tracerOriginDot.BackgroundTransparency = bc
                         end
                     end
                 else
-                    entry.tracer.Visible = false
-                    if entry.tracerEndDot    then entry.tracerEndDot.Visible    = false end
-                    if entry.tracerOriginDot then entry.tracerOriginDot.Visible = false end
+                    aQ.tracer.Visible = false
+                    if aQ.tracerEndDot    then aQ.tracerEndDot.Visible    = false end
+                    if aQ.tracerOriginDot then aQ.tracerOriginDot.Visible = false end
                 end
             else
-                entry.tracer.Visible = false
-                if entry.tracerEndDot    then entry.tracerEndDot.Visible    = false end
-                if entry.tracerOriginDot then entry.tracerOriginDot.Visible = false end
+                aQ.tracer.Visible = false
+                if aQ.tracerEndDot    then aQ.tracerEndDot.Visible    = false end
+                if aQ.tracerOriginDot then aQ.tracerOriginDot.Visible = false end
             end
         end
 
-        if entry.headBb and entry.headDot then
-            if s.HeadDot then
-                entry.headBb.Enabled = true
-                local d = math.max(6, s.HeadDotRadius * 2)
-                entry.headBb.Size = UDim2.fromOffset(d, d)
-                entry.headDot.BackgroundColor3 = s.Colors.HeadDot
-            else entry.headBb.Enabled = false end
+        if aQ.headBb and aQ.headDot then
+            if aM.HeadDot then
+                aQ.headBb.Enabled = true
+                local a_ = math.max(6, aM.HeadDotRadius * 2)
+                aQ.headBb.Size = UDim2.fromOffset(a_, a_)
+                aQ.headDot.BackgroundColor3 = aM.Colors.HeadDot
+            else aQ.headBb.Enabled = false end
         end
 
-        local showChams = s.Chams and ((isPlayer and s.ChamsOnPlayers) or (not isPlayer and s.ChamsOnNPCs))
-        if showChams then
-            if not entry.highlight then
-                entry.highlight = Instance.new("Highlight"); entry.highlight.Name = "JB_Chams"
+        local a_ = aM.Chams and ((aT and aM.ChamsOnPlayers) or (not aT and aM.ChamsOnNPCs))
+        if a_ then
+            if not aQ.highlight then
+                aQ.highlight = Instance.new("Highlight"); aQ.highlight.Name = "JB_Chams"
             end
-            local h = entry.highlight
-            local fill: Color3
-            if s.ChamsMode == "Rainbow" then fill = Color3.fromHSV((tick() * s.ChamsRainbowSpeed) % 1, 1, 1)
-            elseif s.ChamsMode == "Health-based" then
-                local hh = hum :: Humanoid
-                local p = math.clamp(hh.Health / math.max(1, hh.MaxHealth), 0, 1)
-                fill = s.Colors.HealthLo:Lerp(s.Colors.HealthHi, p)
-            elseif s.ChamsTeamColor and owner and owner.Team and LocalPlayer.Team then
-                fill = (owner.Team == LocalPlayer.Team) and s.Colors.Friendly or s.Colors.Enemy
-            elseif s.ChamsDualColor then
-                fill = modelInLOS(model, cam) and s.Colors.ChamsVisible or s.Colors.ChamsOccluded
+            local a0 = aQ.highlight
+            local a1            
+if aM.ChamsMode == "Rainbow" then a1 = Color3.fromHSV((tick() * aM.ChamsRainbowSpeed) % 1, 1, 1)
+            elseif aM.ChamsMode == "Health-based" then
+                local a2 = aR                 
+local a3 = math.clamp(a2.Health / math.max(1, a2.MaxHealth), 0, 1)
+                a1 = aM.Colors.HealthLo:Lerp(aM.Colors.HealthHi, a3)
+            elseif aM.ChamsTeamColor and aS and aS.Team and q.Team then
+                a1 = (aS.Team == q.Team) and aM.Colors.Friendly or aM.Colors.Enemy
+            elseif aM.ChamsDualColor then
+                a1 = aE(aP, aN) and aM.Colors.ChamsVisible or aM.Colors.ChamsOccluded
             else
-                fill = isPlayer and s.Colors.ChamsPlayer or s.Colors.ChamsNPC
+                a1 = aT and aM.Colors.ChamsPlayer or aM.Colors.ChamsNPC
             end
-            local fillOp = s.ChamsFillTransparency
-            local outlineOp = 1 - s.ChamsOutlineTransparency
-            if s.ChamsMode == "Outline Only" then fillOp = 0
-            elseif s.ChamsMode == "Fill Only" then outlineOp = 0
-            elseif s.ChamsMode == "Pulse" then
-                local t = (math.sin(tick() * math.pi * 2 * s.ChamsPulseSpeed) + 1) * 0.5
-                fillOp *= t; outlineOp *= t
+            local a2 = aM.ChamsFillTransparency
+            local a3 = 1 - aM.ChamsOutlineTransparency
+            if aM.ChamsMode == "Outline Only" then a2 = 0
+            elseif aM.ChamsMode == "Fill Only" then a3 = 0
+            elseif aM.ChamsMode == "Pulse" then
+                local a4 = (math.sin(tick() * math.pi * 2 * aM.ChamsPulseSpeed) + 1) * 0.5
+                a2 *= a4; a3 *= a4
             end
-            if s.ChamsDistanceFade and s.MaxDistance > 0 then
-                local k = 1 - math.clamp(distance / s.MaxDistance, 0, 1)
-                fillOp *= k; outlineOp *= k
+            if aM.ChamsDistanceFade and aM.MaxDistance > 0 then
+                local a4 = 1 - math.clamp(aX / aM.MaxDistance, 0, 1)
+                a2 *= a4; a3 *= a4
             end
-            h.Adornee = model; h.FillColor = fill; h.OutlineColor = s.Colors.ChamsOutline
-            h.FillTransparency    = 1 - math.clamp(fillOp,    0, 1)
-            h.OutlineTransparency = 1 - math.clamp(outlineOp, 0, 1)
-            h.DepthMode = (s.ChamsDepth == "AlwaysOnTop") and Enum.HighlightDepthMode.AlwaysOnTop or Enum.HighlightDepthMode.Occluded
-            h.Parent = model; h.Enabled = true
-        elseif entry.highlight then entry.highlight.Enabled = false end
+            a0.Adornee = aP; a0.FillColor = a1; a0.OutlineColor = aM.Colors.ChamsOutline
+            a0.FillTransparency    = 1 - math.clamp(a2,    0, 1)
+            a0.OutlineTransparency = 1 - math.clamp(a3, 0, 1)
+            a0.DepthMode = (aM.ChamsDepth == "AlwaysOnTop") and Enum.HighlightDepthMode.AlwaysOnTop or Enum.HighlightDepthMode.Occluded
+            a0.Parent = aP; a0.Enabled = true
+        elseif aQ.highlight then aQ.highlight.Enabled = false end
     end
 end
 
-function ESP.add(model: Model)
-    if ESP.Entries[model] then return end
-    ESP.Entries[model] = createEntry(model)
+function aD.add(aN)
+    if aD.Entries[aN] then return end
+    aD.Entries[aN] = aH(aN)
 end
-function ESP.remove(model: Model)
-    local e = ESP.Entries[model]
-    if e then destroyEntry(e) end
-    ESP.Entries[model] = nil
+function aD.remove(aN)
+    local aO = aD.Entries[aN]
+    if aO then aI(aO) end
+    aD.Entries[aN] = nil
 end
-function ESP.enable()
-    if ESP.Active then return end
-    ESP.Active = true; ESP.Settings.Enabled = true; ESP.LastScan = 0
-    local accum = 0
-    trackConnection("ESP_RenderStepped", RunService.RenderStepped:Connect(function(dt)
-        accum += dt; if accum < (1/30) then return end; accum = 0; updateESP()
+function aD.enable()
+    if aD.Active then return end
+    aD.Active = true; aD.Settings.Enabled = true; aD.LastScan = 0
+    local aN = 0
+    w("ESP_RenderStepped", d.RenderStepped:Connect(function(aO)
+        aN += aO; if aN < (1/30) then return end; aN = 0; aM()
     end))
     task.defer(function()
-        local seen = collectCreatureModels()
-        local n = 0
-        for m in pairs(seen) do
-            if not ESP.Entries[m] then ESP.Entries[m] = createEntry(m) end
-            n += 1
+        local aO = aC()
+        local aP = 0
+        for aQ in pairs(aO) do
+            if not aD.Entries[aQ] then aD.Entries[aQ] = aH(aQ) end
+            aP += 1
         end
-        ESP.LastScanCount = n; ESP.LastScan = tick()
-        Util.notify("ESP", ("Tracking %d creature%s"):format(n, n == 1 and "" or "s"))
+        aD.LastScanCount = aP; aD.LastScan = tick()
+        y.notify("ESP", ("Tracking %d creature%s"):format(aP, aP == 1 and "" or "s"))
     end)
 end
-function ESP.disable()
-    ESP.Active = false; ESP.Settings.Enabled = false
-    for m in pairs(ESP.Entries) do ESP.remove(m) end
-    if Connections.ESP_RenderStepped then Connections.ESP_RenderStepped:Disconnect(); Connections.ESP_RenderStepped = nil end
-    if ESP.TracerGui then pcall(function() ESP.TracerGui:Destroy() end); ESP.TracerGui = nil end
+function aD.disable()
+    aD.Active = false; aD.Settings.Enabled = false
+    for aN in pairs(aD.Entries) do aD.remove(aN) end
+    if u.ESP_RenderStepped then u.ESP_RenderStepped:Disconnect(); u.ESP_RenderStepped = nil end
+    if aD.TracerGui then pcall(function() aD.TracerGui:Destroy() end); aD.TracerGui = nil end
 end
 
-------------------------------------------------------------------------------
--- 13b. RESOURCE ESP
-------------------------------------------------------------------------------
-local ResourceESP = {
-    Enabled = false, Entries = {} :: {[Instance]: any},
+
+
+
+local aN = {
+    Enabled = false, Entries = {} ,
     Colors = {
         Berry    = Color3.fromRGB(230,  90, 130),
         Meat     = Color3.fromRGB(220,  90,  90),
@@ -1869,687 +1869,687 @@ local ResourceESP = {
         Default  = Color3.fromRGB(255, 200,   0),
     },
 }
-
-local function resourceColor(typeName: string): Color3
-    return (ResourceESP.Colors :: any)[typeName] or ResourceESP.Colors.Default
-end
-local function resourceAnchorPart(inst: Instance): BasePart?
-    if inst:IsA("BasePart") then return inst end
-    if inst:IsA("Model") then
-        return inst.PrimaryPart or inst:FindFirstChild("HumanoidRootPart") :: BasePart?
-            or inst:FindFirstChildWhichIsA("BasePart")
+local aO=function(
+aO)    
+return ((aN.Colors ))[aO] or aN.Colors.Default
+end local aP=function(
+aP)    
+if aP:IsA("BasePart") then return aP end
+    if aP:IsA("Model") then
+        return aP.PrimaryPart or (aP:FindFirstChild("HumanoidRootPart") )            
+or aP:FindFirstChildWhichIsA("BasePart")
     end
     return nil
+end local aQ=function(
+
+aQ, aR)    
+local aS = aP(aQ)
+    if not aS then return nil end
+    local aT = aO(aR)
+    local aU = Instance.new("Highlight")
+    aU.Name = "JurassicBlocky_ResourceESP_" .. b
+    aU.FillColor = aT; aU.OutlineColor = Color3.new(1,1,1)
+    aU.FillTransparency = 0.55; aU.OutlineTransparency = 0
+    aU.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+    aU.Adornee = aQ; aU.Parent = aQ
+    local aV = Instance.new("BillboardGui")
+    aV.Name = "JurassicBlocky_ResourceLabel_" .. b
+    aV.AlwaysOnTop = true; aV.LightInfluence = 0
+    aV.Size = UDim2.new(0,140,0,32); aV.StudsOffsetWorldSpace = Vector3.new(0,4,0)
+    aV.Adornee = aS; aV.Parent = aS
+    local aW = Instance.new("TextLabel")
+    aW.BackgroundTransparency = 1; aW.Size = UDim2.new(1,0,0,16)
+    aW.TextColor3 = aT; aW.TextStrokeTransparency = 0; aW.TextStrokeColor3 = Color3.new(0,0,0)
+    aW.Font = Enum.Font.GothamSemibold; aW.TextSize = 13; aW.Text = aR; aW.Parent = aV
+    local aX = Instance.new("TextLabel")
+    aX.BackgroundTransparency = 1; aX.Position = UDim2.new(0,0,0,16); aX.Size = UDim2.new(1,0,0,14)
+    aX.TextColor3 = Color3.fromRGB(225,228,235); aX.TextStrokeTransparency = 0; aX.TextStrokeColor3 = Color3.new(0,0,0)
+    aX.Font = Enum.Font.Gotham; aX.TextSize = 11; aX.Text = "0 studs"; aX.Parent = aV
+    return { inst = aQ, anchor = aS, typeName = aR, highlight = aU, billboard = aV, title = aW, dist = aX }
+end local aR=function(
+
+aR)    
+if not aR then return end
+    if aR.highlight then pcall(function() aR.highlight:Destroy() end) end
+    if aR.billboard then pcall(function() aR.billboard:Destroy() end) end
 end
 
-local function buildResourceEntry(inst: Instance, typeName: string)
-    local anchor = resourceAnchorPart(inst)
-    if not anchor then return nil end
-    local color = resourceColor(typeName)
-    local highlight = Instance.new("Highlight")
-    highlight.Name = "JurassicBlocky_ResourceESP_" .. _RAND_SUFFIX
-    highlight.FillColor = color; highlight.OutlineColor = Color3.new(1,1,1)
-    highlight.FillTransparency = 0.55; highlight.OutlineTransparency = 0
-    highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-    highlight.Adornee = inst; highlight.Parent = inst
-    local bb = Instance.new("BillboardGui")
-    bb.Name = "JurassicBlocky_ResourceLabel_" .. _RAND_SUFFIX
-    bb.AlwaysOnTop = true; bb.LightInfluence = 0
-    bb.Size = UDim2.new(0,140,0,32); bb.StudsOffsetWorldSpace = Vector3.new(0,4,0)
-    bb.Adornee = anchor; bb.Parent = anchor
-    local title = Instance.new("TextLabel")
-    title.BackgroundTransparency = 1; title.Size = UDim2.new(1,0,0,16)
-    title.TextColor3 = color; title.TextStrokeTransparency = 0; title.TextStrokeColor3 = Color3.new(0,0,0)
-    title.Font = Enum.Font.GothamSemibold; title.TextSize = 13; title.Text = typeName; title.Parent = bb
-    local dist = Instance.new("TextLabel")
-    dist.BackgroundTransparency = 1; dist.Position = UDim2.new(0,0,0,16); dist.Size = UDim2.new(1,0,0,14)
-    dist.TextColor3 = Color3.fromRGB(225,228,235); dist.TextStrokeTransparency = 0; dist.TextStrokeColor3 = Color3.new(0,0,0)
-    dist.Font = Enum.Font.Gotham; dist.TextSize = 11; dist.Text = "0 studs"; dist.Parent = bb
-    return { inst = inst, anchor = anchor, typeName = typeName, highlight = highlight, billboard = bb, title = title, dist = dist }
-end
-
-local function destroyResourceEntry(entry)
-    if not entry then return end
-    if entry.highlight then pcall(function() entry.highlight:Destroy() end) end
-    if entry.billboard then pcall(function() entry.billboard:Destroy() end) end
-end
-
-function ResourceESP.clear()
-    for inst, entry in pairs(ResourceESP.Entries) do
-        destroyResourceEntry(entry); ResourceESP.Entries[inst] = nil
+function aN.clear()
+    for aS, aT in pairs(aN.Entries) do
+        aR(aT); aN.Entries[aS] = nil
     end
 end
-function ResourceESP.disable()
-    ResourceESP.Enabled = false
-    if Connections.ResourceESP_Tick then
-        Connections.ResourceESP_Tick:Disconnect(); Connections.ResourceESP_Tick = nil
+function aN.disable()
+    aN.Enabled = false
+    if u.ResourceESP_Tick then
+        u.ResourceESP_Tick:Disconnect(); u.ResourceESP_Tick = nil
     end
-    ResourceESP.clear()
+    aN.clear()
 end
-function ResourceESP.rescan()
-    if not ResourceESP.Enabled then return end
-    local types = getSelectedFarmTargets()
-    if #types == 0 then table.insert(types, "Berry") end
-    local alive: {[Instance]: string} = {}
-    for _, t in ipairs(types) do
-        for _, part in ipairs(findFarmTargets(t)) do
-            local owner = ownerOf(part); alive[owner] = t
+function aN.rescan()
+    if not aN.Enabled then return end
+    local aS = al()
+    if #aS == 0 then table.insert(aS, "Berry") end
+    local aT= {}
+    for aU, aV in ipairs(aS) do
+        for aW, aX in ipairs(aj(aV)) do
+            local aY = ao(aX); aT[aY] = aV
         end
     end
-    for owner, typeName in pairs(alive) do
-        if not ResourceESP.Entries[owner] then
-            local entry = buildResourceEntry(owner, typeName)
-            if entry then ResourceESP.Entries[owner] = entry end
+    for aU, aV in pairs(aT) do
+        if not aN.Entries[aU] then
+            local aW = aQ(aU, aV)
+            if aW then aN.Entries[aU] = aW end
         end
     end
-    for owner, entry in pairs(ResourceESP.Entries) do
-        if not alive[owner] or not owner.Parent then
-            destroyResourceEntry(entry); ResourceESP.Entries[owner] = nil
+    for aU, aV in pairs(aN.Entries) do
+        if not aT[aU] or not aU.Parent then
+            aR(aV); aN.Entries[aU] = nil
         end
     end
 end
-function ResourceESP.enable()
-    if ResourceESP.Enabled then return end
-    ResourceESP.Enabled = true; ResourceESP.rescan()
+function aN.enable()
+    if aN.Enabled then return end
+    aN.Enabled = true; aN.rescan()
     task.spawn(function()
-        while Alive.value and ResourceESP.Enabled do
-            ResourceESP.rescan(); task.wait(1.0)
+        while v.value and aN.Enabled do
+            aN.rescan(); task.wait(1.0)
         end
     end)
-    local accum = 0
-    Connections.ResourceESP_Tick = RunService.Heartbeat:Connect(function(dt)
-        if not ResourceESP.Enabled or not RootPart then return end
-        accum += dt; if accum < 0.16 then return end; accum = 0
-        local myPos = RootPart.Position
-        for inst, entry in pairs(ResourceESP.Entries) do
-            if entry.anchor and entry.anchor.Parent then
-                local d = (entry.anchor.Position - myPos).Magnitude
-                entry.dist.Text = ("%d studs"):format(math.floor(d))
+    local aS = 0
+    u.ResourceESP_Tick = d.Heartbeat:Connect(function(aT)
+        if not aN.Enabled or not t then return end
+        aS += aT; if aS < 0.16 then return end; aS = 0
+        local aU = t.Position
+        for aV, aW in pairs(aN.Entries) do
+            if aW.anchor and aW.anchor.Parent then
+                local aX = (aW.anchor.Position - aU).Magnitude
+                aW.dist.Text = ("%d studs"):format(math.floor(aX))
             else
-                destroyResourceEntry(entry); ResourceESP.Entries[inst] = nil
+                aR(aW); aN.Entries[aV] = nil
             end
         end
     end)
 end
 
-------------------------------------------------------------------------------
--- 14. TELEPORT UTILITIES
-------------------------------------------------------------------------------
-local Teleport = {}
-function Teleport.toPosition(pos: Vector3, smooth: boolean?)
-    if not RootPart then return end
-    local cf = CFrame.new(pos)
-    if smooth then Util.tweenTo(cf) else RootPart.CFrame = cf end
+
+
+
+local aS = {}
+function aS.toPosition(aT, aU)
+    if not t then return end
+    local aV = CFrame.new(aT)
+    if aU then y.tweenTo(aV) else t.CFrame = aV end
 end
-function Teleport.toPlayer(targetName: string, smooth: boolean?)
-    local target = Players:FindFirstChild(targetName)
-    if not target or not target.Character then Util.notify("Teleport", "Player not found."); return end
-    local root = target.Character:FindFirstChild("HumanoidRootPart")
-    if not root then return end
-    if smooth then Util.tweenTo(root.CFrame + Vector3.new(0,0,3))
-    elseif RootPart then RootPart.CFrame = root.CFrame + Vector3.new(0,0,3) end
+function aS.toPlayer(aT, aU)
+    local aV = c:FindFirstChild(aT)
+    if not aV or not aV.Character then y.notify("Teleport", "Player not found."); return end
+    local aW = aV.Character:FindFirstChild("HumanoidRootPart")
+    if not aW then return end
+    if aU then y.tweenTo(aW.CFrame + Vector3.new(0,0,3))
+    elseif t then t.CFrame = aW.CFrame + Vector3.new(0,0,3) end
 end
 
-------------------------------------------------------------------------------
--- 15. STAT MONITOR HUD
-------------------------------------------------------------------------------
-local StatMonitor = { Frame = nil :: Frame?, Gui = nil :: ScreenGui? }
-function StatMonitor.start()
-    if StatMonitor.Frame then return end
-    local hudParent: Instance = LocalPlayer:WaitForChild("PlayerGui")
-    Util.safe(function() if CoreGui then hudParent = CoreGui end end, "StatMonitor parent")
-    local gui = Instance.new("ScreenGui")
-    gui.Name = "JurassicBlocky_HUD_" .. _RAND_SUFFIX; gui.ResetOnSpawn = false
-    gui.IgnoreGuiInset = true; gui.Parent = hudParent
-    StatMonitor.Gui = gui
-    local frame = Instance.new("Frame")
-    frame.Name = "StatMonitor"; frame.AnchorPoint = Vector2.new(1, 0)
-    frame.Position = UDim2.new(1,-10,0,10); frame.Size = UDim2.new(0,180,0,110)
-    frame.BackgroundColor3 = CONFIG.GUIBackgroundColor; frame.BackgroundTransparency = 0.2
-    frame.BorderSizePixel = 0; frame.Parent = gui
-    Instance.new("UICorner", frame).CornerRadius = UDim.new(0,8)
-    local layout = Instance.new("UIListLayout", frame)
-    layout.Padding = UDim.new(0,2); layout.SortOrder = Enum.SortOrder.LayoutOrder
-    layout.HorizontalAlignment = Enum.HorizontalAlignment.Left
-    local pad = Instance.new("UIPadding", frame)
-    pad.PaddingLeft = UDim.new(0,8); pad.PaddingTop = UDim.new(0,6)
-    StatMonitor.Frame = frame
+
+
+
+local aT = { Frame = nil , Gui = nil }
+function aT.start()
+    if aT.Frame then return end
+    local aU= q:WaitForChild("PlayerGui")
+    y.safe(function() if l then aU = l end end, "StatMonitor parent")
+    local aV = Instance.new("ScreenGui")
+    aV.Name = "JurassicBlocky_HUD_" .. b; aV.ResetOnSpawn = false
+    aV.IgnoreGuiInset = true; aV.Parent = aU
+    aT.Gui = aV
+    local aW = Instance.new("Frame")
+    aW.Name = "StatMonitor"; aW.AnchorPoint = Vector2.new(1, 0)
+    aW.Position = UDim2.new(1,-10,0,10); aW.Size = UDim2.new(0,180,0,110)
+    aW.BackgroundColor3 = o.GUIBackgroundColor; aW.BackgroundTransparency = 0.2
+    aW.BorderSizePixel = 0; aW.Parent = aV
+    Instance.new("UICorner", aW).CornerRadius = UDim.new(0,8)
+    local aX = Instance.new("UIListLayout", aW)
+    aX.Padding = UDim.new(0,2); aX.SortOrder = Enum.SortOrder.LayoutOrder
+    aX.HorizontalAlignment = Enum.HorizontalAlignment.Left
+    local aY = Instance.new("UIPadding", aW)
+    aY.PaddingLeft = UDim.new(0,8); aY.PaddingTop = UDim.new(0,6)
+    aT.Frame = aW
     task.spawn(function()
-        while Alive.value and StatMonitor.Frame and StatMonitor.Frame.Parent do
+        while v.value and aT.Frame and aT.Frame.Parent do
             task.wait(0.5)
-            if not State.StatMonitor then StatMonitor.Frame.Visible = false; continue end
-            StatMonitor.Frame.Visible = true
-            for _, c in ipairs(StatMonitor.Frame:GetChildren()) do
-                if c:IsA("TextLabel") then c:Destroy() end
+            if not p.StatMonitor then aT.Frame.Visible = false; continue end
+            aT.Frame.Visible = true
+            for aZ, a_ in ipairs(aT.Frame:GetChildren()) do
+                if a_:IsA("TextLabel") then a_:Destroy() end
             end
-            for _, statName in ipairs({"Hunger","Thirst","Energy","Breath","Health"}) do
-                local val = getStat(statName)
-                local lbl = Instance.new("TextLabel")
-                lbl.BackgroundTransparency = 1; lbl.Size = UDim2.new(1,-8,0,18)
-                lbl.Font = Enum.Font.Gotham; lbl.TextSize = 13
-                lbl.TextXAlignment = Enum.TextXAlignment.Left; lbl.TextColor3 = Color3.new(1,1,1)
-                lbl.Text = ("%s: %s"):format(statName, val and tostring(math.floor(val)) or "-")
-                lbl.Parent = StatMonitor.Frame
+            for aZ, a_ in ipairs({"Hunger","Thirst","Energy","Breath","Health"}) do
+                local a0 = Q(a_)
+                local a1 = Instance.new("TextLabel")
+                a1.BackgroundTransparency = 1; a1.Size = UDim2.new(1,-8,0,18)
+                a1.Font = Enum.Font.Gotham; a1.TextSize = 13
+                a1.TextXAlignment = Enum.TextXAlignment.Left; a1.TextColor3 = Color3.new(1,1,1)
+                a1.Text = ("%s: %s"):format(a_, a0 and tostring(math.floor(a0)) or "-")
+                a1.Parent = aT.Frame
             end
         end
     end)
 end
-function StatMonitor.stop()
-    if StatMonitor.Gui then StatMonitor.Gui:Destroy() end
-    StatMonitor.Gui = nil; StatMonitor.Frame = nil
+function aT.stop()
+    if aT.Gui then aT.Gui:Destroy() end
+    aT.Gui = nil; aT.Frame = nil
 end
 
-------------------------------------------------------------------------------
--- 15a. INFO HUD (FPS / Ping / Memory / Coords / Time)
-------------------------------------------------------------------------------
-local InfoHUD = {
-    Gui = nil :: ScreenGui?, Labels = {} :: {[string]: TextLabel}, Conn = nil,
+
+
+
+local aU = {
+    Gui = nil , Labels = {} , Conn = nil,
     Visible = { FPS = true, Ping = true, Memory = false, Coords = false, Time = false },
     Anchor = "TopLeft",
     _fpsAccum = 0, _fpsFrames = 0, _fpsCurrent = 0,
 }
-local function _anchorPosition(anchor: string): (Vector2, UDim2)
-    if anchor == "TopRight"     then return Vector2.new(1,0), UDim2.new(1,-12,0,12) end
-    if anchor == "BottomLeft"   then return Vector2.new(0,1), UDim2.new(0,12,1,-12) end
-    if anchor == "BottomRight"  then return Vector2.new(1,1), UDim2.new(1,-12,1,-12) end
+local aV=function(aV)    
+if aV == "TopRight"     then return Vector2.new(1,0), UDim2.new(1,-12,0,12) end
+    if aV == "BottomLeft"   then return Vector2.new(0,1), UDim2.new(0,12,1,-12) end
+    if aV == "BottomRight"  then return Vector2.new(1,1), UDim2.new(1,-12,1,-12) end
     return Vector2.new(0,0), UDim2.new(0,12,0,12)
 end
-function InfoHUD.start()
-    if InfoHUD.Gui and InfoHUD.Gui.Parent then return end
-    local g = Instance.new("ScreenGui")
-    g.Name = "JurassicBlocky_InfoHUD_" .. _RAND_SUFFIX; g.ResetOnSpawn = false; g.IgnoreGuiInset = true; g.DisplayOrder = 8
-    local globals: any = _G
-    if type(globals.gethui) == "function" then
-        local ok, h = pcall(globals.gethui); if ok and h then g.Parent = h end
+function aU.start()
+    if aU.Gui and aU.Gui.Parent then return end
+    local aW = Instance.new("ScreenGui")
+    aW.Name = "JurassicBlocky_InfoHUD_" .. b; aW.ResetOnSpawn = false; aW.IgnoreGuiInset = true; aW.DisplayOrder = 8
+    local aX= _G
+    if type(aX.gethui) == "function" then
+        local aY, aZ = pcall(aX.gethui); if aY and aZ then aW.Parent = aZ end
     end
-    if not g.Parent then pcall(function() g.Parent = CoreGui end) end
-    if not g.Parent then g.Parent = LocalPlayer:WaitForChild("PlayerGui") end
-    local anchor, pos = _anchorPosition(InfoHUD.Anchor)
-    local panel = Instance.new("Frame")
-    panel.Name = "Panel"; panel.AnchorPoint = anchor; panel.Position = pos
-    panel.Size = UDim2.new(0,170,0,0); panel.AutomaticSize = Enum.AutomaticSize.Y
-    panel.BackgroundColor3 = Color3.fromRGB(15,17,24); panel.BackgroundTransparency = 0.15
-    panel.BorderSizePixel = 0; panel.Parent = g
-    Instance.new("UICorner", panel).CornerRadius = UDim.new(0,8)
-    local stk = Instance.new("UIStroke", panel)
-    stk.Color = Color3.fromRGB(70,78,100); stk.Thickness = 1; stk.Transparency = 0.4
-    local pad = Instance.new("UIPadding", panel)
-    pad.PaddingTop = UDim.new(0,8); pad.PaddingBottom = UDim.new(0,8)
-    pad.PaddingLeft = UDim.new(0,10); pad.PaddingRight = UDim.new(0,10)
-    local layout = Instance.new("UIListLayout", panel)
-    layout.FillDirection = Enum.FillDirection.Vertical
-    layout.Padding = UDim.new(0,3); layout.SortOrder = Enum.SortOrder.LayoutOrder
-    local function mkLabel(key: string, order: number)
-        local l = Instance.new("TextLabel")
-        l.Name = key; l.BackgroundTransparency = 1
-        l.Size = UDim2.new(1,0,0,16)
-        l.Font = Enum.Font.GothamSemibold; l.TextSize = 12
-        l.TextColor3 = Color3.fromRGB(235,238,245)
-        l.TextXAlignment = Enum.TextXAlignment.Left
-        l.LayoutOrder = order; l.Text = key .. ": -"; l.Parent = panel
-        InfoHUD.Labels[key] = l
-    end
-    mkLabel("FPS",1); mkLabel("Ping",2); mkLabel("Memory",3); mkLabel("Coords",4); mkLabel("Time",5)
-    InfoHUD.Gui = g
-    InfoHUD.Conn = RunService.RenderStepped:Connect(function(dt)
-        InfoHUD._fpsAccum += dt; InfoHUD._fpsFrames += 1
-        if InfoHUD._fpsAccum >= 0.5 then
-            InfoHUD._fpsCurrent = math.floor(InfoHUD._fpsFrames / InfoHUD._fpsAccum + 0.5)
-            InfoHUD._fpsAccum = 0; InfoHUD._fpsFrames = 0
+    if not aW.Parent then pcall(function() aW.Parent = l end) end
+    if not aW.Parent then aW.Parent = q:WaitForChild("PlayerGui") end
+    local aY, aZ = aV(aU.Anchor)
+    local a_ = Instance.new("Frame")
+    a_.Name = "Panel"; a_.AnchorPoint = aY; a_.Position = aZ
+    a_.Size = UDim2.new(0,170,0,0); a_.AutomaticSize = Enum.AutomaticSize.Y
+    a_.BackgroundColor3 = Color3.fromRGB(15,17,24); a_.BackgroundTransparency = 0.15
+    a_.BorderSizePixel = 0; a_.Parent = aW
+    Instance.new("UICorner", a_).CornerRadius = UDim.new(0,8)
+    local a0 = Instance.new("UIStroke", a_)
+    a0.Color = Color3.fromRGB(70,78,100); a0.Thickness = 1; a0.Transparency = 0.4
+    local a1 = Instance.new("UIPadding", a_)
+    a1.PaddingTop = UDim.new(0,8); a1.PaddingBottom = UDim.new(0,8)
+    a1.PaddingLeft = UDim.new(0,10); a1.PaddingRight = UDim.new(0,10)
+    local a2 = Instance.new("UIListLayout", a_)
+    a2.FillDirection = Enum.FillDirection.Vertical
+    a2.Padding = UDim.new(0,3); a2.SortOrder = Enum.SortOrder.LayoutOrder
+local a3=function(a3, a4)        
+local a5 = Instance.new("TextLabel")
+        a5.Name = a3; a5.BackgroundTransparency = 1
+        a5.Size = UDim2.new(1,0,0,16)
+        a5.Font = Enum.Font.GothamSemibold; a5.TextSize = 12
+        a5.TextColor3 = Color3.fromRGB(235,238,245)
+        a5.TextXAlignment = Enum.TextXAlignment.Left
+        a5.LayoutOrder = a4; a5.Text = a3 .. ": -"; a5.Parent = a_
+        aU.Labels[a3] = a5
+end    
+a3("FPS",1); a3("Ping",2); a3("Memory",3); a3("Coords",4); a3("Time",5)
+    aU.Gui = aW
+    aU.Conn = d.RenderStepped:Connect(function(a4)
+        aU._fpsAccum += a4; aU._fpsFrames += 1
+        if aU._fpsAccum >= 0.5 then
+            aU._fpsCurrent = math.floor(aU._fpsFrames / aU._fpsAccum + 0.5)
+            aU._fpsAccum = 0; aU._fpsFrames = 0
         end
-        for key, label in pairs(InfoHUD.Labels) do label.Visible = InfoHUD.Visible[key] == true end
-        if InfoHUD.Visible.FPS then
-            local fps = InfoHUD._fpsCurrent
-            local col = fps >= 50 and Color3.fromRGB(95,215,135)
-                or fps >= 30 and Color3.fromRGB(255,185,95)
+        for a5, a6 in pairs(aU.Labels) do a6.Visible = aU.Visible[a5] == true end
+        if aU.Visible.FPS then
+            local a5 = aU._fpsCurrent
+            local a6 = a5 >= 50 and Color3.fromRGB(95,215,135)
+                or a5 >= 30 and Color3.fromRGB(255,185,95)
                 or Color3.fromRGB(245,105,120)
-            InfoHUD.Labels.FPS.Text = ("FPS: %d"):format(fps); InfoHUD.Labels.FPS.TextColor3 = col
+            aU.Labels.FPS.Text = ("FPS: %d"):format(a5); aU.Labels.FPS.TextColor3 = a6
         end
-        if InfoHUD.Visible.Ping then
-            local stats = game:GetService("Stats")
-            local ok, ms = pcall(function() return stats.Network.ServerStatsItem["Data Ping"]:GetValue() end)
-            local pingNum = ok and math.floor(ms) or -1
-            local col = pingNum < 100 and Color3.fromRGB(95,215,135)
-                or pingNum < 200 and Color3.fromRGB(255,185,95)
+        if aU.Visible.Ping then
+            local a5 = game:GetService("Stats")
+            local a6, a7 = pcall(function() return a5.Network.ServerStatsItem["Data Ping"]:GetValue() end)
+            local a8 = a6 and math.floor(a7) or -1
+            local a9 = a8 < 100 and Color3.fromRGB(95,215,135)
+                or a8 < 200 and Color3.fromRGB(255,185,95)
                 or Color3.fromRGB(245,105,120)
-            InfoHUD.Labels.Ping.Text = pingNum >= 0 and ("Ping: %d ms"):format(pingNum) or "Ping: ?"
-            InfoHUD.Labels.Ping.TextColor3 = col
+            aU.Labels.Ping.Text = a8 >= 0 and ("Ping: %d ms"):format(a8) or "Ping: ?"
+            aU.Labels.Ping.TextColor3 = a9
         end
-        if InfoHUD.Visible.Memory then
-            local stats = game:GetService("Stats")
-            InfoHUD.Labels.Memory.Text = ("Mem: %d MB"):format(math.floor(stats:GetTotalMemoryUsageMb()))
+        if aU.Visible.Memory then
+            local a5 = game:GetService("Stats")
+            aU.Labels.Memory.Text = ("Mem: %d MB"):format(math.floor(a5:GetTotalMemoryUsageMb()))
         end
-        if InfoHUD.Visible.Coords then
-            if Character and Character:FindFirstChild("HumanoidRootPart") then
-                local p = (Character.HumanoidRootPart :: BasePart).Position
-                InfoHUD.Labels.Coords.Text = ("X %d  Y %d  Z %d"):format(math.floor(p.X), math.floor(p.Y), math.floor(p.Z))
-            else InfoHUD.Labels.Coords.Text = "Coords: -" end
+        if aU.Visible.Coords then
+            if r and r:FindFirstChild("HumanoidRootPart") then
+                local a5 = ((r.HumanoidRootPart )).Position
+                aU.Labels.Coords.Text = ("X %d  Y %d  Z %d"):format(math.floor(a5.X), math.floor(a5.Y), math.floor(a5.Z))
+            else aU.Labels.Coords.Text = "Coords: -" end
         end
-        if InfoHUD.Visible.Time then
-            local t = Lighting.ClockTime
-            local h = math.floor(t); local m = math.floor((t - h) * 60)
-            InfoHUD.Labels.Time.Text = ("Time: %02d:%02d"):format(h, m)
+        if aU.Visible.Time then
+            local a5 = m.ClockTime
+            local a6 = math.floor(a5); local a7 = math.floor((a5 - a6) * 60)
+            aU.Labels.Time.Text = ("Time: %02d:%02d"):format(a6, a7)
         end
     end)
 end
-function InfoHUD.stop()
-    if InfoHUD.Conn then InfoHUD.Conn:Disconnect(); InfoHUD.Conn = nil end
-    if InfoHUD.Gui then InfoHUD.Gui:Destroy() end
-    InfoHUD.Gui = nil; InfoHUD.Labels = {}
+function aU.stop()
+    if aU.Conn then aU.Conn:Disconnect(); aU.Conn = nil end
+    if aU.Gui then aU.Gui:Destroy() end
+    aU.Gui = nil; aU.Labels = {}
 end
-function InfoHUD.refreshAnchor()
-    if not InfoHUD.Gui then return end
-    local panel = InfoHUD.Gui:FindFirstChild("Panel")
-    if not panel or not panel:IsA("Frame") then return end
-    local a, p = _anchorPosition(InfoHUD.Anchor); panel.AnchorPoint = a; panel.Position = p
+function aU.refreshAnchor()
+    if not aU.Gui then return end
+    local aW = aU.Gui:FindFirstChild("Panel")
+    if not aW or not aW:IsA("Frame") then return end
+    local aX, aY = aV(aU.Anchor); aW.AnchorPoint = aX; aW.Position = aY
 end
 
-------------------------------------------------------------------------------
--- 15c. SESSION STATS - tracks first detected coin/XP value
-------------------------------------------------------------------------------
-local Session = { StartTime = tick(), StartCoins = nil :: number?, LastCoins = nil :: number?, CoinsGained = 0, CoinsSpent = 0 }
-local function findCoinValue(): ValueBase?
-    local lp = LocalPlayer
-    local roots: {Instance} = { lp }
-    local ls = lp:FindFirstChild("leaderstats"); if ls then table.insert(roots, ls) end
-    local data = lp:FindFirstChild("Data") or lp:FindFirstChild("PlayerData"); if data then table.insert(roots, data) end
-    if Character then table.insert(roots, Character) end
-    local aliases = STAT_ALIASES.Coins
-    for _, root in ipairs(roots) do
-        for _, c in ipairs(root:GetDescendants()) do
-            if (c:IsA("NumberValue") or c:IsA("IntValue")) then
-                local nm = c.Name:lower()
-                for _, a in ipairs(aliases) do
-                    if nm == a:lower() then return c end
+
+
+
+local aW = { StartTime = tick(), StartCoins = nil , LastCoins = nil , CoinsGained = 0, CoinsSpent = 0 }
+local aX=function()    
+local aX = q
+    local aY= { aX }
+    local aZ = aX:FindFirstChild("leaderstats"); if aZ then table.insert(aY, aZ) end
+    local a_ = aX:FindFirstChild("Data") or aX:FindFirstChild("PlayerData"); if a_ then table.insert(aY, a_) end
+    if r then table.insert(aY, r) end
+    local a0 = J.Coins
+    for a1, a2 in ipairs(aY) do
+        for a3, a4 in ipairs(a2:GetDescendants()) do
+            if (a4:IsA("NumberValue") or a4:IsA("IntValue")) then
+                local a5 = a4.Name:lower()
+                for a6, a7 in ipairs(a0) do
+                    if a5 == a7:lower() then return a4 end
                 end
             end
         end
     end
     return nil
-end
-local function pollCoins()
-    local v = findCoinValue(); if not v then return end
-    local cur = (v :: any).Value
-    if not Session.StartCoins then Session.StartCoins = cur end
-    if Session.LastCoins and cur < Session.LastCoins then
-        Session.CoinsSpent += (Session.LastCoins - cur)
-    end
-    if cur >= (Session.StartCoins or 0) then
-        Session.CoinsGained = cur - (Session.StartCoins or 0)
-    end
-    Session.LastCoins = cur
-end
-task.spawn(function() while Alive.value and task.wait(1) do pcall(pollCoins) end end)
+end local aY=function()    
 
-------------------------------------------------------------------------------
--- 15d. CONFIG IO - save / load named configs
-------------------------------------------------------------------------------
-local ConfigIO = { Folder = "JurassicBlockyFramework_Configs" }
-local function _hasFS(): boolean
-    return type((_G :: any).writefile) == "function"
-       and type((_G :: any).readfile) == "function"
-       and type((_G :: any).isfile)   == "function"
+local aY = aX(); if not aY then return end
+    local aZ = (aY ).Value
+    if not aW.StartCoins then aW.StartCoins = aZ end
+    if aW.LastCoins and aZ < aW.LastCoins then
+        aW.CoinsSpent += (aW.LastCoins - aZ)
+    end
+    if aZ >= (aW.StartCoins or 0) then
+        aW.CoinsGained = aZ - (aW.StartCoins or 0)
+    end
+    aW.LastCoins = aZ
 end
-local function _mkfolder()
-    local g: any = _G
-    if type(g.makefolder) == "function" and type(g.isfolder) == "function" then
-        if not g.isfolder(ConfigIO.Folder) then pcall(g.makefolder, ConfigIO.Folder) end
+task.spawn(function() while v.value and task.wait(1) do pcall(aY) end end)
+
+
+
+
+local aZ = { Folder = "JurassicBlockyFramework_Configs" }
+local a_=function()    
+return type((_G ).writefile) == "function"
+       and type((_G ).readfile) == "function"
+       and type((_G ).isfile)   == "function"
+end local a0=function()    
+
+local a0= _G
+    if type(a0.makefolder) == "function" and type(a0.isfolder) == "function" then
+        if not a0.isfolder(aZ.Folder) then pcall(a0.makefolder, aZ.Folder) end
     end
 end
-function ConfigIO.list(): {string}
-    local g: any = _G
-    if type(g.listfiles) ~= "function" then return {} end
-    local out: {string} = {}
-    local ok, files = pcall(g.listfiles, ConfigIO.Folder)
-    if not ok or not files then return out end
-    for _, path in ipairs(files) do
-        local name = tostring(path):match("([^/\\]+)%.json$") or tostring(path):match("([^/\\]+)$")
-        if name then table.insert(out, name) end
+function aZ.list()    
+local a1= _G
+    if type(a1.listfiles) ~= "function" then return {} end
+    local a2= {}
+    local a3, a4 = pcall(a1.listfiles, aZ.Folder)
+    if not a3 or not a4 then return a2 end
+    for a5, a6 in ipairs(a4) do
+        local a7 = tostring(a6):match("([^/\\]+)%.json$") or tostring(a6):match("([^/\\]+)$")
+        if a7 then table.insert(a2, a7) end
     end
-    return out
+    return a2
 end
-function ConfigIO.save(name: string, lib: any): (boolean, string?)
-    if not _hasFS() then return false, "Executor has no file-system functions" end
-    if type(name) ~= "string" or name == "" then return false, "Config name empty" end
-    _mkfolder()
-    local data: {[string]: any} = { _version = 1, Toggles = {}, Options = {} }
-    if lib and lib.Toggles then
-        for k, t in pairs(lib.Toggles) do
-            if type(t) == "table" and t.Value ~= nil then data.Toggles[k] = t.Value end
+function aZ.save(a1, a2)    
+if not a_() then return false, "Executor has no file-system functions" end
+    if type(a1) ~= "string" or a1 == "" then return false, "Config name empty" end
+    a0()
+    local a3= { _version = 1, Toggles = {}, Options = {} }
+    if a2 and a2.Toggles then
+        for a4, a5 in pairs(a2.Toggles) do
+            if type(a5) == "table" and a5.Value ~= nil then a3.Toggles[a4] = a5.Value end
         end
     end
-    if lib and lib.Options then
-        for k, o in pairs(lib.Options) do
-            if type(o) == "table" then
-                local v = o.Value
-                if typeof(v) == "Color3" then data.Options[k] = { _kind = "Color3", R = v.R, G = v.G, B = v.B }
-                elseif type(v) == "table" then
-                    local copy = {}
-                    for kk, vv in pairs(v) do
-                        if type(vv) == "boolean" or type(vv) == "number" or type(vv) == "string" then copy[kk] = vv end
+    if a2 and a2.Options then
+        for a4, a5 in pairs(a2.Options) do
+            if type(a5) == "table" then
+                local a6 = a5.Value
+                if typeof(a6) == "Color3" then a3.Options[a4] = { _kind = "Color3", R = a6.R, G = a6.G, B = a6.B }
+                elseif type(a6) == "table" then
+                    local a7 = {}
+                    for a8, a9 in pairs(a6) do
+                        if type(a9) == "boolean" or type(a9) == "number" or type(a9) == "string" then a7[a8] = a9 end
                     end
-                    data.Options[k] = copy
-                elseif v ~= nil and (type(v) == "boolean" or type(v) == "number" or type(v) == "string") then
-                    data.Options[k] = v
+                    a3.Options[a4] = a7
+                elseif a6 ~= nil and (type(a6) == "boolean" or type(a6) == "number" or type(a6) == "string") then
+                    a3.Options[a4] = a6
                 end
             end
         end
     end
-    local json = HttpService:JSONEncode(data)
-    local ok, err = pcall((_G :: any).writefile, ConfigIO.Folder .. "/" .. name .. ".json", json)
-    if not ok then return false, tostring(err) end
+    local a4 = k:JSONEncode(a3)
+    local a5, a6 = pcall((_G ).writefile, aZ.Folder .. "/" .. a1 .. ".json", a4)
+    if not a5 then return false, tostring(a6) end
     return true
 end
-function ConfigIO.load(name: string, lib: any): (boolean, string?)
-    if not _hasFS() then return false, "Executor has no file-system functions" end
-    local path = ConfigIO.Folder .. "/" .. name .. ".json"
-    if not (_G :: any).isfile(path) then return false, "Config not found" end
-    local ok, raw = pcall((_G :: any).readfile, path); if not ok then return false, tostring(raw) end
-    local ok2, data = pcall(HttpService.JSONDecode, HttpService, raw); if not ok2 then return false, "JSON parse error" end
-    if not lib then return false, "Library missing" end
-    if data.Toggles then
-        for k, v in pairs(data.Toggles) do
-            local t = lib.Toggles[k]; if t and t.SetValue then pcall(t.SetValue, t, v) end
+function aZ.load(a1, a2)    
+if not a_() then return false, "Executor has no file-system functions" end
+    local a3 = aZ.Folder .. "/" .. a1 .. ".json"
+    if not (_G ).isfile(a3) then return false, "Config not found" end
+    local a4, a5 = pcall((_G ).readfile, a3); if not a4 then return false, tostring(a5) end
+    local a6, a7 = pcall(k.JSONDecode, k, a5); if not a6 then return false, "JSON parse error" end
+    if not a2 then return false, "Library missing" end
+    if a7.Toggles then
+        for a8, a9 in pairs(a7.Toggles) do
+            local ba = a2.Toggles[a8]; if ba and ba.SetValue then pcall(ba.SetValue, ba, a9) end
         end
     end
-    if data.Options then
-        for k, v in pairs(data.Options) do
-            local o = lib.Options[k]; if not o then continue end
-            if type(v) == "table" and v._kind == "Color3" then
-                if o.SetValueRGB then pcall(o.SetValueRGB, o, Color3.new(v.R, v.G, v.B))
-                elseif o.SetValue then pcall(o.SetValue, o, Color3.new(v.R, v.G, v.B)) end
-            elseif type(v) == "table" then
-                if o.SetValue then pcall(o.SetValue, o, v) end
+    if a7.Options then
+        for a8, a9 in pairs(a7.Options) do
+            local ba = a2.Options[a8]; if not ba then continue end
+            if type(a9) == "table" and a9._kind == "Color3" then
+                if ba.SetValueRGB then pcall(ba.SetValueRGB, ba, Color3.new(a9.R, a9.G, a9.B))
+                elseif ba.SetValue then pcall(ba.SetValue, ba, Color3.new(a9.R, a9.G, a9.B)) end
+            elseif type(a9) == "table" then
+                if ba.SetValue then pcall(ba.SetValue, ba, a9) end
             else
-                if o.SetValue then pcall(o.SetValue, o, v) end
+                if ba.SetValue then pcall(ba.SetValue, ba, a9) end
             end
         end
     end
     return true
 end
-function ConfigIO.delete(name: string): (boolean, string?)
-    local g: any = _G
-    if type(g.delfile) ~= "function" then return false, "delfile not available" end
-    local path = ConfigIO.Folder .. "/" .. name .. ".json"
-    if not g.isfile(path) then return false, "Config not found" end
-    local ok, err = pcall(g.delfile, path)
-    return ok, ok and nil or tostring(err)
+function aZ.delete(a1)    
+local a2= _G
+    if type(a2.delfile) ~= "function" then return false, "delfile not available" end
+    local a3 = aZ.Folder .. "/" .. a1 .. ".json"
+    if not a2.isfile(a3) then return false, "Config not found" end
+    local a4, a5 = pcall(a2.delfile, a3)
+    return a4, a4 and nil or tostring(a5)
 end
+local a1=function(
 
-------------------------------------------------------------------------------
--- 15b. VISUAL / CAMERA / FLY / FREECAM (simplified)
-------------------------------------------------------------------------------
-local function setFOV(value: number)
-    local cam = Workspace.CurrentCamera
-    if cam then cam.FieldOfView = value end
+
+
+a1)    
+local a2 = g.CurrentCamera
+    if a2 then a2.FieldOfView = a1 end
 end
-local _defaultMaxZoom = LocalPlayer.CameraMaxZoomDistance
-local function setInfiniteZoom(on: boolean)
-    LocalPlayer.CameraMaxZoomDistance = on and math.huge or _defaultMaxZoom
-end
-local function applyCharTransparency(value: number)
-    if not Character then return end
-    for _, p in ipairs(Character:GetDescendants()) do
-        if p:IsA("BasePart") then p.LocalTransparencyModifier = value end
+local a2 = q.CameraMaxZoomDistance
+local a3=function(a3)    
+q.CameraMaxZoomDistance = a3 and math.huge or a2
+end local a4=function(
+a4)    
+if not r then return end
+    for a5, a6 in ipairs(r:GetDescendants()) do
+        if a6:IsA("BasePart") then a6.LocalTransparencyModifier = a4 end
     end
 end
 
-local FullBright = { Active = false, Saved = nil :: {[string]: any}? }
-function FullBright.start()
-    if FullBright.Active then return end
-    FullBright.Saved = {
-        Ambient = Lighting.Ambient, OutdoorAmbient = Lighting.OutdoorAmbient,
-        Brightness = Lighting.Brightness, ClockTime = Lighting.ClockTime,
-        FogEnd = Lighting.FogEnd, FogStart = Lighting.FogStart,
-        GlobalShadows = Lighting.GlobalShadows,
+local a5 = { Active = false, Saved = nil }
+function a5.start()
+    if a5.Active then return end
+    a5.Saved = {
+        Ambient = m.Ambient, OutdoorAmbient = m.OutdoorAmbient,
+        Brightness = m.Brightness, ClockTime = m.ClockTime,
+        FogEnd = m.FogEnd, FogStart = m.FogStart,
+        GlobalShadows = m.GlobalShadows,
     }
-    FullBright.Active = true
-    Lighting.Ambient = Color3.new(1,1,1); Lighting.OutdoorAmbient = Color3.new(1,1,1)
-    Lighting.Brightness = 2; Lighting.ClockTime = 14
-    Lighting.FogEnd = 1e9; Lighting.FogStart = 1e9; Lighting.GlobalShadows = false
+    a5.Active = true
+    m.Ambient = Color3.new(1,1,1); m.OutdoorAmbient = Color3.new(1,1,1)
+    m.Brightness = 2; m.ClockTime = 14
+    m.FogEnd = 1e9; m.FogStart = 1e9; m.GlobalShadows = false
 end
-function FullBright.stop()
-    if not FullBright.Active or not FullBright.Saved then return end
-    for key, val in pairs(FullBright.Saved) do
-        Util.safe(function() (Lighting :: any)[key] = val end, "FullBright." .. key)
+function a5.stop()
+    if not a5.Active or not a5.Saved then return end
+    for a6, a7 in pairs(a5.Saved) do
+        y.safe(function() (m )[a6] = a7 end, "FullBright." .. a6)
     end
-    FullBright.Active = false; FullBright.Saved = nil
+    a5.Active = false; a5.Saved = nil
 end
 
-local _lightingEffectsSaved: {[Instance]: boolean} = {}
-local function setLightingEffectsEnabled(enabled: boolean)
-    for _, fx in ipairs(Lighting:GetChildren()) do
-        if fx:IsA("PostEffect") then
-            local fxAny = fx :: any
-            if not enabled then _lightingEffectsSaved[fx] = fxAny.Enabled; fxAny.Enabled = false
-            else fxAny.Enabled = _lightingEffectsSaved[fx] ~= false end
+local a6= {}
+local a7=function(a7)    
+for a8, a9 in ipairs(m:GetChildren()) do
+        if a9:IsA("PostEffect") then
+            local ba = a9             
+if not a7 then a6[a9] = ba.Enabled; ba.Enabled = false
+            else ba.Enabled = a6[a9] ~= false end
         end
     end
 end
 
-local WEATHER_KEYWORDS = { "rain", "snow", "storm", "weather", "fog", "mist", "dust", "lightning", "blizzard" }
-local function isWeatherName(name: string): boolean
-    local n = name:lower()
-    for _, kw in ipairs(WEATHER_KEYWORDS) do if n:find(kw, 1, true) then return true end end
+local a8 = { "rain", "snow", "storm", "weather", "fog", "mist", "dust", "lightning", "blizzard" }
+local a9=function(a9)    
+local ba = a9:lower()
+    for bb, bc in ipairs(a8) do if ba:find(bc, 1, true) then return true end end
     return false
 end
-local _rainSaved: {[Instance]: boolean} = {}
-local function setRainEnabled(enabled: boolean)
-    local function visit(roots: {Instance})
-        for _, root in ipairs(roots) do
-            for _, p in ipairs(root:GetDescendants()) do
-                if (p:IsA("ParticleEmitter") or p:IsA("Beam") or p:IsA("Trail")) and isWeatherName(p.Name) then
-                    if not enabled then _rainSaved[p] = (p :: any).Enabled; (p :: any).Enabled = false
-                    else (p :: any).Enabled = _rainSaved[p] ~= false end
+local ba= {}
+local bb=function(bb)local bc=function(
+bc)        
+for bd, be in ipairs(bc) do
+            for bf, bg in ipairs(be:GetDescendants()) do
+                if (bg:IsA("ParticleEmitter") or bg:IsA("Beam") or bg:IsA("Trail")) and a9(bg.Name) then
+                    if not bb then ba[bg] = (bg ).Enabled; (bg ).Enabled = false
+                    else (bg ).Enabled = ba[bg] ~= false end
                 end
             end
         end
-    end
-    visit({ Workspace, Lighting })
+end    
+bc({ g, m })
 end
 
-local _underwaterSaved: {[Instance]: any} = {}
-local _underwaterFog: {[string]: any} = {}
-local _underwaterActive = false
-local function setUnderwaterVision(enabled: boolean)
-    if enabled and not _underwaterActive then
-        _underwaterActive = true
-        _underwaterFog = { FogEnd = Lighting.FogEnd, FogStart = Lighting.FogStart, FogColor = Lighting.FogColor }
-        Lighting.FogEnd = 1e9; Lighting.FogStart = 1e9
-        for _, fx in ipairs(Lighting:GetDescendants()) do
-            if fx:IsA("ColorCorrectionEffect") or fx:IsA("BlurEffect")
-               or fx:IsA("DepthOfFieldEffect") or fx:IsA("Atmosphere") then
-                _underwaterSaved[fx] = { Enabled = (fx :: any).Enabled }
-                if fx:IsA("Atmosphere") then _underwaterSaved[fx].Density = fx.Density; fx.Density = 0
-                else (fx :: any).Enabled = false end
+local bc= {}
+local bd= {}
+local be = false
+local bf=function(bf)    
+if bf and not be then
+        be = true
+        bd = { FogEnd = m.FogEnd, FogStart = m.FogStart, FogColor = m.FogColor }
+        m.FogEnd = 1e9; m.FogStart = 1e9
+        for bg, _ in ipairs(m:GetDescendants()) do
+            if _:IsA("ColorCorrectionEffect") or _:IsA("BlurEffect")
+               or _:IsA("DepthOfFieldEffect") or _:IsA("Atmosphere") then
+                bc[_] = { Enabled = (_ ).Enabled }
+                if _:IsA("Atmosphere") then bc[_].Density = _.Density; _.Density = 0
+                else (_ ).Enabled = false end
             end
         end
-    elseif (not enabled) and _underwaterActive then
-        _underwaterActive = false
-        for fx, saved in pairs(_underwaterSaved) do
-            if fx.Parent then
-                if fx:IsA("Atmosphere") and saved.Density ~= nil then (fx :: any).Density = saved.Density end
-                if saved.Enabled ~= nil then (fx :: any).Enabled = saved.Enabled end
+    elseif (not bf) and be then
+        be = false
+        for bg, _ in pairs(bc) do
+            if bg.Parent then
+                if bg:IsA("Atmosphere") and _.Density ~= nil then (bg ).Density = _.Density end
+                if _.Enabled ~= nil then (bg ).Enabled = _.Enabled end
             end
         end
-        _underwaterSaved = {}
-        for k, v in pairs(_underwaterFog) do (Lighting :: any)[k] = v end
-        _underwaterFog = {}
+        bc = {}
+        for bg, _ in pairs(bd) do (m )[bg] = _ end
+        bd = {}
     end
 end
 
-local Fly = { Active = false, BV = nil :: BodyVelocity?, Gyro = nil :: BodyGyro?, Conn = nil :: RBXScriptConnection? }
-function Fly.start()
-    if Fly.Active then return end
-    if not RootPart or not Humanoid then return end
-    Fly.Active = true
-    local bv = Instance.new("BodyVelocity")
-    bv.Name = "JB_FlyVel_" .. _RAND_SUFFIX; bv.MaxForce = Vector3.new(1,1,1) * 9e9
-    bv.Velocity = Vector3.new(); bv.P = 1250; bv.Parent = RootPart; Fly.BV = bv
-    local gyro = Instance.new("BodyGyro")
-    gyro.Name = "JB_FlyGyro_" .. _RAND_SUFFIX; gyro.MaxTorque = Vector3.new(1,1,1) * 9e9
-    gyro.P = 1250; gyro.CFrame = RootPart.CFrame; gyro.Parent = RootPart; Fly.Gyro = gyro
-    Fly.Conn = RunService.RenderStepped:Connect(function()
-        if not (Fly.Active and RootPart and bv.Parent and Workspace.CurrentCamera) then return end
-        local cam = Workspace.CurrentCamera
-        local dir = Vector3.new()
-        if UserInputService:IsKeyDown(Enum.KeyCode.W) then dir = dir + cam.CFrame.LookVector end
-        if UserInputService:IsKeyDown(Enum.KeyCode.S) then dir = dir - cam.CFrame.LookVector end
-        if UserInputService:IsKeyDown(Enum.KeyCode.A) then dir = dir - cam.CFrame.RightVector end
-        if UserInputService:IsKeyDown(Enum.KeyCode.D) then dir = dir + cam.CFrame.RightVector end
-        if UserInputService:IsKeyDown(Enum.KeyCode.Space)       then dir = dir + Vector3.new(0,1,0) end
-        if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) then dir = dir - Vector3.new(0,1,0) end
-        bv.Velocity = (dir.Magnitude > 0 and dir.Unit or Vector3.new()) * CONFIG.FlySpeed
-        gyro.CFrame = cam.CFrame
+local bg = { Active = false, BV = nil , Gyro = nil , Conn = nil }
+function bg.start()
+    if bg.Active then return end
+    if not t or not s then return end
+    bg.Active = true
+    local _ = Instance.new("BodyVelocity")
+    _.Name = "JB_FlyVel_" .. b; _.MaxForce = Vector3.new(1,1,1) * 9e9
+    _.Velocity = Vector3.new(); _.P = 1250; _.Parent = t; bg.BV = _
+    local bh = Instance.new("BodyGyro")
+    bh.Name = "JB_FlyGyro_" .. b; bh.MaxTorque = Vector3.new(1,1,1) * 9e9
+    bh.P = 1250; bh.CFrame = t.CFrame; bh.Parent = t; bg.Gyro = bh
+    bg.Conn = d.RenderStepped:Connect(function()
+        if not (bg.Active and t and _.Parent and g.CurrentCamera) then return end
+        local bi = g.CurrentCamera
+        local bj = Vector3.new()
+        if e:IsKeyDown(Enum.KeyCode.W) then bj = bj + bi.CFrame.LookVector end
+        if e:IsKeyDown(Enum.KeyCode.S) then bj = bj - bi.CFrame.LookVector end
+        if e:IsKeyDown(Enum.KeyCode.A) then bj = bj - bi.CFrame.RightVector end
+        if e:IsKeyDown(Enum.KeyCode.D) then bj = bj + bi.CFrame.RightVector end
+        if e:IsKeyDown(Enum.KeyCode.Space)       then bj = bj + Vector3.new(0,1,0) end
+        if e:IsKeyDown(Enum.KeyCode.LeftControl) then bj = bj - Vector3.new(0,1,0) end
+        _.Velocity = (bj.Magnitude > 0 and bj.Unit or Vector3.new()) * o.FlySpeed
+        bh.CFrame = bi.CFrame
     end)
 end
-function Fly.stop()
-    Fly.Active = false
-    if Fly.Conn then Fly.Conn:Disconnect(); Fly.Conn = nil end
-    if Fly.BV   then Fly.BV:Destroy();      Fly.BV   = nil end
-    if Fly.Gyro then Fly.Gyro:Destroy();    Fly.Gyro = nil end
+function bg.stop()
+    bg.Active = false
+    if bg.Conn then bg.Conn:Disconnect(); bg.Conn = nil end
+    if bg.BV   then bg.BV:Destroy();      bg.BV   = nil end
+    if bg.Gyro then bg.Gyro:Destroy();    bg.Gyro = nil end
 end
 
-local Freecam = { Active = false, Conn = nil :: RBXScriptConnection?, OldType = Enum.CameraType.Custom }
-function Freecam.start()
-    if Freecam.Active then return end
-    local cam = Workspace.CurrentCamera; if not cam then return end
-    Freecam.Active = true; Freecam.OldType = cam.CameraType
-    cam.CameraType = Enum.CameraType.Scriptable
-    Freecam.Conn = RunService.RenderStepped:Connect(function(dt)
-        if not Freecam.Active then return end
-        cam = Workspace.CurrentCamera; if not cam then return end
-        local speed = CONFIG.FreecamSpeed * dt * 10
-        local dir = Vector3.new()
-        if UserInputService:IsKeyDown(Enum.KeyCode.W) then dir = dir + cam.CFrame.LookVector end
-        if UserInputService:IsKeyDown(Enum.KeyCode.S) then dir = dir - cam.CFrame.LookVector end
-        if UserInputService:IsKeyDown(Enum.KeyCode.A) then dir = dir - cam.CFrame.RightVector end
-        if UserInputService:IsKeyDown(Enum.KeyCode.D) then dir = dir + cam.CFrame.RightVector end
-        if UserInputService:IsKeyDown(Enum.KeyCode.E) then dir = dir + Vector3.new(0,1,0) end
-        if UserInputService:IsKeyDown(Enum.KeyCode.Q) then dir = dir - Vector3.new(0,1,0) end
-        cam.CFrame = cam.CFrame + dir * speed
+local bh = { Active = false, Conn = nil , OldType = Enum.CameraType.Custom }
+function bh.start()
+    if bh.Active then return end
+    local bi = g.CurrentCamera; if not bi then return end
+    bh.Active = true; bh.OldType = bi.CameraType
+    bi.CameraType = Enum.CameraType.Scriptable
+    bh.Conn = d.RenderStepped:Connect(function(bj)
+        if not bh.Active then return end
+        bi = g.CurrentCamera; if not bi then return end
+        local _ = o.FreecamSpeed * bj * 10
+        local bk = Vector3.new()
+        if e:IsKeyDown(Enum.KeyCode.W) then bk = bk + bi.CFrame.LookVector end
+        if e:IsKeyDown(Enum.KeyCode.S) then bk = bk - bi.CFrame.LookVector end
+        if e:IsKeyDown(Enum.KeyCode.A) then bk = bk - bi.CFrame.RightVector end
+        if e:IsKeyDown(Enum.KeyCode.D) then bk = bk + bi.CFrame.RightVector end
+        if e:IsKeyDown(Enum.KeyCode.E) then bk = bk + Vector3.new(0,1,0) end
+        if e:IsKeyDown(Enum.KeyCode.Q) then bk = bk - Vector3.new(0,1,0) end
+        bi.CFrame = bi.CFrame + bk * _
     end)
 end
-function Freecam.stop()
-    if not Freecam.Active then return end
-    Freecam.Active = false
-    if Freecam.Conn then Freecam.Conn:Disconnect(); Freecam.Conn = nil end
-    local cam = Workspace.CurrentCamera; if cam then cam.CameraType = Freecam.OldType end
+function bh.stop()
+    if not bh.Active then return end
+    bh.Active = false
+    if bh.Conn then bh.Conn:Disconnect(); bh.Conn = nil end
+    local bi = g.CurrentCamera; if bi then bi.CameraType = bh.OldType end
 end
+local bi=function()    
 
-------------------------------------------------------------------------------
--- 15e. WEBHOOK
-------------------------------------------------------------------------------
-local function getExecRequest(): (((req: {[string]: any}) -> any)?, string?)
-    local scopes: {{[string]: any}} = {}
-    local genvFn = (rawget(_G, "getgenv") or (getfenv and getfenv(0).getgenv)) :: any
-    if type(genvFn) == "function" then
-        local ok, env = pcall(genvFn)
-        if ok and type(env) == "table" then table.insert(scopes, env) end
+
+
+
+local bi= {}
+    local bj = (rawget(_G, "getgenv") or (getfenv and getfenv(0).getgenv))     
+if type(bj) == "function" then
+        local bk, _ = pcall(bj)
+        if bk and type(_) == "table" then table.insert(bi, _) end
     end
-    table.insert(scopes, _G :: any)
-    if type(shared) == "table" then table.insert(scopes, shared :: any) end
+    table.insert(bi, _G )
+    if type(shared) == "table" then table.insert(bi, shared ) end
     if getfenv then
-        local ok, env0 = pcall(getfenv, 0)
-        if ok and type(env0) == "table" then table.insert(scopes, env0 :: any) end
+        local bk, _ = pcall(getfenv, 0)
+        if bk and type(_) == "table" then table.insert(bi, _ ) end
     end
-    for _, env in ipairs(scopes) do
-        for _, n in ipairs({"request","http_request","httprequest"}) do
-            local v = env[n]; if type(v) == "function" then return v, n end
+    for bk, _ in ipairs(bi) do
+        for bl, bm in ipairs({"request","http_request","httprequest"}) do
+            local bn = _[bm]; if type(bn) == "function" then return bn, bm end
         end
-        for _, ns in ipairs({"syn","fluxus","http","Krnl","krnl","Synapse","secure"}) do
-            local nsTbl = env[ns]
-            if type(nsTbl) == "table" then
-                for _, n in ipairs({"request","httprequest"}) do
-                    local fn = nsTbl[n]; if type(fn) == "function" then return fn, ns .. "." .. n end
+        for bl, bm in ipairs({"syn","fluxus","http","Krnl","krnl","Synapse","secure"}) do
+            local bn = _[bm]
+            if type(bn) == "table" then
+                for bo, bp in ipairs({"request","httprequest"}) do
+                    local bq = bn[bp]; if type(bq) == "function" then return bq, bm .. "." .. bp end
                 end
             end
         end
     end
     return nil, nil
-end
+end local bj=function(
 
-local function sendWebhook(url: string, payload: {[string]: any})
-    if type(url) ~= "string" or url == "" then
-        Util.notify("Webhook", "URL is empty - paste a webhook link first."); return
+bj, bk)    
+if type(bj) ~= "string" or bj == "" then
+        y.notify("Webhook", "URL is empty - paste a webhook link first."); return
     end
-    if not url:lower():find("^https?://") then
-        Util.notify("Webhook", "URL must start with https://"); return
+    if not bj:lower():find("^https?://") then
+        y.notify("Webhook", "URL must start with https://"); return
     end
-    local body = HttpService:JSONEncode(payload)
-    local req, reqName = getExecRequest()
+    local bl = k:JSONEncode(bk)
+    local bm, bn = bi()
     task.spawn(function()
-        if not req then
-            Util.notify("Webhook", "No executor request function. Try a newer executor."); return
+        if not bm then
+            y.notify("Webhook", "No executor request function. Try a newer executor."); return
         end
-        local ok, resp = pcall(req, {
-            Url = url, Method = "POST",
-            Headers = { ["Content-Type"] = "application/json" }, Body = body,
+        local bo, bp = pcall(bm, {
+            Url = bj, Method = "POST",
+            Headers = { ["Content-Type"] = "application/json" }, Body = bl,
         })
-        if not ok then Util.notify("Webhook", ("Threw: %s"):format(tostring(resp))); return end
-        local status = (type(resp) == "table") and (resp.StatusCode or resp.statusCode or resp.status or resp.Status) or nil
-        if type(status) == "number" then
-            if status >= 200 and status < 300 then Util.notify("Webhook", ("Sent OK (HTTP %d via %s)"):format(status, reqName or "?"))
-            else Util.notify("Webhook", ("Failed HTTP %d"):format(status)) end
-        else Util.notify("Webhook", ("Sent (via %s)"):format(reqName or "?")) end
+        if not bo then y.notify("Webhook", ("Threw: %s"):format(tostring(bp))); return end
+        local bq = (type(bp) == "table") and (bp.StatusCode or bp.statusCode or bp.status or bp.Status) or nil
+        if type(bq) == "number" then
+            if bq >= 200 and bq < 300 then y.notify("Webhook", ("Sent OK (HTTP %d via %s)"):format(bq, bn or "?"))
+            else y.notify("Webhook", ("Failed HTTP %d"):format(bq)) end
+        else y.notify("Webhook", ("Sent (via %s)"):format(bn or "?")) end
     end)
 end
 
-------------------------------------------------------------------------------
--- 15f. OPTIONAL KICK BYPASS (generic, off by default; no DS-specific kills)
-------------------------------------------------------------------------------
-local KickBypass = { Installed = false, BlockedCount = 0, LastError = nil :: string? }
-local function installKickBypass(): (boolean, string)
-    KickBypass.LastError = nil
-    local LP = Players.LocalPlayer
-    if not LP then KickBypass.LastError = "no LocalPlayer"; return false, KickBypass.LastError end
-    local hookmm = _findExecFn("hookmetamethod")
-    local hookF = _findExecFn("hookfunction") or _findExecFn("replaceclosure")
-    local newcc = _findExecFn("newcclosure") or function(f) return f end
-    local hooked = false
-    if type(hookF) == "function" then
-        local ok = pcall(function()
-            local oldKick
-            oldKick = hookF(LP.Kick, newcc(function(self, reason)
-                if self == LP then
-                    KickBypass.BlockedCount += 1
-                    warn(("[JurassicBlocky] [KickBypass] Blocked Kick: %s"):format(tostring(reason)))
+
+
+
+local bk = { Installed = false, BlockedCount = 0, LastError = nil }
+local bl=function()    
+bk.LastError = nil
+    local bl = c.LocalPlayer
+    if not bl then bk.LastError = "no LocalPlayer"; return false, bk.LastError end
+    local bm = A("hookmetamethod")
+    local bn = A("hookfunction") or A("replaceclosure")
+    local bo = A("newcclosure") or function(bo) return bo end
+    local bp = false
+    if type(bn) == "function" then
+        local bq = pcall(function()
+            local bq
+            bq = bn(bl.Kick, bo(function(_, br)
+                if _ == bl then
+                    bk.BlockedCount += 1
+                    warn(("[JurassicBlocky] [KickBypass] Blocked Kick: %s"):format(tostring(br)))
                     return
                 end
-                return oldKick(self, reason)
+                return bq(_, br)
             end))
         end)
-        if ok then hooked = true end
+        if bq then bp = true end
     end
-    if type(hookmm) == "function" then
-        local getNC = _findExecFn("getnamecallmethod")
-        if type(getNC) == "function" then
-            local ok = pcall(function()
-                local oldNamecall
-                oldNamecall = hookmm(game, "__namecall", function(self, ...)
-                    if self == LP and getNC() == "Kick" then
-                        KickBypass.BlockedCount += 1
+    if type(bm) == "function" then
+        local bq = A("getnamecallmethod")
+        if type(bq) == "function" then
+            local br = pcall(function()
+                local br
+                br = bm(game, "__namecall", function(_, ...)
+                    if _ == bl and bq() == "Kick" then
+                        bk.BlockedCount += 1
                         warn(("[JurassicBlocky] [KickBypass] Blocked __namecall Kick: %s"):format(tostring((...))))
                         return
                     end
-                    return oldNamecall(self, ...)
+                    return br(_, ...)
                 end)
             end)
-            if ok then hooked = true end
+            if br then bp = true end
         end
     end
-    if hooked then KickBypass.Installed = true; return true, "Kick hook installed" end
-    KickBypass.LastError = "no hooking primitives available"
-    return false, KickBypass.LastError
+    if bp then bk.Installed = true; return true, "Kick hook installed" end
+    bk.LastError = "no hooking primitives available"
+    return false, bk.LastError
 end
 
-------------------------------------------------------------------------------
--- 16. JBUI - bundled UI library (lightly trimmed from DinoUI)
---     - Randomized instance names per session
---     - Same widget set (Toggle/Slider/Dropdown/Input/Button/KeyPicker/ColorPicker)
-------------------------------------------------------------------------------
-local JBUI = {} do
-    local THEME_PRESETS = {
+
+
+
+
+
+local bm = {} do
+    local bn = {
         Jungle = {
             Background = Color3.fromRGB(20,26,22), BackgroundAlt = Color3.fromRGB(26,32,28),
             Sidebar = Color3.fromRGB(22,28,24), SidebarHi = Color3.fromRGB(30,38,32),
@@ -2616,1875 +2616,1875 @@ local JBUI = {} do
         },
     }
 
-    local _savedThemeName = "Jungle"
+    local bo = "Jungle"
     do
-        local execFn = function(name)
-            return rawget(getfenv(0), name)
-                or (type(getgenv) == "function" and getgenv()[name])
-                or rawget(_G, name)
+        local bp = function(bp)
+            return rawget(getfenv(0), bp)
+                or (type(getgenv) == "function" and getgenv()[bp])
+                or rawget(_G, bp)
         end
-        local rf = execFn("readfile")
-        if type(rf) == "function" then
-            local ok, content = pcall(function() return rf("JurassicBlockyFramework_Theme.txt") end)
-            if ok and type(content) == "string" then
-                local name = content:gsub("%s+", "")
-                if THEME_PRESETS[name] then _savedThemeName = name end
+        local bq = bp("readfile")
+        if type(bq) == "function" then
+            local br, _ = pcall(function() return bq("JurassicBlockyFramework_Theme.txt") end)
+            if br and type(_) == "string" then
+                local bs = _:gsub("%s+", "")
+                if bn[bs] then bo = bs end
             end
         end
     end
 
-    local THEME = {}
-    for k, v in pairs(THEME_PRESETS[_savedThemeName]) do THEME[k] = v end
-    local _currentThemeName = _savedThemeName
-    local function setThemeNamed(name: string): (boolean, string?)
-        local preset = THEME_PRESETS[name]
-        if not preset then return false, "no such theme" end
-        for k, v in pairs(preset) do THEME[k] = v end
-        _currentThemeName = name
-        local execFn = function(n)
-            return rawget(getfenv(0), n)
-                or (type(getgenv) == "function" and getgenv()[n])
-                or rawget(_G, n)
+    local bp = {}
+    for bq, br in pairs(bn[bo]) do bp[bq] = br end
+    local bq = bo
+local br=function(br)        
+local bs = bn[br]
+        if not bs then return false, "no such theme" end
+        for _, bt in pairs(bs) do bp[_] = bt end
+        bq = br
+        local bt = function(bt)
+            return rawget(getfenv(0), bt)
+                or (type(getgenv) == "function" and getgenv()[bt])
+                or rawget(_G, bt)
         end
-        local wf = execFn("writefile")
-        if type(wf) == "function" then pcall(function() wf("JurassicBlockyFramework_Theme.txt", name) end) end
+        local _ = bt("writefile")
+        if type(_) == "function" then pcall(function() _("JurassicBlockyFramework_Theme.txt", br) end) end
         return true
-    end
+end
+    
+local bs = game:GetService("TweenService")
+    local bt  = TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+    local _ = TweenInfo.new(0.20, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+local bu=function(
+bu)return UDim.new(0, bu) end local bv=function(
+bv, bw, bx)        
+local by = Instance.new(bv)
+        if bw then for bz, bA in pairs(bw) do (by )[bz] = bA end end
+        if bx then for bz, bA in ipairs(bx) do bA.Parent = by end end
+        return by
+end local bw=function(
+bw, bx)        
+bv("UICorner", { CornerRadius = bu(bx), Parent = bw })
+end local bx=function(
+bx, by, bz, bA)        
+return (bv("UIStroke", {
+            Color = by, Thickness = bz or 1, Transparency = bA or 0,
+            ApplyStrokeMode = Enum.ApplyStrokeMode.Border, Parent = bx,
+        }) )end local by=function(
 
-    local TS = game:GetService("TweenService")
-    local QUICK  = TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-    local MEDIUM = TweenInfo.new(0.20, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-
-    local function px(n) return UDim.new(0, n) end
-    local function create(class: string, props: {[string]: any}?, children: {Instance}?): Instance
-        local inst = Instance.new(class)
-        if props then for k, v in pairs(props) do (inst :: any)[k] = v end end
-        if children then for _, c in ipairs(children) do c.Parent = inst end end
-        return inst
-    end
-    local function corner(parent: Instance, radius: number)
-        create("UICorner", { CornerRadius = px(radius), Parent = parent })
-    end
-    local function stroke(parent: Instance, color: Color3, thickness: number?, transparency: number?)
-        return create("UIStroke", {
-            Color = color, Thickness = thickness or 1, Transparency = transparency or 0,
-            ApplyStrokeMode = Enum.ApplyStrokeMode.Border, Parent = parent,
-        }) :: UIStroke
-    end
-    local function pad(parent: Instance, p: number, lr: number?)
-        create("UIPadding", {
-            PaddingTop = px(p), PaddingBottom = px(p),
-            PaddingLeft = px(lr or p), PaddingRight = px(lr or p), Parent = parent,
+by, bz, bA)        
+bv("UIPadding", {
+            PaddingTop = bu(bz), PaddingBottom = bu(bz),
+            PaddingLeft = bu(bA or bz), PaddingRight = bu(bA or bz), Parent = by,
         })
-    end
-    local function vlayout(parent: Instance, gap: number?, align: any?)
-        return create("UIListLayout", {
+end local bz=function(
+bz, bA, bB)        
+return (bv("UIListLayout", {
             FillDirection = Enum.FillDirection.Vertical,
-            HorizontalAlignment = align or Enum.HorizontalAlignment.Center,
-            SortOrder = Enum.SortOrder.LayoutOrder, Padding = px(gap or 6), Parent = parent,
-        }) :: UIListLayout
-    end
-    local function tween(obj: any, props: {[string]: any}, info: TweenInfo?)
-        if not obj then return nil end
-        local ok, t = pcall(function() return TS:Create(obj, info or QUICK, props) end)
-        if not ok or not t then return nil end
-        pcall(function() t:Play() end); return t
-    end
+            HorizontalAlignment = bB or Enum.HorizontalAlignment.Center,
+            SortOrder = Enum.SortOrder.LayoutOrder, Padding = bu(bA or 6), Parent = bz,
+        }) )end local bA=function(
 
-    local function accentGradient(parent: Instance, vertical: boolean?)
-        local g = Instance.new("UIGradient")
-        g.Color = ColorSequence.new({
-            ColorSequenceKeypoint.new(0,   THEME.Accent),
-            ColorSequenceKeypoint.new(0.5, THEME.AccentCyan),
-            ColorSequenceKeypoint.new(1,   THEME.AccentDeep),
+bA, bB, bC)        
+if not bA then return nil end
+        local bD, bE = pcall(function() return bs:Create(bA, bC or bt, bB) end)
+        if not bD or not bE then return nil end
+        pcall(function() bE:Play() end); return bE
+end local bB=function(
+
+bB, bC)        
+local bD = Instance.new("UIGradient")
+        bD.Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0,   bp.Accent),
+            ColorSequenceKeypoint.new(0.5, bp.AccentCyan),
+            ColorSequenceKeypoint.new(1,   bp.AccentDeep),
         })
-        g.Rotation = vertical and 90 or 0; g.Parent = parent
-        return g
-    end
-    local function depthGradient(parent: Instance, top: Color3, bottom: Color3)
-        local g = Instance.new("UIGradient")
-        g.Color = ColorSequence.new({ ColorSequenceKeypoint.new(0, top), ColorSequenceKeypoint.new(1, bottom) })
-        g.Rotation = 90; g.Parent = parent
-        return g
-    end
-    local function parentToBest(gui: Instance)
-        local g: any = _G
-        local container: any
-        if type(g.gethui) == "function" then
-            local ok, h = pcall(g.gethui); if ok and h then container = h end
+        bD.Rotation = bC and 90 or 0; bD.Parent = bB
+        return bD
+end local bC=function(
+bC, bD, bE)        
+local bF = Instance.new("UIGradient")
+        bF.Color = ColorSequence.new({ ColorSequenceKeypoint.new(0, bD), ColorSequenceKeypoint.new(1, bE) })
+        bF.Rotation = 90; bF.Parent = bC
+        return bF
+end local bD=function(
+bD)        
+local bE= _G
+        local bF        
+if type(bE.gethui) == "function" then
+            local bG, bH = pcall(bE.gethui); if bG and bH then bF = bH end
         end
-        if not container then
-            local ok, h = pcall(function() return CoreGui end); if ok and h then container = h end
+        if not bF then
+            local bG, bH = pcall(function() return l end); if bG and bH then bF = bH end
         end
-        if not container then container = LocalPlayer:WaitForChild("PlayerGui") end
-        gui.Parent = container
+        if not bF then bF = q:WaitForChild("PlayerGui") end
+        bD.Parent = bF
+end
+    
+local bE= {}
+    bE.Toggles = {}
+    bE.Options = {}
+    bE.Unloaded = false
+    bE.NotifySide = "Right"
+    bE.ShowCustomCursor = false
+    bE.ForceCheckbox = false
+    bE.ShowToggleFrameInKeybinds = true
+    bE.MinimizeKey = Enum.KeyCode.RightControl
+    bE.ToggleKeybind = nil
+    bE._unloadHooks = {}
+    bE._dpi = 1
+    bE._connections = {}
+    bE._searchable = {}     
+bE._activeTab = nil
+    bE._ThemePresets = bn
+    bE.CurrentTheme = bq
+    function bE:SetTheme(bF)
+        local bG, bH = br(bF)
+        if bG then bE.CurrentTheme = bq end
+        return bG, bH
     end
-
-    local Library: any = {}
-    Library.Toggles = {}
-    Library.Options = {}
-    Library.Unloaded = false
-    Library.NotifySide = "Right"
-    Library.ShowCustomCursor = false
-    Library.ForceCheckbox = false
-    Library.ShowToggleFrameInKeybinds = true
-    Library.MinimizeKey = Enum.KeyCode.RightControl
-    Library.ToggleKeybind = nil
-    Library._unloadHooks = {}
-    Library._dpi = 1
-    Library._connections = {}
-    Library._searchable = {} :: {{label: string, row: Instance, parentTab: string}}
-    Library._activeTab = nil
-    Library._ThemePresets = THEME_PRESETS
-    Library.CurrentTheme = _currentThemeName
-    function Library:SetTheme(name)
-        local ok, err = setThemeNamed(name)
-        if ok then Library.CurrentTheme = _currentThemeName end
-        return ok, err
-    end
-    function Library:_track(conn) table.insert(self._connections, conn); return conn end
-    function Library:OnUnload(fn) table.insert(self._unloadHooks, fn) end
-    function Library:Unload()
+    function bE:_track(bF) table.insert(self._connections, bF); return bF end
+    function bE:OnUnload(bF) table.insert(self._unloadHooks, bF) end
+    function bE:Unload()
         if self.Unloaded then return end
         self.Unloaded = true
-        Alive.value = false
-        for _, fn in ipairs(self._unloadHooks) do pcall(fn) end
-        for _, c in ipairs(self._connections) do pcall(function() c:Disconnect() end) end
+        v.value = false
+        for bF, bG in ipairs(self._unloadHooks) do pcall(bG) end
+        for bF, bG in ipairs(self._connections) do pcall(function() bG:Disconnect() end) end
         if self._gui  then pcall(function() self._gui:Destroy()  end) end
         if self._note then pcall(function() self._note:Destroy() end) end
     end
-    function Library:SetNotifySide(side) self.NotifySide = side end
-    function Library:SetDPIScale(n) self._dpi = (n or 100) / 100; if self._uiScale then self._uiScale.Scale = self._dpi end end
+    function bE:SetNotifySide(bF) self.NotifySide = bF end
+    function bE:SetDPIScale(bF) self._dpi = (bF or 100) / 100; if self._uiScale then self._uiScale.Scale = self._dpi end end
 
-    -- Notification dock
-    local NOTIFY_WIDTH = 240
-    local function buildNotifyGui()
-        local g = create("ScreenGui", {
-            Name = "JurassicBlocky_Notify_" .. _RAND_SUFFIX, ResetOnSpawn = false,
+    
+    local bF = 240
+local bG=function()        
+local bG = bv("ScreenGui", {
+            Name = "JurassicBlocky_Notify_" .. b, ResetOnSpawn = false,
             IgnoreGuiInset = true, DisplayOrder = 100,
         })
-        local stack = create("Frame", {
+        local bH = bv("Frame", {
             AnchorPoint = Vector2.new(1,1), Position = UDim2.new(1,-12,1,-12),
-            Size = UDim2.new(0, NOTIFY_WIDTH, 1, -24), BackgroundTransparency = 1, Parent = g,
+            Size = UDim2.new(0, bF, 1, -24), BackgroundTransparency = 1, Parent = bG,
         })
-        create("UIListLayout", {
+        bv("UIListLayout", {
             FillDirection = Enum.FillDirection.Vertical,
             HorizontalAlignment = Enum.HorizontalAlignment.Right,
             VerticalAlignment = Enum.VerticalAlignment.Bottom,
-            SortOrder = Enum.SortOrder.LayoutOrder, Padding = px(6), Parent = stack,
+            SortOrder = Enum.SortOrder.LayoutOrder, Padding = bu(6), Parent = bH,
         })
-        Library._noteStack = stack
-        parentToBest(g); Library._note = g
-    end
-    function Library:Notify(opts)
-        if type(opts) == "string" then opts = { Title = "NameHub", Description = opts } end
-        local title = opts.Title or "Notice"
-        local desc  = opts.Description or opts.Content or ""
-        local dur   = opts.Time or 4
-        if not self._noteStack then buildNotifyGui() end
-        local isLeft = (self.NotifySide == "Left")
-        local stack: any = self._noteStack
-        if isLeft then
-            stack.AnchorPoint = Vector2.new(0,1); stack.Position = UDim2.new(0,12,1,-12)
-            local L = stack:FindFirstChildWhichIsA("UIListLayout")
-            if L then (L :: any).HorizontalAlignment = Enum.HorizontalAlignment.Left end
+        bE._noteStack = bH
+        bD(bG); bE._note = bG
+end    
+function bE:Notify(bH)
+        if type(bH) == "string" then bH = { Title = "NameHub", Description = bH } end
+        local bI = bH.Title or "Notice"
+        local bJ  = bH.Description or bH.Content or ""
+        local bK   = bH.Time or 4
+        if not self._noteStack then bG() end
+        local bL = (self.NotifySide == "Left")
+        local bM= self._noteStack
+        if bL then
+            bM.AnchorPoint = Vector2.new(0,1); bM.Position = UDim2.new(0,12,1,-12)
+            local bN = bM:FindFirstChildWhichIsA("UIListLayout")
+            if bN then (bN ).HorizontalAlignment = Enum.HorizontalAlignment.Left end
         else
-            stack.AnchorPoint = Vector2.new(1,1); stack.Position = UDim2.new(1,-12,1,-12)
-            local R = stack:FindFirstChildWhichIsA("UIListLayout")
-            if R then (R :: any).HorizontalAlignment = Enum.HorizontalAlignment.Right end
+            bM.AnchorPoint = Vector2.new(1,1); bM.Position = UDim2.new(1,-12,1,-12)
+            local bN = bM:FindFirstChildWhichIsA("UIListLayout")
+            if bN then (bN ).HorizontalAlignment = Enum.HorizontalAlignment.Right end
         end
-        local frame = create("Frame", {
-            Size = UDim2.new(0, NOTIFY_WIDTH, 0, 0), AutomaticSize = Enum.AutomaticSize.Y,
-            BackgroundColor3 = THEME.Surface, BorderSizePixel = 0, BackgroundTransparency = 1, Parent = self._noteStack,
+        local bN = bv("Frame", {
+            Size = UDim2.new(0, bF, 0, 0), AutomaticSize = Enum.AutomaticSize.Y,
+            BackgroundColor3 = bp.Surface, BorderSizePixel = 0, BackgroundTransparency = 1, Parent = self._noteStack,
         })
-        corner(frame, 6); stroke(frame, THEME.Border, 1, 0.3); pad(frame, 8)
-        create("UIListLayout", { FillDirection = Enum.FillDirection.Vertical, Padding = px(2), Parent = frame })
-        local titleLbl = create("TextLabel", {
+        bw(bN, 6); bx(bN, bp.Border, 1, 0.3); by(bN, 8)
+        bv("UIListLayout", { FillDirection = Enum.FillDirection.Vertical, Padding = bu(2), Parent = bN })
+        local bO = bv("TextLabel", {
             Size = UDim2.new(1,0,0,16), BackgroundTransparency = 1, TextTransparency = 1,
-            Font = Enum.Font.GothamSemibold, TextSize = 13, Text = title,
-            TextColor3 = THEME.Text, TextXAlignment = Enum.TextXAlignment.Left, Parent = frame, LayoutOrder = 1,
+            Font = Enum.Font.GothamSemibold, TextSize = 13, Text = bI,
+            TextColor3 = bp.Text, TextXAlignment = Enum.TextXAlignment.Left, Parent = bN, LayoutOrder = 1,
         })
-        local descLbl = create("TextLabel", {
+        local bP = bv("TextLabel", {
             Size = UDim2.new(1,0,0,0), AutomaticSize = Enum.AutomaticSize.Y,
             BackgroundTransparency = 1, TextTransparency = 1,
-            Font = Enum.Font.Gotham, TextSize = 11, Text = desc, TextWrapped = true,
-            TextColor3 = THEME.TextDim, TextXAlignment = Enum.TextXAlignment.Left, Parent = frame, LayoutOrder = 2,
+            Font = Enum.Font.Gotham, TextSize = 11, Text = bJ, TextWrapped = true,
+            TextColor3 = bp.TextDim, TextXAlignment = Enum.TextXAlignment.Left, Parent = bN, LayoutOrder = 2,
         })
-        tween(frame,    {BackgroundTransparency = 0}, MEDIUM)
-        tween(titleLbl, {TextTransparency = 0}, MEDIUM)
-        tween(descLbl,  {TextTransparency = 0}, MEDIUM)
-        task.delay(dur, function()
-            if frame and frame.Parent then
-                tween(frame,    {BackgroundTransparency = 1}, QUICK)
-                tween(titleLbl, {TextTransparency = 1}, QUICK)
-                tween(descLbl,  {TextTransparency = 1}, QUICK)
-                task.wait(0.14); frame:Destroy()
+        bA(bN,    {BackgroundTransparency = 0}, _)
+        bA(bO, {TextTransparency = 0}, _)
+        bA(bP,  {TextTransparency = 0}, _)
+        task.delay(bK, function()
+            if bN and bN.Parent then
+                bA(bN,    {BackgroundTransparency = 1}, bt)
+                bA(bO, {TextTransparency = 1}, bt)
+                bA(bP,  {TextTransparency = 1}, bt)
+                task.wait(0.14); bN:Destroy()
             end
         end)
     end
 
-    local TAB_ICONS = {
+    local bH = {
         Main = "M", Player = "P", Visuals = "V", Misc = "+",
         Missions = "!", Teleport = "T", Stats = "S", Settings = "*",
     }
-    local function iconFor(name: string): string
-        return TAB_ICONS[name] or (name:sub(1, 1):upper())
-    end
+local bI=function(bI)        
+return bH[bI] or (bI:sub(1, 1):upper())
+end
+    
+function bE:CreateWindow(bJ)
+        bJ = bJ or {}
+        local bK  = bJ.Title  or "NameHub"
+        local bL = bJ.Footer or ""
+        self.NotifySide  = bJ.NotifySide or "Right"
 
-    function Library:CreateWindow(opts: {[string]: any})
-        opts = opts or {}
-        local titleText  = opts.Title  or "NameHub"
-        local footerText = opts.Footer or ""
-        self.NotifySide  = opts.NotifySide or "Right"
-
-        local gui = create("ScreenGui", {
-            Name = "JurassicBlocky_UI_" .. _RAND_SUFFIX, ResetOnSpawn = false,
+        local bM = bv("ScreenGui", {
+            Name = "JurassicBlocky_UI_" .. b, ResetOnSpawn = false,
             IgnoreGuiInset = true, ZIndexBehavior = Enum.ZIndexBehavior.Sibling, DisplayOrder = 10,
         })
-        self._gui = gui
-        local scale = create("UIScale", { Scale = self._dpi, Parent = gui }) :: UIScale
-        self._uiScale = scale
+        self._gui = bM
+        local bN = (bv("UIScale", { Scale = self._dpi, Parent = bM }) )        
+self._uiScale = bN
 
-        local shadowOuter = create("ImageLabel", {
+        local bO = bv("ImageLabel", {
             AnchorPoint = Vector2.new(0.5,0.5), Position = UDim2.new(0.5,0,0.5,30),
             Size = UDim2.new(0,980,0,680), BackgroundTransparency = 1,
             Image = "rbxassetid://5028857084", ImageColor3 = Color3.new(0,0,0), ImageTransparency = 0.55,
-            ScaleType = Enum.ScaleType.Slice, SliceCenter = Rect.new(24,24,276,276), Parent = gui,
+            ScaleType = Enum.ScaleType.Slice, SliceCenter = Rect.new(24,24,276,276), Parent = bM,
         })
-        local shadow = create("ImageLabel", {
+        local bP = bv("ImageLabel", {
             AnchorPoint = Vector2.new(0.5,0.5), Position = UDim2.new(0.5,0,0.5,14),
             Size = UDim2.new(0,940,0,660), BackgroundTransparency = 1,
             Image = "rbxassetid://5028857084", ImageColor3 = Color3.new(0,0,0), ImageTransparency = 0.3,
-            ScaleType = Enum.ScaleType.Slice, SliceCenter = Rect.new(24,24,276,276), Parent = gui,
+            ScaleType = Enum.ScaleType.Slice, SliceCenter = Rect.new(24,24,276,276), Parent = bM,
         })
-        local glow = create("ImageLabel", {
+        local bQ = bv("ImageLabel", {
             AnchorPoint = Vector2.new(0.5,0.5), Position = UDim2.new(0.5,0,0.5,0),
             Size = UDim2.new(0,920,0,640), BackgroundTransparency = 1,
-            Image = "rbxassetid://5028857084", ImageColor3 = THEME.Accent, ImageTransparency = 0.78,
-            ScaleType = Enum.ScaleType.Slice, SliceCenter = Rect.new(24,24,276,276), Parent = gui,
+            Image = "rbxassetid://5028857084", ImageColor3 = bp.Accent, ImageTransparency = 0.78,
+            ScaleType = Enum.ScaleType.Slice, SliceCenter = Rect.new(24,24,276,276), Parent = bM,
         })
 
-        local root = create("Frame", {
+        local bR = bv("Frame", {
             Name = "Window", AnchorPoint = Vector2.new(0.5,0.5), Position = UDim2.new(0.5,0,0.5,0),
-            Size = UDim2.new(0,880,0,600), BackgroundColor3 = THEME.Background,
-            BorderSizePixel = 0, ClipsDescendants = true, Parent = gui,
+            Size = UDim2.new(0,880,0,600), BackgroundColor3 = bp.Background,
+            BorderSizePixel = 0, ClipsDescendants = true, Parent = bM,
         })
-        corner(root, 16); depthGradient(root, THEME.BackgroundAlt, THEME.Background); stroke(root, THEME.Border, 1)
-        create("UIStroke", {
-            Color = THEME.BorderLight, Thickness = 1, Transparency = 0.6,
-            ApplyStrokeMode = Enum.ApplyStrokeMode.Border, Parent = root,
+        bw(bR, 16); bC(bR, bp.BackgroundAlt, bp.Background); bx(bR, bp.Border, 1)
+        bv("UIStroke", {
+            Color = bp.BorderLight, Thickness = 1, Transparency = 0.6,
+            ApplyStrokeMode = Enum.ApplyStrokeMode.Border, Parent = bR,
         })
-        local topStripe = create("Frame", {
-            Size = UDim2.new(1,0,0,3), BackgroundColor3 = THEME.Accent,
-            BorderSizePixel = 0, ZIndex = 5, Parent = root,
+        local bS = bv("Frame", {
+            Size = UDim2.new(1,0,0,3), BackgroundColor3 = bp.Accent,
+            BorderSizePixel = 0, ZIndex = 5, Parent = bR,
         })
-        accentGradient(topStripe)
+        bB(bS)
 
-        local header = create("Frame", {
+        local bT = bv("Frame", {
             Position = UDim2.new(0,0,0,3), Size = UDim2.new(1,0,0,54),
-            BackgroundColor3 = THEME.Header, BorderSizePixel = 0, Parent = root,
+            BackgroundColor3 = bp.Header, BorderSizePixel = 0, Parent = bR,
         })
-        depthGradient(header, THEME.Header, THEME.Background)
-        local headerDiv = create("Frame", {
+        bC(bT, bp.Header, bp.Background)
+        local bU = bv("Frame", {
             Position = UDim2.new(0,0,1,-1), Size = UDim2.new(1,0,0,1),
-            BackgroundColor3 = THEME.Border, BorderSizePixel = 0, Parent = header,
+            BackgroundColor3 = bp.Border, BorderSizePixel = 0, Parent = bT,
         })
-        local headerDivGrad = accentGradient(headerDiv)
-        ;(headerDivGrad :: any).Transparency = NumberSequence.new({
+        local bV = bB(bU)
+        ;(bV ).Transparency = NumberSequence.new({
             NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(0.5, 0.2), NumberSequenceKeypoint.new(1, 1),
         })
 
-        local titleHolder = create("Frame", {
+        local bW = bv("Frame", {
             Position = UDim2.new(0,14,0,0), Size = UDim2.new(0,200,1,0),
-            BackgroundTransparency = 1, Parent = header,
+            BackgroundTransparency = 1, Parent = bT,
         })
-        create("ImageLabel", {
+        bv("ImageLabel", {
             AnchorPoint = Vector2.new(0.5,0.5), Position = UDim2.new(0,19,0.5,0),
             Size = UDim2.new(0,48,0,48), BackgroundTransparency = 1,
-            Image = "rbxassetid://5028857084", ImageColor3 = THEME.Accent, ImageTransparency = 0.55,
-            ScaleType = Enum.ScaleType.Slice, SliceCenter = Rect.new(24,24,276,276), Parent = titleHolder, ZIndex = 0,
+            Image = "rbxassetid://5028857084", ImageColor3 = bp.Accent, ImageTransparency = 0.55,
+            ScaleType = Enum.ScaleType.Slice, SliceCenter = Rect.new(24,24,276,276), Parent = bW, ZIndex = 0,
         })
-        local logoDot = create("Frame", {
+        local bX = bv("Frame", {
             AnchorPoint = Vector2.new(0,0.5), Position = UDim2.new(0,4,0.5,0),
-            Size = UDim2.new(0,28,0,28), BackgroundColor3 = THEME.Accent, BorderSizePixel = 0,
-            Parent = titleHolder, ZIndex = 2,
+            Size = UDim2.new(0,28,0,28), BackgroundColor3 = bp.Accent, BorderSizePixel = 0,
+            Parent = bW, ZIndex = 2,
         })
-        corner(logoDot, 14); accentGradient(logoDot)
-        local titleLbl = create("TextLabel", {
+        bw(bX, 14); bB(bX)
+        local bY = bv("TextLabel", {
             Position = UDim2.new(0,44,0,0), Size = UDim2.new(1,-44,1,0),
-            BackgroundTransparency = 1, Text = titleText, TextColor3 = THEME.Text,
+            BackgroundTransparency = 1, Text = bK, TextColor3 = bp.Text,
             Font = Enum.Font.GothamBold, TextSize = 18,
-            TextXAlignment = Enum.TextXAlignment.Left, Parent = titleHolder,
+            TextXAlignment = Enum.TextXAlignment.Left, Parent = bW,
         })
-        titleHolder.Size = UDim2.new(0, 48 + titleLbl.TextBounds.X + 14, 1, 0)
+        bW.Size = UDim2.new(0, 48 + bY.TextBounds.X + 14, 1, 0)
 
-        local searchBox = create("Frame", {
+        local bZ = bv("Frame", {
             AnchorPoint = Vector2.new(0,0.5), Position = UDim2.new(0,220,0.5,0),
-            Size = UDim2.new(1,-390,0,32), BackgroundColor3 = THEME.Surface,
-            BorderSizePixel = 0, Parent = header,
+            Size = UDim2.new(1,-390,0,32), BackgroundColor3 = bp.Surface,
+            BorderSizePixel = 0, Parent = bT,
         })
-        corner(searchBox, 8); local searchStroke = stroke(searchBox, THEME.Border, 1, 0.3)
-        local iconHolder = create("Frame", {
+        bw(bZ, 8); local b_ = bx(bZ, bp.Border, 1, 0.3)
+        local b0 = bv("Frame", {
             Position = UDim2.new(0,10,0.5,-6), Size = UDim2.new(0,12,0,12),
-            BackgroundTransparency = 1, Parent = searchBox,
+            BackgroundTransparency = 1, Parent = bZ,
         })
-        local iconCircle = create("Frame", {
+        local b1 = bv("Frame", {
             Size = UDim2.new(0,8,0,8), Position = UDim2.new(0,0,0,0),
-            BackgroundTransparency = 1, BorderSizePixel = 0, Parent = iconHolder,
+            BackgroundTransparency = 1, BorderSizePixel = 0, Parent = b0,
         })
-        corner(iconCircle, 4); stroke(iconCircle, THEME.TextDim, 1.5)
-        create("Frame", {
+        bw(b1, 4); bx(b1, bp.TextDim, 1.5)
+        bv("Frame", {
             Position = UDim2.new(0,7,0,7), Size = UDim2.new(0,4,0,1.5),
-            BackgroundColor3 = THEME.TextDim, BorderSizePixel = 0, Rotation = 45, Parent = iconHolder,
+            BackgroundColor3 = bp.TextDim, BorderSizePixel = 0, Rotation = 45, Parent = b0,
         })
-        local searchInput = create("TextBox", {
+        local b2 = (bv("TextBox", {
             Position = UDim2.new(0,30,0,0), Size = UDim2.new(1,-36,1,0),
             BackgroundTransparency = 1, Text = "", PlaceholderText = "Search features...",
-            Font = Enum.Font.Gotham, TextSize = 13, TextColor3 = THEME.Text,
-            PlaceholderColor3 = THEME.Subtle, ClearTextOnFocus = false,
-            TextXAlignment = Enum.TextXAlignment.Left, Parent = searchBox,
-        }) :: TextBox
-        searchInput.Focused:Connect(function()
-            tween(searchStroke, {Color = THEME.Accent, Transparency = 0})
-            tween(searchBox,    {BackgroundColor3 = THEME.SurfaceAlt})
+            Font = Enum.Font.Gotham, TextSize = 13, TextColor3 = bp.Text,
+            PlaceholderColor3 = bp.Subtle, ClearTextOnFocus = false,
+            TextXAlignment = Enum.TextXAlignment.Left, Parent = bZ,
+        }) )        
+b2.Focused:Connect(function()
+            bA(b_, {Color = bp.Accent, Transparency = 0})
+            bA(bZ,    {BackgroundColor3 = bp.SurfaceAlt})
         end)
-        searchInput.FocusLost:Connect(function()
-            tween(searchStroke, {Color = THEME.Border, Transparency = 0.3})
-            tween(searchBox,    {BackgroundColor3 = THEME.Surface})
+        b2.FocusLost:Connect(function()
+            bA(b_, {Color = bp.Border, Transparency = 0.3})
+            bA(bZ,    {BackgroundColor3 = bp.Surface})
         end)
-        local dragHandle = create("TextLabel", {
+        local b3 = bv("TextLabel", {
             AnchorPoint = Vector2.new(1,0.5), Position = UDim2.new(1,-16,0.5,0),
             Size = UDim2.new(0,80,1,0), BackgroundTransparency = 1, Text = ":: drag",
-            Font = Enum.Font.GothamMedium, TextSize = 12, TextColor3 = THEME.Subtle,
-            TextXAlignment = Enum.TextXAlignment.Right, Parent = header,
+            Font = Enum.Font.GothamMedium, TextSize = 12, TextColor3 = bp.Subtle,
+            TextXAlignment = Enum.TextXAlignment.Right, Parent = bT,
         })
 
-        searchInput:GetPropertyChangedSignal("Text"):Connect(function()
-            local q = searchInput.Text:lower()
-            for _, entry in ipairs(Library._searchable) do
-                local matchTab = (entry.parentTab == Library._activeTab) or (entry.parentTab == nil)
-                if q == "" then entry.row.Visible = true
-                else entry.row.Visible = matchTab and (entry.label:lower():find(q, 1, true) ~= nil) end
+        b2:GetPropertyChangedSignal("Text"):Connect(function()
+            local b4 = b2.Text:lower()
+            for b5, b6 in ipairs(bE._searchable) do
+                local b7 = (b6.parentTab == bE._activeTab) or (b6.parentTab == nil)
+                if b4 == "" then b6.row.Visible = true
+                else b6.row.Visible = b7 and (b6.label:lower():find(b4, 1, true) ~= nil) end
             end
         end)
 
-        local body = create("Frame", {
+        local b4 = bv("Frame", {
             Position = UDim2.new(0,0,0,57), Size = UDim2.new(1,0,1,-77),
-            BackgroundTransparency = 1, Parent = root,
+            BackgroundTransparency = 1, Parent = bR,
         })
-        local sidebar = create("Frame", {
-            Size = UDim2.new(0,160,1,0), BackgroundColor3 = THEME.Sidebar,
-            BorderSizePixel = 0, Parent = body,
+        local b5 = bv("Frame", {
+            Size = UDim2.new(0,160,1,0), BackgroundColor3 = bp.Sidebar,
+            BorderSizePixel = 0, Parent = b4,
         })
-        depthGradient(sidebar, THEME.SidebarHi, THEME.Sidebar)
-        create("Frame", {
+        bC(b5, bp.SidebarHi, bp.Sidebar)
+        bv("Frame", {
             Position = UDim2.new(1,-1,0,0), Size = UDim2.new(0,1,1,0),
-            BackgroundColor3 = THEME.Border, BorderSizePixel = 0, ZIndex = 2, Parent = sidebar,
+            BackgroundColor3 = bp.Border, BorderSizePixel = 0, ZIndex = 2, Parent = b5,
         })
-        local tabsHost = create("Frame", {
-            Size = UDim2.new(1,0,1,0), BackgroundTransparency = 1, ZIndex = 2, Parent = sidebar,
+        local b6 = bv("Frame", {
+            Size = UDim2.new(1,0,1,0), BackgroundTransparency = 1, ZIndex = 2, Parent = b5,
         })
-        pad(tabsHost, 12, 10); vlayout(tabsHost, 4, Enum.HorizontalAlignment.Left)
-        local activeIndicator = create("Frame", {
+        by(b6, 12, 10); bz(b6, 4, Enum.HorizontalAlignment.Left)
+        local b7 = bv("Frame", {
             Position = UDim2.new(0,4,0,12), Size = UDim2.new(0,3,0,30),
-            BackgroundColor3 = THEME.Accent, BorderSizePixel = 0, Visible = false,
-            ZIndex = 5, Parent = sidebar,
+            BackgroundColor3 = bp.Accent, BorderSizePixel = 0, Visible = false,
+            ZIndex = 5, Parent = b5,
         })
-        corner(activeIndicator, 2); accentGradient(activeIndicator, true)
+        bw(b7, 2); bB(b7, true)
 
-        local content = create("Frame", {
+        local b8 = bv("Frame", {
             Position = UDim2.new(0,160,0,0), Size = UDim2.new(1,-160,1,0),
-            BackgroundTransparency = 1, Parent = body,
+            BackgroundTransparency = 1, Parent = b4,
         })
-        local footer = create("TextLabel", {
+        local b9 = bv("TextLabel", {
             Position = UDim2.new(0,0,1,-20), Size = UDim2.new(1,0,0,20),
-            BackgroundTransparency = 1, Text = footerText, TextColor3 = THEME.Subtle,
-            Font = Enum.Font.Gotham, TextSize = 11, Parent = root,
+            BackgroundTransparency = 1, Text = bL, TextColor3 = bp.Subtle,
+            Font = Enum.Font.Gotham, TextSize = 11, Parent = bR,
         })
+local ca=function(
+ca, cb, cc, cd)            
+local ce = (bv("TextButton", {
+                AnchorPoint = Vector2.new(1,0.5), Position = UDim2.new(1,cb,0.5,0),
+                Size = UDim2.new(0,20,0,20), BackgroundColor3 = cc, BorderSizePixel = 0,
+                Text = ca, Font = Enum.Font.GothamBold, TextSize = 11, TextColor3 = bp.Text,
+                AutoButtonColor = false, Parent = bT,
+            }) )            
+bw(ce, 4)
+            ce.MouseEnter:Connect(function() bA(ce, {BackgroundColor3 = cd}) end)
+            ce.MouseLeave:Connect(function() bA(ce, {BackgroundColor3 = cc}) end)
+            return ce
+end        
+local cb = ca("X", -100, bp.RiskyDim, bp.Risky)
+        local cc   = ca("-", -124, bp.Surface,  bp.SurfaceAlt)
+        cb.MouseButton1Click:Connect(function() bE:Unload() end)
+        b3.Size = UDim2.new(0,50,1,0); b3.Position = UDim2.new(1,-154,0.5,0)
 
-        local function makeWinBtn(text, x, normal, hover)
-            local b = create("TextButton", {
-                AnchorPoint = Vector2.new(1,0.5), Position = UDim2.new(1,x,0.5,0),
-                Size = UDim2.new(0,20,0,20), BackgroundColor3 = normal, BorderSizePixel = 0,
-                Text = text, Font = Enum.Font.GothamBold, TextSize = 11, TextColor3 = THEME.Text,
-                AutoButtonColor = false, Parent = header,
-            }) :: TextButton
-            corner(b, 4)
-            b.MouseEnter:Connect(function() tween(b, {BackgroundColor3 = hover}) end)
-            b.MouseLeave:Connect(function() tween(b, {BackgroundColor3 = normal}) end)
-            return b
-        end
-        local closeBtn = makeWinBtn("X", -100, THEME.RiskyDim, THEME.Risky)
-        local minBtn   = makeWinBtn("-", -124, THEME.Surface,  THEME.SurfaceAlt)
-        closeBtn.MouseButton1Click:Connect(function() Library:Unload() end)
-        dragHandle.Size = UDim2.new(0,50,1,0); dragHandle.Position = UDim2.new(1,-154,0.5,0)
-
-        local dragging, dragStart, startPos = false, Vector2.new(), root.Position
-        local function bindDrag(target)
-            target.InputBegan:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                    dragging = true; dragStart = input.Position; startPos = root.Position
+        local cd, ce, cf = false, Vector2.new(), bR.Position
+local cg=function(cg)            
+cg.InputBegan:Connect(function(ch)
+                if ch.UserInputType == Enum.UserInputType.MouseButton1 or ch.UserInputType == Enum.UserInputType.Touch then
+                    cd = true; ce = ch.Position; cf = bR.Position
                 end
             end)
-            target.InputEnded:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                    dragging = false
+            cg.InputEnded:Connect(function(ch)
+                if ch.UserInputType == Enum.UserInputType.MouseButton1 or ch.UserInputType == Enum.UserInputType.Touch then
+                    cd = false
                 end
             end)
-        end
-        bindDrag(header)
-        Library:_track(UserInputService.InputChanged:Connect(function(input)
-            if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-                local d = input.Position - dragStart
-                local newPos = UDim2.new(startPos.X.Scale, startPos.X.Offset + d.X, startPos.Y.Scale, startPos.Y.Offset + d.Y)
-                root.Position = newPos
-                shadow.Position = UDim2.new(newPos.X.Scale, newPos.X.Offset, newPos.Y.Scale, newPos.Y.Offset + 8)
+end        
+cg(bT)
+        bE:_track(e.InputChanged:Connect(function(ch)
+            if cd and (ch.UserInputType == Enum.UserInputType.MouseMovement or ch.UserInputType == Enum.UserInputType.Touch) then
+                local ci = ch.Position - ce
+                local cj = UDim2.new(cf.X.Scale, cf.X.Offset + ci.X, cf.Y.Scale, cf.Y.Offset + ci.Y)
+                bR.Position = cj
+                bP.Position = UDim2.new(cj.X.Scale, cj.X.Offset, cj.Y.Scale, cj.Y.Offset + 8)
             end
         end))
 
-        local Window: any = { Tabs = {}, _activeTab = nil }
-        Window._root = root; Window._sidebar = sidebar; Window._content = content
-
-        local function moveIndicator(targetRow)
-            if not targetRow then activeIndicator.Visible = false; return end
-            activeIndicator.Visible = true
-            local rel = targetRow.AbsolutePosition - sidebar.AbsolutePosition
-            tween(activeIndicator, {
-                Position = UDim2.new(0,4,0, rel.Y + 4),
-                Size = UDim2.new(0,3,0, math.max(targetRow.AbsoluteSize.Y - 8, 18)),
+        local ch= { Tabs = {}, _activeTab = nil }
+        ch._root = bR; ch._sidebar = b5; ch._content = b8
+local ci=function(
+ci)            
+if not ci then b7.Visible = false; return end
+            b7.Visible = true
+            local cj = ci.AbsolutePosition - b5.AbsolutePosition
+            bA(b7, {
+                Position = UDim2.new(0,4,0, cj.Y + 4),
+                Size = UDim2.new(0,3,0, math.max(ci.AbsoluteSize.Y - 8, 18)),
             })
-        end
+end local cj=function(
 
-        local function selectTab(name)
-            for tn, t in pairs(Window.Tabs) do
-                local active = (tn == name)
-                t._page.Visible = active
-                if t._row then
-                    tween(t._row, {
-                        BackgroundColor3 = active and THEME.SurfaceAlt or THEME.Surface,
-                        BackgroundTransparency = active and 0 or 0.55,
+cj)            
+for ck, cl in pairs(ch.Tabs) do
+                local cm = (ck == cj)
+                cl._page.Visible = cm
+                if cl._row then
+                    bA(cl._row, {
+                        BackgroundColor3 = cm and bp.SurfaceAlt or bp.Surface,
+                        BackgroundTransparency = cm and 0 or 0.55,
                     })
                 end
-                if t._icon then tween(t._icon, {TextColor3 = active and THEME.Accent or THEME.TextDim}) end
-                if t._name then tween(t._name, {TextColor3 = active and THEME.Accent or THEME.Text}) end
-                if active then moveIndicator(t._row) end
+                if cl._icon then bA(cl._icon, {TextColor3 = cm and bp.Accent or bp.TextDim}) end
+                if cl._name then bA(cl._name, {TextColor3 = cm and bp.Accent or bp.Text}) end
+                if cm then ci(cl._row) end
             end
-            Window._activeTab = name
-            Library._activeTab = name
-            if searchInput.Text ~= "" then
-                local q = searchInput.Text:lower()
-                for _, entry in ipairs(Library._searchable) do
-                    local matchTab = (entry.parentTab == name) or (entry.parentTab == nil)
-                    entry.row.Visible = matchTab and (entry.label:lower():find(q, 1, true) ~= nil)
+            ch._activeTab = cj
+            bE._activeTab = cj
+            if b2.Text ~= "" then
+                local ck = b2.Text:lower()
+                for cl, cm in ipairs(bE._searchable) do
+                    local cn = (cm.parentTab == cj) or (cm.parentTab == nil)
+                    cm.row.Visible = cn and (cm.label:lower():find(ck, 1, true) ~= nil)
                 end
             end
-        end
-
-        function Window:AddTab(name: string, _icon: string?)
-            local row = create("Frame", {
-                Size = UDim2.new(1,0,0,34), BackgroundColor3 = THEME.Surface,
-                BackgroundTransparency = 0.75, BorderSizePixel = 0, ZIndex = 3, Parent = tabsHost,
+end
+        
+function ch:AddTab(ck, cl)
+            local cm = bv("Frame", {
+                Size = UDim2.new(1,0,0,34), BackgroundColor3 = bp.Surface,
+                BackgroundTransparency = 0.75, BorderSizePixel = 0, ZIndex = 3, Parent = b6,
             })
-            corner(row, 8)
-            local btn = create("TextButton", {
+            bw(cm, 8)
+            local cn = (bv("TextButton", {
                 Size = UDim2.new(1,0,1,0), BackgroundTransparency = 1,
-                Text = "", AutoButtonColor = false, ZIndex = 4, Parent = row,
-            }) :: TextButton
-            local iconLbl = create("TextLabel", {
+                Text = "", AutoButtonColor = false, ZIndex = 4, Parent = cm,
+            }) )            
+local co = bv("TextLabel", {
                 Position = UDim2.new(0,14,0,0), Size = UDim2.new(0,20,1,0),
-                BackgroundTransparency = 1, Text = iconFor(name),
-                Font = Enum.Font.GothamBold, TextSize = 15, TextColor3 = THEME.TextDim,
-                TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 5, Parent = row,
+                BackgroundTransparency = 1, Text = bI(ck),
+                Font = Enum.Font.GothamBold, TextSize = 15, TextColor3 = bp.TextDim,
+                TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 5, Parent = cm,
             })
-            local nameLbl = create("TextLabel", {
+            local cp = bv("TextLabel", {
                 Position = UDim2.new(0,38,0,0), Size = UDim2.new(1,-40,1,0),
-                BackgroundTransparency = 1, Text = name,
-                Font = Enum.Font.GothamSemibold, TextSize = 13, TextColor3 = THEME.Text,
-                TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 5, Parent = row,
+                BackgroundTransparency = 1, Text = ck,
+                Font = Enum.Font.GothamSemibold, TextSize = 13, TextColor3 = bp.Text,
+                TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 5, Parent = cm,
             })
-            btn.MouseEnter:Connect(function() if Window._activeTab ~= name then tween(row, {BackgroundTransparency = 0.5}, QUICK) end end)
-            btn.MouseLeave:Connect(function() if Window._activeTab ~= name then tween(row, {BackgroundTransparency = 0.75}, QUICK) end end)
+            cn.MouseEnter:Connect(function() if ch._activeTab ~= ck then bA(cm, {BackgroundTransparency = 0.5}, bt) end end)
+            cn.MouseLeave:Connect(function() if ch._activeTab ~= ck then bA(cm, {BackgroundTransparency = 0.75}, bt) end end)
 
-            local page = create("Frame", {
-                Size = UDim2.new(1,0,1,0), BackgroundTransparency = 1, Visible = false, Parent = content,
+            local cq = bv("Frame", {
+                Size = UDim2.new(1,0,1,0), BackgroundTransparency = 1, Visible = false, Parent = b8,
             })
-            pad(page, 12, 16)
+            by(cq, 12, 16)
 
-            local left = create("ScrollingFrame", {
+            local cr = bv("ScrollingFrame", {
                 Size = UDim2.new(0.5,-8,1,0), BackgroundTransparency = 1, BorderSizePixel = 0,
                 CanvasSize = UDim2.new(0,0,0,0), AutomaticCanvasSize = Enum.AutomaticSize.Y,
-                ScrollBarThickness = 3, ScrollBarImageColor3 = THEME.BorderLight, Parent = page,
+                ScrollBarThickness = 3, ScrollBarImageColor3 = bp.BorderLight, Parent = cq,
             })
-            vlayout(left, 12, Enum.HorizontalAlignment.Center); pad(left, 0, 2)
-            local right = create("ScrollingFrame", {
+            bz(cr, 12, Enum.HorizontalAlignment.Center); by(cr, 0, 2)
+            local cs = bv("ScrollingFrame", {
                 Position = UDim2.new(0.5,8,0,0), Size = UDim2.new(0.5,-8,1,0),
                 BackgroundTransparency = 1, BorderSizePixel = 0,
                 CanvasSize = UDim2.new(0,0,0,0), AutomaticCanvasSize = Enum.AutomaticSize.Y,
-                ScrollBarThickness = 3, ScrollBarImageColor3 = THEME.BorderLight, Parent = page,
+                ScrollBarThickness = 3, ScrollBarImageColor3 = bp.BorderLight, Parent = cq,
             })
-            vlayout(right, 12, Enum.HorizontalAlignment.Center); pad(right, 0, 2)
+            bz(cs, 12, Enum.HorizontalAlignment.Center); by(cs, 0, 2)
 
-            local tab: any = { _btn = btn, _icon = iconLbl, _name = nameLbl,
-                _page = page, _row = row, _left = left, _right = right, _tabName = name }
-
-            local function makeGroupHeader(parent: Instance, gname: string)
-                local outer = create("Frame", {
+            local ct= { _btn = cn, _icon = co, _name = cp,
+                _page = cq, _row = cm, _left = cr, _right = cs, _tabName = ck }
+local cu=function(
+cu, cv)                
+local cw = bv("Frame", {
                     Size = UDim2.new(1,0,0,0), AutomaticSize = Enum.AutomaticSize.Y,
-                    BackgroundColor3 = THEME.Surface, BorderSizePixel = 0,
-                    BackgroundTransparency = 0.15, Parent = parent,
+                    BackgroundColor3 = bp.Surface, BorderSizePixel = 0,
+                    BackgroundTransparency = 0.15, Parent = cu,
                 })
-                corner(outer, 10); stroke(outer, THEME.Border, 1, 0.4)
-                create("UIGradient", {
+                bw(cw, 10); bx(cw, bp.Border, 1, 0.4)
+                bv("UIGradient", {
                     Rotation = 90,
-                    Color = ColorSequence.new(THEME.Surface, THEME.BackgroundAlt),
+                    Color = ColorSequence.new(bp.Surface, bp.BackgroundAlt),
                     Transparency = NumberSequence.new({
                         NumberSequenceKeypoint.new(0, 0.05),
                         NumberSequenceKeypoint.new(1, 0.35),
                     }),
-                    Parent = outer,
+                    Parent = cw,
                 })
-                create("UIListLayout", { SortOrder = Enum.SortOrder.LayoutOrder, Parent = outer, Padding = px(6) })
-                pad(outer, 10, 12)
-                local headerRow = create("Frame", { Size = UDim2.new(1,0,0,22), BackgroundTransparency = 1, Parent = outer, LayoutOrder = 1 })
-                local dot = create("Frame", {
+                bv("UIListLayout", { SortOrder = Enum.SortOrder.LayoutOrder, Parent = cw, Padding = bu(6) })
+                by(cw, 10, 12)
+                local cx = bv("Frame", { Size = UDim2.new(1,0,0,22), BackgroundTransparency = 1, Parent = cw, LayoutOrder = 1 })
+                local cy = bv("Frame", {
                     AnchorPoint = Vector2.new(0,0.5), Position = UDim2.new(0,0,0.5,0),
-                    Size = UDim2.new(0,7,0,7), BackgroundColor3 = THEME.Accent,
-                    BorderSizePixel = 0, Parent = headerRow,
+                    Size = UDim2.new(0,7,0,7), BackgroundColor3 = bp.Accent,
+                    BorderSizePixel = 0, Parent = cx,
                 })
-                corner(dot, 4); accentGradient(dot)
-                create("TextLabel", {
+                bw(cy, 4); bB(cy)
+                bv("TextLabel", {
                     Position = UDim2.new(0,16,0,0), Size = UDim2.new(1,-16,1,0),
-                    BackgroundTransparency = 1, Text = gname,
-                    Font = Enum.Font.GothamBold, TextSize = 13, TextColor3 = THEME.Text,
-                    TextXAlignment = Enum.TextXAlignment.Left, Parent = headerRow,
+                    BackgroundTransparency = 1, Text = cv,
+                    Font = Enum.Font.GothamBold, TextSize = 13, TextColor3 = bp.Text,
+                    TextXAlignment = Enum.TextXAlignment.Left, Parent = cx,
                 })
-                local underline = create("Frame", {
-                    Size = UDim2.new(1,0,0,1), BackgroundColor3 = THEME.Border,
-                    BorderSizePixel = 0, Parent = outer, LayoutOrder = 2,
+                local cz = bv("Frame", {
+                    Size = UDim2.new(1,0,0,1), BackgroundColor3 = bp.Border,
+                    BorderSizePixel = 0, Parent = cw, LayoutOrder = 2,
                 })
-                local ug = accentGradient(underline)
-                ;(ug :: any).Transparency = NumberSequence.new({
+                local cA = bB(cz)
+                ;(cA ).Transparency = NumberSequence.new({
                     NumberSequenceKeypoint.new(0, 0.1),
                     NumberSequenceKeypoint.new(0.7, 0.6),
                     NumberSequenceKeypoint.new(1, 1),
                 })
-                local bodyFrame = create("Frame", {
+                local cB = bv("Frame", {
                     Size = UDim2.new(1,0,0,0), AutomaticSize = Enum.AutomaticSize.Y,
-                    BackgroundTransparency = 1, Parent = outer, LayoutOrder = 3,
+                    BackgroundTransparency = 1, Parent = cw, LayoutOrder = 3,
                 })
-                vlayout(bodyFrame, 7, Enum.HorizontalAlignment.Center)
-                return JBUI._makeContainer(outer, bodyFrame, name)
-            end
-            local function makeTabbox(parent: Instance)
-                local outer = create("Frame", {
+                bz(cB, 7, Enum.HorizontalAlignment.Center)
+                return bm._makeContainer(cw, cB, ck)
+end local cv=function(
+cv)                
+local cw = bv("Frame", {
                     Size = UDim2.new(1,0,0,0), AutomaticSize = Enum.AutomaticSize.Y,
-                    BackgroundTransparency = 1, Parent = parent,
+                    BackgroundTransparency = 1, Parent = cv,
                 })
-                create("UIListLayout", { SortOrder = Enum.SortOrder.LayoutOrder, Parent = outer, Padding = px(4) })
-                local tabRow = create("Frame", { Size = UDim2.new(1,0,0,22), BackgroundTransparency = 1, Parent = outer, LayoutOrder = 1 })
-                create("UIListLayout", {
-                    FillDirection = Enum.FillDirection.Horizontal, Padding = px(14),
-                    SortOrder = Enum.SortOrder.LayoutOrder, Parent = tabRow,
+                bv("UIListLayout", { SortOrder = Enum.SortOrder.LayoutOrder, Parent = cw, Padding = bu(4) })
+                local cx = bv("Frame", { Size = UDim2.new(1,0,0,22), BackgroundTransparency = 1, Parent = cw, LayoutOrder = 1 })
+                bv("UIListLayout", {
+                    FillDirection = Enum.FillDirection.Horizontal, Padding = bu(14),
+                    SortOrder = Enum.SortOrder.LayoutOrder, Parent = cx,
                 })
-                local bodyArea = create("Frame", {
+                local cy = bv("Frame", {
                     Size = UDim2.new(1,0,0,0), AutomaticSize = Enum.AutomaticSize.Y,
-                    BackgroundTransparency = 1, Parent = outer, LayoutOrder = 2,
+                    BackgroundTransparency = 1, Parent = cw, LayoutOrder = 2,
                 })
-                vlayout(bodyArea, 6, Enum.HorizontalAlignment.Center)
-                local tabbox: any = { _subTabs = {}, _activeSubtab = nil }
-                local function selectSubTab(sname)
-                    for n, st in pairs(tabbox._subTabs) do
-                        local active = (n == sname)
-                        st._page.Visible = active
-                        tween(st._btn, {TextColor3 = active and THEME.Accent or THEME.TextDim})
+                bz(cy, 6, Enum.HorizontalAlignment.Center)
+                local cz= { _subTabs = {}, _activeSubtab = nil }
+local cA=function(cA)                    
+for cB, cC in pairs(cz._subTabs) do
+                        local cD = (cB == cA)
+                        cC._page.Visible = cD
+                        bA(cC._btn, {TextColor3 = cD and bp.Accent or bp.TextDim})
                     end
-                    tabbox._activeSubtab = sname
-                end
-                function tabbox:AddTab(stname: string)
-                    local b = create("TextButton", {
+                    cz._activeSubtab = cA
+end                
+function cz:AddTab(cB)
+                    local cC = (bv("TextButton", {
                         Size = UDim2.new(0,0,1,0), AutomaticSize = Enum.AutomaticSize.X,
                         BackgroundTransparency = 1, AutoButtonColor = false,
-                        Text = stname, Font = Enum.Font.GothamSemibold, TextSize = 13,
-                        TextColor3 = THEME.TextDim, Parent = tabRow,
-                    }) :: TextButton
-                    local stPage = create("Frame", {
+                        Text = cB, Font = Enum.Font.GothamSemibold, TextSize = 13,
+                        TextColor3 = bp.TextDim, Parent = cx,
+                    }) )                    
+local cD = bv("Frame", {
                         Size = UDim2.new(1,0,0,0), AutomaticSize = Enum.AutomaticSize.Y,
-                        BackgroundTransparency = 1, Visible = false, Parent = bodyArea,
+                        BackgroundTransparency = 1, Visible = false, Parent = cy,
                     })
-                    vlayout(stPage, 6, Enum.HorizontalAlignment.Center)
-                    local subtab = JBUI._makeContainer(outer, stPage, name)
-                    subtab._btn = b; subtab._page = stPage
-                    tabbox._subTabs[stname] = subtab
-                    b.MouseButton1Click:Connect(function() selectSubTab(stname) end)
-                    if tabbox._activeSubtab == nil then selectSubTab(stname) end
-                    return subtab
+                    bz(cD, 6, Enum.HorizontalAlignment.Center)
+                    local cE = bm._makeContainer(cw, cD, ck)
+                    cE._btn = cC; cE._page = cD
+                    cz._subTabs[cB] = cE
+                    cC.MouseButton1Click:Connect(function() cA(cB) end)
+                    if cz._activeSubtab == nil then cA(cB) end
+                    return cE
                 end
-                return tabbox
-            end
-            function tab:AddLeftGroupbox(gn: string, _i: string?)  return makeGroupHeader(left,  gn) end
-            function tab:AddRightGroupbox(gn: string, _i: string?) return makeGroupHeader(right, gn) end
-            function tab:AddLeftGroupBox(gn: string, _i: string?)  return makeGroupHeader(left,  gn) end
-            function tab:AddRightGroupBox(gn: string, _i: string?) return makeGroupHeader(right, gn) end
-            function tab:AddLeftTabbox()  return makeTabbox(left)  end
-            function tab:AddRightTabbox() return makeTabbox(right) end
+                return cz
+end            
+function ct:AddLeftGroupbox(cw, cx)  return cu(cr,  cw) end
+            function ct:AddRightGroupbox(cw, cx) return cu(cs, cw) end
+            function ct:AddLeftGroupBox(cw, cx)  return cu(cr,  cw) end
+            function ct:AddRightGroupBox(cw, cx) return cu(cs, cw) end
+            function ct:AddLeftTabbox()  return cv(cr)  end
+            function ct:AddRightTabbox() return cv(cs) end
 
-            Window.Tabs[name] = tab
-            btn.MouseButton1Click:Connect(function() selectTab(name) end)
-            if not Window._activeTab then task.defer(function() selectTab(name) end) end
-            return tab
+            ch.Tabs[ck] = ct
+            cn.MouseButton1Click:Connect(function() cj(ck) end)
+            if not ch._activeTab then task.defer(function() cj(ck) end) end
+            return ct
         end
 
-        local minimized = false
-        minBtn.MouseButton1Click:Connect(function()
-            minimized = not minimized
-            body.Visible = not minimized; footer.Visible = not minimized
-            tween(root,   {Size = minimized and UDim2.new(0,800,0,44) or UDim2.new(0,800,0,520)}, MEDIUM)
-            tween(shadow, {ImageTransparency = minimized and 0.75 or 0.5})
+        local ck = false
+        cc.MouseButton1Click:Connect(function()
+            ck = not ck
+            b4.Visible = not ck; b9.Visible = not ck
+            bA(bR,   {Size = ck and UDim2.new(0,800,0,44) or UDim2.new(0,800,0,520)}, _)
+            bA(bP, {ImageTransparency = ck and 0.75 or 0.5})
         end)
 
-        Library:_track(UserInputService.InputBegan:Connect(function(input, gpe)
-            if gpe then return end
-            local kc = Library.ToggleKeybind and Library.ToggleKeybind.Value
-            if kc and input.KeyCode == Enum.KeyCode[tostring(kc)] then gui.Enabled = not gui.Enabled
-            elseif (not kc) and input.KeyCode == Library.MinimizeKey then gui.Enabled = not gui.Enabled end
+        bE:_track(e.InputBegan:Connect(function(cl, cm)
+            if cm then return end
+            local cn = bE.ToggleKeybind and bE.ToggleKeybind.Value
+            if cn and cl.KeyCode == Enum.KeyCode[tostring(cn)] then bM.Enabled = not bM.Enabled
+            elseif (not cn) and cl.KeyCode == bE.MinimizeKey then bM.Enabled = not bM.Enabled end
         end))
 
-        parentToBest(gui)
-        return Window
+        bD(bM)
+        return ch
     end
 
-    local Container: any = {}
-    Container.__index = Container
-    function JBUI._makeContainer(_outer: Instance, body: Instance, tabName: string?)
-        return setmetatable({ _body = body, _tab = tabName }, Container)
+    local bJ= {}
+    bJ.__index = bJ
+    function bm._makeContainer(bK, bL, bM)
+        return setmetatable({ _body = bL, _tab = bM }, bJ)
     end
-
-    local function registerSearchable(container, row, label)
-        if container and container._tab then
-            table.insert(Library._searchable, { label = label or "", row = row, parentTab = container._tab })
+local bK=function(
+bK, bL, bM)        
+if bK and bK._tab then
+            table.insert(bE._searchable, { label = bM or "", row = bL, parentTab = bK._tab })
         end
-    end
-    local function rowFrame(parent: Instance, h: number?)
-        return create("Frame", { Size = UDim2.new(1,0,0, h or 26), BackgroundTransparency = 1, Parent = parent })
-    end
-
-    function Container:AddToggle(idx: string, info: {[string]: any})
-        info = info or {}
-        local row = rowFrame(self._body, 28)
-        local lbl = create("TextLabel", {
+end local bL=function(
+bL, bM)        
+return bv("Frame", { Size = UDim2.new(1,0,0, bM or 26), BackgroundTransparency = 1, Parent = bL })
+end
+    
+function bJ:AddToggle(bM, bN)
+        bN = bN or {}
+        local bO = bL(self._body, 28)
+        local bP = bv("TextLabel", {
             Position = UDim2.new(0,4,0,0), Size = UDim2.new(1,-56,1,0),
-            BackgroundTransparency = 1, Text = info.Text or idx,
+            BackgroundTransparency = 1, Text = bN.Text or bM,
             Font = Enum.Font.Gotham, TextSize = 13,
-            TextColor3 = info.Risky and THEME.Risky or THEME.Text,
-            TextXAlignment = Enum.TextXAlignment.Left, Parent = row,
+            TextColor3 = bN.Risky and bp.Risky or bp.Text,
+            TextXAlignment = Enum.TextXAlignment.Left, Parent = bO,
         })
-        local track = create("TextButton", {
+        local bQ = (bv("TextButton", {
             AnchorPoint = Vector2.new(1,0.5), Position = UDim2.new(1,-4,0.5,0),
             Size = UDim2.new(0,40,0,20),
-            BackgroundColor3 = info.Default and THEME.Accent or THEME.ToggleOff,
-            BorderSizePixel = 0, AutoButtonColor = false, Text = "", Parent = row,
-        }) :: TextButton
-        corner(track, 10)
-        local trackGrad = accentGradient(track)
-        ;(trackGrad :: any).Transparency = NumberSequence.new(info.Default and 0 or 1)
-        local trackGlow = stroke(track, THEME.Accent, 1.5, info.Default and 0.4 or 1)
-        local knob = create("Frame", {
-            AnchorPoint = Vector2.new(0,0.5), Position = UDim2.new(0, info.Default and 22 or 2, 0.5, 0),
+            BackgroundColor3 = bN.Default and bp.Accent or bp.ToggleOff,
+            BorderSizePixel = 0, AutoButtonColor = false, Text = "", Parent = bO,
+        }) )        
+bw(bQ, 10)
+        local bR = bB(bQ)
+        ;(bR ).Transparency = NumberSequence.new(bN.Default and 0 or 1)
+        local bS = bx(bQ, bp.Accent, 1.5, bN.Default and 0.4 or 1)
+        local bT = bv("Frame", {
+            AnchorPoint = Vector2.new(0,0.5), Position = UDim2.new(0, bN.Default and 22 or 2, 0.5, 0),
             Size = UDim2.new(0,16,0,16), BackgroundColor3 = Color3.new(1,1,1),
-            BorderSizePixel = 0, Parent = track,
+            BorderSizePixel = 0, Parent = bQ,
         })
-        corner(knob, 8)
-        local obj: any = { Value = info.Default or false, _changed = {}, _row = row, _label = lbl, Type = "Toggle" }
-        function obj:OnChanged(fn) table.insert(self._changed, fn) end
-        function obj:SetText(t) lbl.Text = t end
-        function obj:SetValue(v)
-            self.Value = v and true or false
-            tween(track, {BackgroundColor3 = self.Value and THEME.Accent or THEME.ToggleOff})
-            tween(knob,  {Position         = UDim2.new(0, self.Value and 22 or 2, 0.5, 0)})
-            tween(trackGlow, {Transparency = self.Value and 0.4 or 1})
-            ;(trackGrad :: any).Transparency = NumberSequence.new(self.Value and 0 or 1)
-            if info.Callback then pcall(info.Callback, self.Value) end
-            for _, fn in ipairs(self._changed) do pcall(fn, self.Value) end
+        bw(bT, 8)
+        local bU= { Value = bN.Default or false, _changed = {}, _row = bO, _label = bP, Type = "Toggle" }
+        function bU:OnChanged(bV) table.insert(self._changed, bV) end
+        function bU:SetText(bV) bP.Text = bV end
+        function bU:SetValue(bV)
+            self.Value = bV and true or false
+            bA(bQ, {BackgroundColor3 = self.Value and bp.Accent or bp.ToggleOff})
+            bA(bT,  {Position         = UDim2.new(0, self.Value and 22 or 2, 0.5, 0)})
+            bA(bS, {Transparency = self.Value and 0.4 or 1})
+            ;(bR ).Transparency = NumberSequence.new(self.Value and 0 or 1)
+            if bN.Callback then pcall(bN.Callback, self.Value) end
+            for bW, bX in ipairs(self._changed) do pcall(bX, self.Value) end
         end
-        function obj:AddKeyPicker(kpIdx, kpInfo)   return Container.AddKeyPicker({_body = row},   kpIdx, kpInfo, lbl) end
-        function obj:AddColorPicker(cpIdx, cpInfo) return Container.AddColorPicker({_body = row}, cpIdx, cpInfo, lbl) end
-        track.MouseButton1Click:Connect(function() obj:SetValue(not obj.Value) end)
-        create("TextButton", {
-            Size = UDim2.new(1,-50,1,0), BackgroundTransparency = 1, Text = "", Parent = row,
-        }).MouseButton1Click:Connect(function() obj:SetValue(not obj.Value) end)
-        Library.Toggles[idx] = obj
-        registerSearchable(self, row, info.Text or idx)
-        return obj
+        function bU:AddKeyPicker(bV, bW)   return bJ.AddKeyPicker({_body = bO},   bV, bW, bP) end
+        function bU:AddColorPicker(bV, bW) return bJ.AddColorPicker({_body = bO}, bV, bW, bP) end
+        bQ.MouseButton1Click:Connect(function() bU:SetValue(not bU.Value) end)
+        bv("TextButton", {
+            Size = UDim2.new(1,-50,1,0), BackgroundTransparency = 1, Text = "", Parent = bO,
+        }).MouseButton1Click:Connect(function() bU:SetValue(not bU.Value) end)
+        bE.Toggles[bM] = bU
+        bK(self, bO, bN.Text or bM)
+        return bU
     end
 
-    function Container:AddSlider(idx: string, info: {[string]: any})
-        info = info or {}
-        local mn, mx = info.Min or 0, info.Max or 100
-        local rounding = info.Rounding or 0
-        local function snap(v) local m = 10 ^ rounding; return math.floor(v * m + 0.5) / m end
-        local row = rowFrame(self._body, 42)
-        create("TextLabel", {
+    function bJ:AddSlider(bM, bN)
+        bN = bN or {}
+        local bO, bP = bN.Min or 0, bN.Max or 100
+        local bQ = bN.Rounding or 0
+local bR=function(bR)local bS = 10 ^ bQ; return math.floor(bR * bS + 0.5) / bS end        
+local bS = bL(self._body, 42)
+        bv("TextLabel", {
             Size = UDim2.new(1,-80,0,18), Position = UDim2.new(0,4,0,0),
-            BackgroundTransparency = 1, Text = info.Text or idx,
-            Font = Enum.Font.Gotham, TextSize = 13, TextColor3 = THEME.Text,
-            TextXAlignment = Enum.TextXAlignment.Left, Parent = row,
+            BackgroundTransparency = 1, Text = bN.Text or bM,
+            Font = Enum.Font.Gotham, TextSize = 13, TextColor3 = bp.Text,
+            TextXAlignment = Enum.TextXAlignment.Left, Parent = bS,
         })
-        local valLbl = create("TextLabel", {
+        local bT = bv("TextLabel", {
             AnchorPoint = Vector2.new(1,0), Position = UDim2.new(1,-4,0,0),
             Size = UDim2.new(0,80,0,18), BackgroundTransparency = 1,
-            Text = tostring(snap(info.Default or mn)) .. (info.Suffix or ""),
-            Font = Enum.Font.GothamSemibold, TextSize = 13, TextColor3 = THEME.Accent,
-            TextXAlignment = Enum.TextXAlignment.Right, Parent = row,
+            Text = tostring(bR(bN.Default or bO)) .. (bN.Suffix or ""),
+            Font = Enum.Font.GothamSemibold, TextSize = 13, TextColor3 = bp.Accent,
+            TextXAlignment = Enum.TextXAlignment.Right, Parent = bS,
         })
-        local track = create("Frame", {
+        local bU = bv("Frame", {
             Position = UDim2.new(0,4,0,24), Size = UDim2.new(1,-8,0,8),
-            BackgroundColor3 = THEME.Surface, BorderSizePixel = 0, Parent = row,
+            BackgroundColor3 = bp.Surface, BorderSizePixel = 0, Parent = bS,
         })
-        corner(track, 4); stroke(track, THEME.Border, 1, 0.5)
-        local fill = create("Frame", { Size = UDim2.new(0,0,1,0), BackgroundColor3 = THEME.Accent, BorderSizePixel = 0, Parent = track })
-        corner(fill, 4); accentGradient(fill)
-        local handle = create("Frame", {
+        bw(bU, 4); bx(bU, bp.Border, 1, 0.5)
+        local bV = bv("Frame", { Size = UDim2.new(0,0,1,0), BackgroundColor3 = bp.Accent, BorderSizePixel = 0, Parent = bU })
+        bw(bV, 4); bB(bV)
+        local bW = bv("Frame", {
             AnchorPoint = Vector2.new(0.5,0.5), Position = UDim2.new(0,0,0.5,0),
             Size = UDim2.new(0,16,0,16), BackgroundColor3 = Color3.new(1,1,1),
-            BorderSizePixel = 0, ZIndex = 3, Parent = track,
+            BorderSizePixel = 0, ZIndex = 3, Parent = bU,
         })
-        corner(handle, 8); stroke(handle, THEME.AccentBright, 1.5, 0.1)
+        bw(bW, 8); bx(bW, bp.AccentBright, 1.5, 0.1)
 
-        local obj: any = { Value = info.Default or mn, _changed = {}, Type = "Slider", Min = mn, Max = mx }
-        local function refresh()
-            local frac = (obj.Value - mn) / math.max(mx - mn, 0.0001)
-            local c = math.clamp(frac, 0, 1)
-            fill.Size = UDim2.new(c, 0, 1, 0)
-            handle.Position = UDim2.new(c, 0, 0.5, 0)
-            valLbl.Text = tostring(snap(obj.Value)) .. (info.Suffix or "")
+        local bX= { Value = bN.Default or bO, _changed = {}, Type = "Slider", Min = bO, Max = bP }
+local bY=function()            
+local bY = (bX.Value - bO) / math.max(bP - bO, 0.0001)
+            local bZ = math.clamp(bY, 0, 1)
+            bV.Size = UDim2.new(bZ, 0, 1, 0)
+            bW.Position = UDim2.new(bZ, 0, 0.5, 0)
+            bT.Text = tostring(bR(bX.Value)) .. (bN.Suffix or "")
+end        
+function bX:OnChanged(bZ) table.insert(self._changed, bZ) end
+        function bX:SetValue(bZ)
+            bZ = math.clamp(bR(bZ), bO, bP); self.Value = bZ; bY()
+            if bN.Callback then pcall(bN.Callback, bZ) end
+            for b_, b0 in ipairs(self._changed) do pcall(b0, bZ) end
         end
-        function obj:OnChanged(fn) table.insert(self._changed, fn) end
-        function obj:SetValue(v)
-            v = math.clamp(snap(v), mn, mx); self.Value = v; refresh()
-            if info.Callback then pcall(info.Callback, v) end
-            for _, fn in ipairs(self._changed) do pcall(fn, v) end
-        end
-        local sliding = false
-        track.InputBegan:Connect(function(input)
-            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                sliding = true
-                local abs, sz = track.AbsolutePosition, track.AbsoluteSize
-                obj:SetValue(mn + ((input.Position.X - abs.X) / sz.X) * (mx - mn))
+        local bZ = false
+        bU.InputBegan:Connect(function(b_)
+            if b_.UserInputType == Enum.UserInputType.MouseButton1 or b_.UserInputType == Enum.UserInputType.Touch then
+                bZ = true
+                local b0, b1 = bU.AbsolutePosition, bU.AbsoluteSize
+                bX:SetValue(bO + ((b_.Position.X - b0.X) / b1.X) * (bP - bO))
             end
         end)
-        track.InputEnded:Connect(function(input)
-            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                sliding = false
+        bU.InputEnded:Connect(function(b_)
+            if b_.UserInputType == Enum.UserInputType.MouseButton1 or b_.UserInputType == Enum.UserInputType.Touch then
+                bZ = false
             end
         end)
-        Library:_track(UserInputService.InputChanged:Connect(function(input)
-            if sliding and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-                local abs, sz = track.AbsolutePosition, track.AbsoluteSize
-                obj:SetValue(mn + ((input.Position.X - abs.X) / sz.X) * (mx - mn))
+        bE:_track(e.InputChanged:Connect(function(b_)
+            if bZ and (b_.UserInputType == Enum.UserInputType.MouseMovement or b_.UserInputType == Enum.UserInputType.Touch) then
+                local b0, b1 = bU.AbsolutePosition, bU.AbsoluteSize
+                bX:SetValue(bO + ((b_.Position.X - b0.X) / b1.X) * (bP - bO))
             end
         end))
-        refresh()
-        Library.Options[idx] = obj
-        registerSearchable(self, row, info.Text or idx)
-        return obj
+        bY()
+        bE.Options[bM] = bX
+        bK(self, bS, bN.Text or bM)
+        return bX
     end
 
-    function Container:AddDropdown(idx: string, info: {[string]: any})
-        info = info or {}
-        local multi = info.Multi == true
-        local values: {string} = info.Values or {}
-        local row = rowFrame(self._body, 46)
-        create("TextLabel", {
+    function bJ:AddDropdown(bM, bN)
+        bN = bN or {}
+        local bO = bN.Multi == true
+        local bP= bN.Values or {}
+        local bQ = bL(self._body, 46)
+        bv("TextLabel", {
             Position = UDim2.new(0,4,0,0), Size = UDim2.new(1,-8,0,16),
-            BackgroundTransparency = 1, Text = info.Text or idx,
-            Font = Enum.Font.Gotham, TextSize = 12, TextColor3 = THEME.TextDim,
-            TextXAlignment = Enum.TextXAlignment.Left, Parent = row,
+            BackgroundTransparency = 1, Text = bN.Text or bM,
+            Font = Enum.Font.Gotham, TextSize = 12, TextColor3 = bp.TextDim,
+            TextXAlignment = Enum.TextXAlignment.Left, Parent = bQ,
         })
-        local btn = create("TextButton", {
+        local bR = (bv("TextButton", {
             Position = UDim2.new(0,4,0,20), Size = UDim2.new(1,-8,0,24),
-            BackgroundColor3 = THEME.Surface, BorderSizePixel = 0,
-            Text = "", AutoButtonColor = false, Parent = row,
-        }) :: TextButton
-        corner(btn, 6); stroke(btn, THEME.Border, 1, 0.4)
-        local valLbl = create("TextLabel", {
+            BackgroundColor3 = bp.Surface, BorderSizePixel = 0,
+            Text = "", AutoButtonColor = false, Parent = bQ,
+        }) )        
+bw(bR, 6); bx(bR, bp.Border, 1, 0.4)
+        local bS = bv("TextLabel", {
             Size = UDim2.new(1,-22,1,0), Position = UDim2.new(0,12,0,0),
-            BackgroundTransparency = 1, Font = Enum.Font.Gotham, TextSize = 12, TextColor3 = THEME.Text,
-            TextXAlignment = Enum.TextXAlignment.Center, Parent = btn,
+            BackgroundTransparency = 1, Font = Enum.Font.Gotham, TextSize = 12, TextColor3 = bp.Text,
+            TextXAlignment = Enum.TextXAlignment.Center, Parent = bR,
         })
-        create("TextLabel", {
+        bv("TextLabel", {
             AnchorPoint = Vector2.new(1,0.5), Position = UDim2.new(1,-8,0.5,0),
             Size = UDim2.new(0,16,0,16), BackgroundTransparency = 1, Text = "v",
-            Font = Enum.Font.GothamBold, TextSize = 12, TextColor3 = THEME.TextDim, Parent = btn,
+            Font = Enum.Font.GothamBold, TextSize = 12, TextColor3 = bp.TextDim, Parent = bR,
         })
-        local obj: any = { Type = "Dropdown", _changed = {}, Values = values, Multi = multi }
-        if multi then obj.Value = (type(info.Default) == "table") and info.Default or {}
-        else obj.Value = info.Default or (values[1] or "") end
-        local function display()
-            if multi then
-                local picked = {}
-                for k, v in pairs(obj.Value) do if v then table.insert(picked, k) end end
-                if #picked == 0 then valLbl.Text = "---" else valLbl.Text = table.concat(picked, ", ") end
-            else valLbl.Text = tostring(obj.Value) end
+        local bT= { Type = "Dropdown", _changed = {}, Values = bP, Multi = bO }
+        if bO then bT.Value = (type(bN.Default) == "table") and bN.Default or {}
+        else bT.Value = bN.Default or (bP[1] or "") end
+local bU=function()            
+if bO then
+                local bU = {}
+                for bV, bW in pairs(bT.Value) do if bW then table.insert(bU, bV) end end
+                if #bU == 0 then bS.Text = "---" else bS.Text = table.concat(bU, ", ") end
+            else bS.Text = tostring(bT.Value) end
+end        
+bU()
+        function bT:OnChanged(bV) table.insert(self._changed, bV) end
+        function bT:SetValue(bV)
+            self.Value = bV; bU()
+            if bN.Callback then pcall(bN.Callback, bV) end
+            for bW, bX in ipairs(self._changed) do pcall(bX, bV) end
         end
-        display()
-        function obj:OnChanged(fn) table.insert(self._changed, fn) end
-        function obj:SetValue(v)
-            self.Value = v; display()
-            if info.Callback then pcall(info.Callback, v) end
-            for _, fn in ipairs(self._changed) do pcall(fn, v) end
+        function bT:SetValues(bV)
+            self.Values = bV or {}; bP = self.Values
+            if not bO and not table.find(bP, self.Value) then self.Value = bP[1] or "" end
+            bU()
         end
-        function obj:SetValues(nv)
-            self.Values = nv or {}; values = self.Values
-            if not multi and not table.find(values, self.Value) then self.Value = values[1] or "" end
-            display()
-        end
-        local popup
-        local function closePopup() if popup then popup:Destroy(); popup = nil end end
-        btn.MouseButton1Click:Connect(function()
-            if popup then closePopup() return end
-            popup = create("Frame", {
-                Size = UDim2.new(0, btn.AbsoluteSize.X, 0, math.min(#values * 24 + 8, 200)),
-                Position = UDim2.new(0, btn.AbsolutePosition.X, 0, btn.AbsolutePosition.Y + btn.AbsoluteSize.Y + 2),
-                BackgroundColor3 = THEME.Header, BorderSizePixel = 0, ZIndex = 50, Parent = Library._gui,
+        local bV
+local bW=function()if bV then bV:Destroy(); bV = nil end end        
+bR.MouseButton1Click:Connect(function()
+            if bV then bW() return end
+            bV = bv("Frame", {
+                Size = UDim2.new(0, bR.AbsoluteSize.X, 0, math.min(#bP * 24 + 8, 200)),
+                Position = UDim2.new(0, bR.AbsolutePosition.X, 0, bR.AbsolutePosition.Y + bR.AbsoluteSize.Y + 2),
+                BackgroundColor3 = bp.Header, BorderSizePixel = 0, ZIndex = 50, Parent = bE._gui,
             })
-            corner(popup :: any, 6); stroke(popup :: any, THEME.BorderLight, 1, 0.3)
-            local scroll = create("ScrollingFrame", {
+            bw(bV , 6); bx(bV , bp.BorderLight, 1, 0.3)
+            local bX = bv("ScrollingFrame", {
                 Size = UDim2.new(1,0,1,0), BackgroundTransparency = 1, BorderSizePixel = 0,
                 ScrollBarThickness = 3, ZIndex = 51,
-                CanvasSize = UDim2.new(0,0,0,0), AutomaticCanvasSize = Enum.AutomaticSize.Y, Parent = popup,
+                CanvasSize = UDim2.new(0,0,0,0), AutomaticCanvasSize = Enum.AutomaticSize.Y, Parent = bV,
             })
-            vlayout(scroll, 0, Enum.HorizontalAlignment.Center); pad(scroll, 3, 3)
-            for _, v in ipairs(values) do
-                local item = create("TextButton", {
-                    Size = UDim2.new(1,0,0,22), BackgroundColor3 = THEME.Surface, BorderSizePixel = 0,
-                    Text = tostring(v), Font = Enum.Font.Gotham, TextSize = 12,
-                    TextColor3 = THEME.Text, ZIndex = 52, AutoButtonColor = false, Parent = scroll,
-                }) :: TextButton
-                corner(item, 4)
-                if multi and obj.Value[v] then item.BackgroundColor3 = THEME.Accent end
-                item.MouseEnter:Connect(function() tween(item, {BackgroundColor3 = multi and obj.Value[v] and THEME.Accent or THEME.SurfaceAlt}) end)
-                item.MouseLeave:Connect(function() tween(item, {BackgroundColor3 = multi and obj.Value[v] and THEME.Accent or THEME.Surface}) end)
-                item.MouseButton1Click:Connect(function()
-                    if multi then
-                        obj.Value[v] = not obj.Value[v]
-                        item.BackgroundColor3 = obj.Value[v] and THEME.Accent or THEME.Surface
-                        display(); if info.Callback then pcall(info.Callback, obj.Value) end
-                        for _, fn in ipairs(obj._changed) do pcall(fn, obj.Value) end
-                    else obj:SetValue(v); closePopup() end
+            bz(bX, 0, Enum.HorizontalAlignment.Center); by(bX, 3, 3)
+            for bY, bZ in ipairs(bP) do
+                local b_ = (bv("TextButton", {
+                    Size = UDim2.new(1,0,0,22), BackgroundColor3 = bp.Surface, BorderSizePixel = 0,
+                    Text = tostring(bZ), Font = Enum.Font.Gotham, TextSize = 12,
+                    TextColor3 = bp.Text, ZIndex = 52, AutoButtonColor = false, Parent = bX,
+                }) )                
+bw(b_, 4)
+                if bO and bT.Value[bZ] then b_.BackgroundColor3 = bp.Accent end
+                b_.MouseEnter:Connect(function() bA(b_, {BackgroundColor3 = bO and bT.Value[bZ] and bp.Accent or bp.SurfaceAlt}) end)
+                b_.MouseLeave:Connect(function() bA(b_, {BackgroundColor3 = bO and bT.Value[bZ] and bp.Accent or bp.Surface}) end)
+                b_.MouseButton1Click:Connect(function()
+                    if bO then
+                        bT.Value[bZ] = not bT.Value[bZ]
+                        b_.BackgroundColor3 = bT.Value[bZ] and bp.Accent or bp.Surface
+                        bU(); if bN.Callback then pcall(bN.Callback, bT.Value) end
+                        for b0, b1 in ipairs(bT._changed) do pcall(b1, bT.Value) end
+                    else bT:SetValue(bZ); bW() end
                 end)
             end
         end)
-        Library.Options[idx] = obj
-        registerSearchable(self, row, info.Text or idx)
-        return obj
+        bE.Options[bM] = bT
+        bK(self, bQ, bN.Text or bM)
+        return bT
     end
 
-    function Container:AddInput(idx: string, info: {[string]: any})
-        info = info or {}
-        local row = rowFrame(self._body, 46)
-        create("TextLabel", {
+    function bJ:AddInput(bM, bN)
+        bN = bN or {}
+        local bO = bL(self._body, 46)
+        bv("TextLabel", {
             Position = UDim2.new(0,4,0,0), Size = UDim2.new(1,-8,0,16),
-            BackgroundTransparency = 1, Text = info.Text or idx,
-            Font = Enum.Font.Gotham, TextSize = 12, TextColor3 = THEME.TextDim,
-            TextXAlignment = Enum.TextXAlignment.Left, Parent = row,
+            BackgroundTransparency = 1, Text = bN.Text or bM,
+            Font = Enum.Font.Gotham, TextSize = 12, TextColor3 = bp.TextDim,
+            TextXAlignment = Enum.TextXAlignment.Left, Parent = bO,
         })
-        local input = create("TextBox", {
+        local bP = (bv("TextBox", {
             Position = UDim2.new(0,4,0,20), Size = UDim2.new(1,-8,0,24),
-            BackgroundColor3 = THEME.Surface, BorderSizePixel = 0, ClearTextOnFocus = false,
-            Text = tostring(info.Default or ""), PlaceholderText = tostring(info.Placeholder or ""),
-            Font = Enum.Font.Gotham, TextSize = 12, TextColor3 = THEME.Text,
-            PlaceholderColor3 = THEME.TextDim, TextXAlignment = Enum.TextXAlignment.Left, Parent = row,
-        }) :: TextBox
-        corner(input, 6); stroke(input, THEME.Border, 1, 0.4)
-        create("UIPadding", { PaddingLeft = px(8), PaddingRight = px(8), Parent = input })
-        local obj: any = { Value = tostring(info.Default or ""), _changed = {}, Type = "Input" }
-        function obj:OnChanged(fn) table.insert(self._changed, fn) end
-        function obj:SetValue(v) self.Value = tostring(v); input.Text = self.Value end
-        input:GetPropertyChangedSignal("Text"):Connect(function()
-            if info.Numeric then input.Text = input.Text:gsub("[^%-%.%d]", "") end
-            obj.Value = input.Text
-            if info.Callback then pcall(info.Callback, obj.Value) end
-            for _, fn in ipairs(obj._changed) do pcall(fn, obj.Value) end
+            BackgroundColor3 = bp.Surface, BorderSizePixel = 0, ClearTextOnFocus = false,
+            Text = tostring(bN.Default or ""), PlaceholderText = tostring(bN.Placeholder or ""),
+            Font = Enum.Font.Gotham, TextSize = 12, TextColor3 = bp.Text,
+            PlaceholderColor3 = bp.TextDim, TextXAlignment = Enum.TextXAlignment.Left, Parent = bO,
+        }) )        
+bw(bP, 6); bx(bP, bp.Border, 1, 0.4)
+        bv("UIPadding", { PaddingLeft = bu(8), PaddingRight = bu(8), Parent = bP })
+        local bQ= { Value = tostring(bN.Default or ""), _changed = {}, Type = "Input" }
+        function bQ:OnChanged(bR) table.insert(self._changed, bR) end
+        function bQ:SetValue(bR) self.Value = tostring(bR); bP.Text = self.Value end
+        bP:GetPropertyChangedSignal("Text"):Connect(function()
+            if bN.Numeric then bP.Text = bP.Text:gsub("[^%-%.%d]", "") end
+            bQ.Value = bP.Text
+            if bN.Callback then pcall(bN.Callback, bQ.Value) end
+            for bR, bS in ipairs(bQ._changed) do pcall(bS, bQ.Value) end
         end)
-        Library.Options[idx] = obj
-        registerSearchable(self, row, info.Text or idx)
-        return obj
+        bE.Options[bM] = bQ
+        bK(self, bO, bN.Text or bM)
+        return bQ
     end
 
-    function Container:AddButton(info: {[string]: any})
-        info = info or {}
-        local row = rowFrame(self._body, 30)
-        local baseCol  = info.Risky and THEME.RiskyDim or THEME.Surface
-        local hoverCol = info.Risky and THEME.Risky    or THEME.SurfaceAlt
-        local b = create("TextButton", {
+    function bJ:AddButton(bM)
+        bM = bM or {}
+        local bN = bL(self._body, 30)
+        local bO  = bM.Risky and bp.RiskyDim or bp.Surface
+        local bP = bM.Risky and bp.Risky    or bp.SurfaceAlt
+        local bQ = (bv("TextButton", {
             Size = UDim2.new(1,-8,1,-2), Position = UDim2.new(0,4,0,0),
-            BackgroundColor3 = baseCol, BorderSizePixel = 0,
-            Text = info.Text or "Button", Font = Enum.Font.GothamSemibold, TextSize = 12,
-            TextColor3 = THEME.Text, AutoButtonColor = false, Parent = row,
-        }) :: TextButton
-        corner(b, 6); stroke(b, info.Risky and THEME.Risky or THEME.Border, 1, 0.4)
-        b.MouseEnter:Connect(function() tween(b, {BackgroundColor3 = hoverCol}) end)
-        b.MouseLeave:Connect(function() tween(b, {BackgroundColor3 = baseCol}) end)
-        local clicks = 0
-        b.MouseButton1Click:Connect(function()
-            if info.DoubleClick then
-                clicks += 1
-                if clicks == 1 then
-                    local original = b.Text; b.Text = "Click again to confirm"
-                    task.delay(2, function() if clicks == 1 then clicks = 0; b.Text = original end end)
+            BackgroundColor3 = bO, BorderSizePixel = 0,
+            Text = bM.Text or "Button", Font = Enum.Font.GothamSemibold, TextSize = 12,
+            TextColor3 = bp.Text, AutoButtonColor = false, Parent = bN,
+        }) )        
+bw(bQ, 6); bx(bQ, bM.Risky and bp.Risky or bp.Border, 1, 0.4)
+        bQ.MouseEnter:Connect(function() bA(bQ, {BackgroundColor3 = bP}) end)
+        bQ.MouseLeave:Connect(function() bA(bQ, {BackgroundColor3 = bO}) end)
+        local bR = 0
+        bQ.MouseButton1Click:Connect(function()
+            if bM.DoubleClick then
+                bR += 1
+                if bR == 1 then
+                    local bS = bQ.Text; bQ.Text = "Click again to confirm"
+                    task.delay(2, function() if bR == 1 then bR = 0; bQ.Text = bS end end)
                     return
                 end
-                clicks = 0
+                bR = 0
             end
-            if info.Func then pcall(info.Func) end
+            if bM.Func then pcall(bM.Func) end
         end)
-        local obj: any = { Type = "Button", _btn = b }
-        function obj:SetText(t) b.Text = t end
-        registerSearchable(self, row, info.Text or "")
-        return obj
+        local bS= { Type = "Button", _btn = bQ }
+        function bS:SetText(bT) bQ.Text = bT end
+        bK(self, bN, bM.Text or "")
+        return bS
     end
 
-    function Container:AddKeyPicker(idx: string, info: {[string]: any}, attachLabel: Instance?)
-        info = info or {}
-        local parent = self._body
-        local row
-        if attachLabel then
-            row = create("Frame", {
+    function bJ:AddKeyPicker(bM, bN, bO)
+        bN = bN or {}
+        local bP = self._body
+        local bQ
+        if bO then
+            bQ = bv("Frame", {
                 AnchorPoint = Vector2.new(1,0.5), Position = UDim2.new(1,-4,0.5,0),
-                Size = UDim2.new(0,64,0,18), BackgroundTransparency = 1, Parent = parent,
+                Size = UDim2.new(0,64,0,18), BackgroundTransparency = 1, Parent = bP,
             })
         else
-            row = rowFrame(parent, 26)
-            create("TextLabel", {
+            bQ = bL(bP, 26)
+            bv("TextLabel", {
                 Position = UDim2.new(0,4,0,0), Size = UDim2.new(1,-80,1,0),
-                BackgroundTransparency = 1, Text = info.Text or idx,
-                Font = Enum.Font.Gotham, TextSize = 13, TextColor3 = THEME.Text,
-                TextXAlignment = Enum.TextXAlignment.Left, Parent = row,
+                BackgroundTransparency = 1, Text = bN.Text or bM,
+                Font = Enum.Font.Gotham, TextSize = 13, TextColor3 = bp.Text,
+                TextXAlignment = Enum.TextXAlignment.Left, Parent = bQ,
             })
         end
-        local btn = create("TextButton", {
+        local bR = (bv("TextButton", {
             AnchorPoint = Vector2.new(1,0.5),
-            Position = attachLabel and UDim2.new(1,0,0.5,0) or UDim2.new(1,-4,0.5,0),
-            Size = UDim2.new(0,64,0,20), BackgroundColor3 = THEME.Surface, BorderSizePixel = 0,
-            Text = tostring(info.Default or "None"), Font = Enum.Font.GothamSemibold, TextSize = 11,
-            TextColor3 = THEME.Accent, AutoButtonColor = false, Parent = row,
-        }) :: TextButton
-        corner(btn, 4); stroke(btn, THEME.Border, 1, 0.4)
-        local obj: any = { Value = tostring(info.Default or "None"), Mode = info.Mode or "Toggle", _changed = {}, Type = "KeyPicker" }
-        function obj:OnChanged(fn) table.insert(self._changed, fn) end
-        function obj:SetValue(v) self.Value = tostring(v); btn.Text = self.Value end
-        local waiting = false
-        btn.MouseButton1Click:Connect(function() waiting = true; btn.Text = "..." end)
-        Library:_track(UserInputService.InputBegan:Connect(function(input, gpe)
-            if Library.Unloaded then return end
-            if waiting and input.UserInputType == Enum.UserInputType.Keyboard then
-                obj:SetValue(input.KeyCode.Name); waiting = false
-                if info.Callback then pcall(info.Callback, obj.Value) end
+            Position = bO and UDim2.new(1,0,0.5,0) or UDim2.new(1,-4,0.5,0),
+            Size = UDim2.new(0,64,0,20), BackgroundColor3 = bp.Surface, BorderSizePixel = 0,
+            Text = tostring(bN.Default or "None"), Font = Enum.Font.GothamSemibold, TextSize = 11,
+            TextColor3 = bp.Accent, AutoButtonColor = false, Parent = bQ,
+        }) )        
+bw(bR, 4); bx(bR, bp.Border, 1, 0.4)
+        local bS= { Value = tostring(bN.Default or "None"), Mode = bN.Mode or "Toggle", _changed = {}, Type = "KeyPicker" }
+        function bS:OnChanged(bT) table.insert(self._changed, bT) end
+        function bS:SetValue(bT) self.Value = tostring(bT); bR.Text = self.Value end
+        local bT = false
+        bR.MouseButton1Click:Connect(function() bT = true; bR.Text = "..." end)
+        bE:_track(e.InputBegan:Connect(function(bU, bV)
+            if bE.Unloaded then return end
+            if bT and bU.UserInputType == Enum.UserInputType.Keyboard then
+                bS:SetValue(bU.KeyCode.Name); bT = false
+                if bN.Callback then pcall(bN.Callback, bS.Value) end
                 return
             end
-            if (not gpe) and input.UserInputType == Enum.UserInputType.Keyboard
-                and input.KeyCode.Name == obj.Value then
-                if info.Callback then pcall(info.Callback) end
+            if (not bV) and bU.UserInputType == Enum.UserInputType.Keyboard
+                and bU.KeyCode.Name == bS.Value then
+                if bN.Callback then pcall(bN.Callback) end
             end
         end))
-        Library.Options[idx] = obj
-        return obj
+        bE.Options[bM] = bS
+        return bS
     end
 
-    function Container:AddColorPicker(idx: string, info: {[string]: any}, attachLabel: Instance?)
-        info = info or {}
-        local parent = self._body
-        local row
-        if attachLabel then
-            row = create("Frame", {
+    function bJ:AddColorPicker(bM, bN, bO)
+        bN = bN or {}
+        local bP = self._body
+        local bQ
+        if bO then
+            bQ = bv("Frame", {
                 AnchorPoint = Vector2.new(1,0.5), Position = UDim2.new(1,-4,0.5,0),
-                Size = UDim2.new(0,28,0,16), BackgroundTransparency = 1, Parent = parent,
+                Size = UDim2.new(0,28,0,16), BackgroundTransparency = 1, Parent = bP,
             })
         else
-            row = rowFrame(parent, 26)
-            create("TextLabel", {
+            bQ = bL(bP, 26)
+            bv("TextLabel", {
                 Position = UDim2.new(0,4,0,0), Size = UDim2.new(1,-44,1,0),
-                BackgroundTransparency = 1, Text = info.Title or idx,
-                Font = Enum.Font.Gotham, TextSize = 13, TextColor3 = THEME.Text,
-                TextXAlignment = Enum.TextXAlignment.Left, Parent = row,
+                BackgroundTransparency = 1, Text = bN.Title or bM,
+                Font = Enum.Font.Gotham, TextSize = 13, TextColor3 = bp.Text,
+                TextXAlignment = Enum.TextXAlignment.Left, Parent = bQ,
             })
         end
-        local swatch = create("TextButton", {
+        local bR = (bv("TextButton", {
             AnchorPoint = Vector2.new(1,0.5),
-            Position = attachLabel and UDim2.new(1,0,0.5,0) or UDim2.new(1,-4,0.5,0),
+            Position = bO and UDim2.new(1,0,0.5,0) or UDim2.new(1,-4,0.5,0),
             Size = UDim2.new(0,28,0,16), Text = "", BorderSizePixel = 0,
-            BackgroundColor3 = info.Default or Color3.new(1,1,1), AutoButtonColor = false, Parent = row,
-        }) :: TextButton
-        corner(swatch, 4); stroke(swatch, THEME.BorderLight, 1, 0.2)
-        local obj: any = { Value = info.Default or Color3.new(1,1,1), _changed = {}, Type = "ColorPicker" }
-        function obj:OnChanged(fn) table.insert(self._changed, fn) end
-        function obj:SetValueRGB(c)
-            self.Value = c; swatch.BackgroundColor3 = c
-            if info.Callback then pcall(info.Callback, c) end
-            for _, fn in ipairs(self._changed) do pcall(fn, c) end
+            BackgroundColor3 = bN.Default or Color3.new(1,1,1), AutoButtonColor = false, Parent = bQ,
+        }) )        
+bw(bR, 4); bx(bR, bp.BorderLight, 1, 0.2)
+        local bS= { Value = bN.Default or Color3.new(1,1,1), _changed = {}, Type = "ColorPicker" }
+        function bS:OnChanged(bT) table.insert(self._changed, bT) end
+        function bS:SetValueRGB(bT)
+            self.Value = bT; bR.BackgroundColor3 = bT
+            if bN.Callback then pcall(bN.Callback, bT) end
+            for bU, bV in ipairs(self._changed) do pcall(bV, bT) end
         end
-        function obj:SetValue(c) self:SetValueRGB(c) end
-        local popup
-        local function close() if popup then popup:Destroy(); popup = nil end end
-        swatch.MouseButton1Click:Connect(function()
-            if popup then close() return end
-            popup = create("Frame", {
+        function bS:SetValue(bT) self:SetValueRGB(bT) end
+        local bT
+local bU=function()if bT then bT:Destroy(); bT = nil end end        
+bR.MouseButton1Click:Connect(function()
+            if bT then bU() return end
+            bT = bv("Frame", {
                 Size = UDim2.new(0,220,0,120),
-                Position = UDim2.new(0, swatch.AbsolutePosition.X - 220, 0, swatch.AbsolutePosition.Y + swatch.AbsoluteSize.Y + 4),
-                BackgroundColor3 = THEME.Header, BorderSizePixel = 0, ZIndex = 60, Parent = Library._gui,
+                Position = UDim2.new(0, bR.AbsolutePosition.X - 220, 0, bR.AbsolutePosition.Y + bR.AbsoluteSize.Y + 4),
+                BackgroundColor3 = bp.Header, BorderSizePixel = 0, ZIndex = 60, Parent = bE._gui,
             })
-            corner(popup :: any, 8); stroke(popup :: any, THEME.BorderLight, 1, 0.3)
-            pad(popup :: any, 10); vlayout(popup :: any, 6, Enum.HorizontalAlignment.Center)
-            local function chan(label: string, get, set)
-                local rr = create("Frame", { Size = UDim2.new(1,0,0,18), BackgroundTransparency = 1, Parent = popup, ZIndex = 61 })
-                create("TextLabel", {
-                    Size = UDim2.new(0,14,1,0), BackgroundTransparency = 1, Text = label, ZIndex = 61,
-                    Font = Enum.Font.GothamBold, TextSize = 12, TextColor3 = THEME.Text, Parent = rr,
+            bw(bT , 8); bx(bT , bp.BorderLight, 1, 0.3)
+            by(bT , 10); bz(bT , 6, Enum.HorizontalAlignment.Center)
+local bV=function(bV, bW, bX)                
+local bY = bv("Frame", { Size = UDim2.new(1,0,0,18), BackgroundTransparency = 1, Parent = bT, ZIndex = 61 })
+                bv("TextLabel", {
+                    Size = UDim2.new(0,14,1,0), BackgroundTransparency = 1, Text = bV, ZIndex = 61,
+                    Font = Enum.Font.GothamBold, TextSize = 12, TextColor3 = bp.Text, Parent = bY,
                 })
-                local track = create("Frame", {
+                local bZ = bv("Frame", {
                     Position = UDim2.new(0,18,0.5,-3), Size = UDim2.new(1,-50,0,6),
-                    BackgroundColor3 = THEME.Surface, BorderSizePixel = 0, ZIndex = 61, Parent = rr,
+                    BackgroundColor3 = bp.Surface, BorderSizePixel = 0, ZIndex = 61, Parent = bY,
                 })
-                corner(track :: any, 3)
-                local fill = create("Frame", { Size = UDim2.new(get(),0,1,0), BackgroundColor3 = THEME.Accent, BorderSizePixel = 0, ZIndex = 62, Parent = track })
-                corner(fill :: any, 3)
-                local txt = create("TextLabel", {
+                bw(bZ , 3)
+                local b_ = bv("Frame", { Size = UDim2.new(bW(),0,1,0), BackgroundColor3 = bp.Accent, BorderSizePixel = 0, ZIndex = 62, Parent = bZ })
+                bw(b_ , 3)
+                local b0 = bv("TextLabel", {
                     AnchorPoint = Vector2.new(1,0.5), Position = UDim2.new(1,0,0.5,0),
                     Size = UDim2.new(0,28,1,0), BackgroundTransparency = 1, ZIndex = 61,
-                    Text = tostring(math.floor(get() * 255)), Font = Enum.Font.Gotham, TextSize = 11, TextColor3 = THEME.TextDim, Parent = rr,
+                    Text = tostring(math.floor(bW() * 255)), Font = Enum.Font.Gotham, TextSize = 11, TextColor3 = bp.TextDim, Parent = bY,
                 })
-                local function update(input)
-                    local frac = math.clamp((input.Position.X - track.AbsolutePosition.X) / track.AbsoluteSize.X, 0, 1)
-                    fill.Size = UDim2.new(frac, 0, 1, 0); txt.Text = tostring(math.floor(frac * 255)); set(frac)
-                end
-                local d = false
-                track.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then d = true; update(input) end end)
-                track.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then d = false end end)
-                Library:_track(UserInputService.InputChanged:Connect(function(input) if d and input.UserInputType == Enum.UserInputType.MouseMovement then update(input) end end))
-            end
-            chan("R", function() return obj.Value.R end, function(v) obj:SetValueRGB(Color3.new(v, obj.Value.G, obj.Value.B)) end)
-            chan("G", function() return obj.Value.G end, function(v) obj:SetValueRGB(Color3.new(obj.Value.R, v, obj.Value.B)) end)
-            chan("B", function() return obj.Value.B end, function(v) obj:SetValueRGB(Color3.new(obj.Value.R, obj.Value.G, v)) end)
+local b1=function(b1)                    
+local b2 = math.clamp((b1.Position.X - bZ.AbsolutePosition.X) / bZ.AbsoluteSize.X, 0, 1)
+                    b_.Size = UDim2.new(b2, 0, 1, 0); b0.Text = tostring(math.floor(b2 * 255)); bX(b2)
+end                
+local b2 = false
+                bZ.InputBegan:Connect(function(b3) if b3.UserInputType == Enum.UserInputType.MouseButton1 then b2 = true; b1(b3) end end)
+                bZ.InputEnded:Connect(function(b3) if b3.UserInputType == Enum.UserInputType.MouseButton1 then b2 = false end end)
+                bE:_track(e.InputChanged:Connect(function(b3) if b2 and b3.UserInputType == Enum.UserInputType.MouseMovement then b1(b3) end end))
+end            
+bV("R", function() return bS.Value.R end, function(bW) bS:SetValueRGB(Color3.new(bW, bS.Value.G, bS.Value.B)) end)
+            bV("G", function() return bS.Value.G end, function(bW) bS:SetValueRGB(Color3.new(bS.Value.R, bW, bS.Value.B)) end)
+            bV("B", function() return bS.Value.B end, function(bW) bS:SetValueRGB(Color3.new(bS.Value.R, bS.Value.G, bW)) end)
         end)
-        Library.Options[idx] = obj
-        return obj
+        bE.Options[bM] = bS
+        return bS
     end
 
-    function Container:AddLabel(text: string, doubleLine: boolean?, optionsId: string?)
-        local row = rowFrame(self._body, doubleLine and 34 or 20)
-        local lbl = create("TextLabel", {
+    function bJ:AddLabel(bM, bN, bO)
+        local bP = bL(self._body, bN and 34 or 20)
+        local bQ = bv("TextLabel", {
             Position = UDim2.new(0,4,0,0), Size = UDim2.new(1,-72,1,0),
-            BackgroundTransparency = 1, Text = text or "",
-            Font = Enum.Font.Gotham, TextSize = 12, TextColor3 = THEME.TextDim,
-            TextXAlignment = Enum.TextXAlignment.Left, TextWrapped = doubleLine or false, Parent = row,
+            BackgroundTransparency = 1, Text = bM or "",
+            Font = Enum.Font.Gotham, TextSize = 12, TextColor3 = bp.TextDim,
+            TextXAlignment = Enum.TextXAlignment.Left, TextWrapped = bN or false, Parent = bP,
         })
-        local obj: any = { Type = "Label", _row = row, _lbl = lbl, Value = text }
-        function obj:SetText(t) self.Value = t; lbl.Text = t end
-        function obj:AddKeyPicker(kpIdx, kpInfo)   return Container.AddKeyPicker({_body = row},   kpIdx, kpInfo, lbl) end
-        function obj:AddColorPicker(cpIdx, cpInfo) return Container.AddColorPicker({_body = row}, cpIdx, cpInfo, lbl) end
-        if optionsId then Library.Options[optionsId] = obj end
-        return obj
+        local bR= { Type = "Label", _row = bP, _lbl = bQ, Value = bM }
+        function bR:SetText(bS) self.Value = bS; bQ.Text = bS end
+        function bR:AddKeyPicker(bS, bT)   return bJ.AddKeyPicker({_body = bP},   bS, bT, bQ) end
+        function bR:AddColorPicker(bS, bT) return bJ.AddColorPicker({_body = bP}, bS, bT, bQ) end
+        if bO then bE.Options[bO] = bR end
+        return bR
     end
 
-    function Container:AddDivider()
-        return create("Frame", {
-            Size = UDim2.new(1,-8,0,1), BackgroundColor3 = THEME.Border, BorderSizePixel = 0, Parent = self._body,
+    function bJ:AddDivider()
+        return bv("Frame", {
+            Size = UDim2.new(1,-8,0,1), BackgroundColor3 = bp.Border, BorderSizePixel = 0, Parent = self._body,
         })
     end
 
-    JBUI._Library = Library
-    function JBUI.GetLibrary() return Library end
+    bm._Library = bE
+    function bm.GetLibrary() return bE end
 end
 
-------------------------------------------------------------------------------
--- 17. GUI BUILD
-------------------------------------------------------------------------------
-local Library : any = nil
-local Window  : any = nil
-local Tabs    : {[string]: any} = {}
-local Toggles : any = nil
 
-local function bindToggle(toggleName: string, stateKey: string, sideEffect: ((boolean) -> ())?)
-    Toggles[toggleName]:OnChanged(function()
-        local v = Toggles[toggleName].Value
-        State[stateKey] = v
-        if sideEffect then sideEffect(v) end
+
+
+local bn 
+local bo  
+local bp    = {}
+local bq local br=function(
+
+br, bs, bt)    
+bq[br]:OnChanged(function()
+        local bu = bq[br].Value
+        p[bs] = bu
+        if bt then bt(bu) end
     end)
-end
+end local bs=function()    
 
-local function buildUI()
-    Library = JBUI.GetLibrary()
-    Toggles = Library.Toggles
-    Options = Library.Options
-    Util.setLibrary(Library)
 
-    Window = Library:CreateWindow({
+bn = bm.GetLibrary()
+    bq = bn.Toggles
+    ak = bn.Options
+    y.setLibrary(bn)
+
+    bo = bn:CreateWindow({
         Title            = "NameHub",
-        Footer           = "Jurassic Blocky -- " .. JB_BUILD,
-        NotifySide       = CONFIG.NotifySide,
-        ShowCustomCursor = CONFIG.ShowCustomCursor,
+        Footer           = "Jurassic Blocky -- " .. a,
+        NotifySide       = o.NotifySide,
+        ShowCustomCursor = o.ShowCustomCursor,
     })
 
-    Tabs = {
-        Main     = Window:AddTab("Main"),
-        Player   = Window:AddTab("Player"),
-        Visuals  = Window:AddTab("Visuals"),
-        Misc     = Window:AddTab("Misc"),
-        Teleport = Window:AddTab("Teleport"),
-        Stats    = Window:AddTab("Stats"),
-        Settings = Window:AddTab("Settings"),
+    bp = {
+        Main     = bo:AddTab("Main"),
+        Player   = bo:AddTab("Player"),
+        Visuals  = bo:AddTab("Visuals"),
+        Misc     = bo:AddTab("Misc"),
+        Teleport = bo:AddTab("Teleport"),
+        Stats    = bo:AddTab("Stats"),
+        Settings = bo:AddTab("Settings"),
     }
 
-    --==========================================================================
-    -- MAIN tab
-    --==========================================================================
+    
+    
+    
     do
-        local FarmTab = Tabs.Main:AddLeftTabbox():AddTab("Farm")
-        FarmTab:AddToggle("Autofarm", { Text = "Autofarm", Default = State.AutoFarm })
-        FarmTab:AddDropdown("FarmTargets", {
+        local bs = bp.Main:AddLeftTabbox():AddTab("Farm")
+        bs:AddToggle("Autofarm", { Text = "Autofarm", Default = p.AutoFarm })
+        bs:AddDropdown("FarmTargets", {
             Values  = { "Berry","Meat","Fish","Wood","Stone","Fossil","Egg","Water","Iron","Gold","Diamond","Sapling","Mushroom","Loot" },
-            Default = CONFIG.FarmTarget, Text = "Farm Target",
+            Default = o.FarmTarget, Text = "Farm Target",
             Tooltip = "Primary farm target. Keyword-matched against workspace names; the keyword list lives in FARM_TARGETS in the script.",
-            Callback = function(v) CONFIG.FarmTarget = v end,
+            Callback = function(bt) o.FarmTarget = bt end,
         })
-        FarmTab:AddDropdown("FarmPriority", {
+        bs:AddDropdown("FarmPriority", {
             Values  = { "Berry","Meat","Fish","Wood","Stone","Fossil","Egg","Water","Iron","Gold","Diamond","Sapling","Mushroom","Loot" },
             Default = {}, Multi = true,
             Text    = "Additional Farm Targets",
             Tooltip = "Anything ticked here is farmed IN ADDITION to the primary target.",
         })
-        FarmTab:AddSlider("FarmRange", {
-            Text = "Farm Range", Default = CONFIG.AutoFarmRadius, Min = 100, Max = 6000, Rounding = 0, Suffix = " studs",
-            Callback = function(v) CONFIG.AutoFarmRadius = v end,
+        bs:AddSlider("FarmRange", {
+            Text = "Farm Range", Default = o.AutoFarmRadius, Min = 100, Max = 6000, Rounding = 0, Suffix = " studs",
+            Callback = function(bt) o.AutoFarmRadius = bt end,
         })
-        FarmTab:AddToggle("SafeFarmSpeed", { Text = "Safe-Speed Tween Walk", Default = State.SafeFarmSpeed })
-        FarmTab:AddSlider("SafeFarmSpeedValue", {
-            Text = "Walk Speed", Default = CONFIG.SafeFarmSpeed,
-            Min = 20, Max = CONFIG.SafeFarmSpeedMax, Rounding = 0, Suffix = " studs/s",
-            Callback = function(v) CONFIG.SafeFarmSpeed = v end,
+        bs:AddToggle("SafeFarmSpeed", { Text = "Safe-Speed Tween Walk", Default = p.SafeFarmSpeed })
+        bs:AddSlider("SafeFarmSpeedValue", {
+            Text = "Walk Speed", Default = o.SafeFarmSpeed,
+            Min = 20, Max = o.SafeFarmSpeedMax, Rounding = 0, Suffix = " studs/s",
+            Callback = function(bt) o.SafeFarmSpeed = bt end,
         })
-        FarmTab:AddSlider("SafeFarmHopCap", {
-            Text = "Hop Distance", Default = CONFIG.SafeFarmHopCap,
-            Min = 10, Max = CONFIG.SafeFarmHopCapMax, Rounding = 0, Suffix = " studs",
-            Callback = function(v) CONFIG.SafeFarmHopCap = v end,
+        bs:AddSlider("SafeFarmHopCap", {
+            Text = "Hop Distance", Default = o.SafeFarmHopCap,
+            Min = 10, Max = o.SafeFarmHopCapMax, Rounding = 0, Suffix = " studs",
+            Callback = function(bt) o.SafeFarmHopCap = bt end,
         })
-        FarmTab:AddSlider("SafeFarmInterHop", {
-            Text = "Inter-Hop Pause", Default = CONFIG.SafeFarmInterHop,
+        bs:AddSlider("SafeFarmInterHop", {
+            Text = "Inter-Hop Pause", Default = o.SafeFarmInterHop,
             Min = 0, Max = 0.5, Rounding = 2, Suffix = "s",
-            Callback = function(v) CONFIG.SafeFarmInterHop = v end,
+            Callback = function(bt) o.SafeFarmInterHop = bt end,
         })
-        bindToggle("SafeFarmSpeed", "SafeFarmSpeed")
+        br("SafeFarmSpeed", "SafeFarmSpeed")
 
-        FarmTab:AddDivider()
-        FarmTab:AddLabel("Instant TP (plain CFrame; JB has no known teleport check)")
-        FarmTab:AddToggle("InstantFarmTP", { Text = "Instant TP Mode", Default = State.InstantFarmTP })
-        FarmTab:AddSlider("InstantTPMaxJump", {
-            Text = "Max Jump Per Hop", Default = CONFIG.InstantTPMaxJump,
+        bs:AddDivider()
+        bs:AddLabel("Instant TP (plain CFrame; JB has no known teleport check)")
+        bs:AddToggle("InstantFarmTP", { Text = "Instant TP Mode", Default = p.InstantFarmTP })
+        bs:AddSlider("InstantTPMaxJump", {
+            Text = "Max Jump Per Hop", Default = o.InstantTPMaxJump,
             Min = 5, Max = 250, Rounding = 0, Suffix = " studs",
-            Callback = function(v) CONFIG.InstantTPMaxJump = v end,
+            Callback = function(bt) o.InstantTPMaxJump = bt end,
         })
-        FarmTab:AddSlider("InstantTPInterJump", {
-            Text = "Inter-Hop Pause", Default = CONFIG.InstantTPInterJump,
+        bs:AddSlider("InstantTPInterJump", {
+            Text = "Inter-Hop Pause", Default = o.InstantTPInterJump,
             Min = 0, Max = 1.0, Rounding = 2, Suffix = "s",
-            Callback = function(v) CONFIG.InstantTPInterJump = v end,
+            Callback = function(bt) o.InstantTPInterJump = bt end,
         })
-        FarmTab:AddSlider("InstantTPSettleTime", {
-            Text = "Pickup Settle Time", Default = CONFIG.InstantTPSettleTime,
+        bs:AddSlider("InstantTPSettleTime", {
+            Text = "Pickup Settle Time", Default = o.InstantTPSettleTime,
             Min = 0.05, Max = 0.5, Rounding = 2, Suffix = "s",
-            Callback = function(v) CONFIG.InstantTPSettleTime = v end,
+            Callback = function(bt) o.InstantTPSettleTime = bt end,
         })
-        FarmTab:AddToggle("InstantTPBurstMode", { Text = "Burst Mode (~60Hz hops)", Default = CONFIG.InstantTPBurstMode })
-        Toggles.InstantTPBurstMode:OnChanged(function() CONFIG.InstantTPBurstMode = Toggles.InstantTPBurstMode.Value end)
-        FarmTab:AddSlider("InstantTPBurstStuds", {
-            Text = "Burst Studs Per Frame", Default = CONFIG.InstantTPBurstStuds,
+        bs:AddToggle("InstantTPBurstMode", { Text = "Burst Mode (~60Hz hops)", Default = o.InstantTPBurstMode })
+        bq.InstantTPBurstMode:OnChanged(function() o.InstantTPBurstMode = bq.InstantTPBurstMode.Value end)
+        bs:AddSlider("InstantTPBurstStuds", {
+            Text = "Burst Studs Per Frame", Default = o.InstantTPBurstStuds,
             Min = 10, Max = 250, Rounding = 0, Suffix = " studs",
-            Callback = function(v) CONFIG.InstantTPBurstStuds = v end,
+            Callback = function(bt) o.InstantTPBurstStuds = bt end,
         })
 
-        FarmTab:AddDivider()
-        FarmTab:AddLabel("Target landing options")
-        FarmTab:AddDropdown("TargetTargetPriority", {
+        bs:AddDivider()
+        bs:AddLabel("Target landing options")
+        bs:AddDropdown("TargetTargetPriority", {
             Values = { "Closest","Furthest","Largest","Random" },
-            Default = CONFIG.TargetTargetPriority, Text = "Target Priority",
-            Callback = function(v) CONFIG.TargetTargetPriority = v end,
+            Default = o.TargetTargetPriority, Text = "Target Priority",
+            Callback = function(bt) o.TargetTargetPriority = bt end,
         })
-        FarmTab:AddSlider("TargetLandingYOffset", {
-            Text = "Landing Y Offset", Default = CONFIG.TargetLandingYOffset, Min = -10, Max = 30, Rounding = 0, Suffix = " studs",
-            Callback = function(v) CONFIG.TargetLandingYOffset = v end,
+        bs:AddSlider("TargetLandingYOffset", {
+            Text = "Landing Y Offset", Default = o.TargetLandingYOffset, Min = -10, Max = 30, Rounding = 0, Suffix = " studs",
+            Callback = function(bt) o.TargetLandingYOffset = bt end,
         })
-        FarmTab:AddSlider("TargetLandingJitter", {
-            Text = "Landing Jitter", Default = CONFIG.TargetLandingJitter, Min = 0, Max = 15, Rounding = 0, Suffix = " studs",
-            Callback = function(v) CONFIG.TargetLandingJitter = v end,
+        bs:AddSlider("TargetLandingJitter", {
+            Text = "Landing Jitter", Default = o.TargetLandingJitter, Min = 0, Max = 15, Rounding = 0, Suffix = " studs",
+            Callback = function(bt) o.TargetLandingJitter = bt end,
         })
-        FarmTab:AddSlider("TargetMinDistance", {
-            Text = "Min Distance Filter", Default = CONFIG.TargetMinDistance, Min = 0, Max = 200, Rounding = 0, Suffix = " studs",
-            Callback = function(v) CONFIG.TargetMinDistance = v end,
+        bs:AddSlider("TargetMinDistance", {
+            Text = "Min Distance Filter", Default = o.TargetMinDistance, Min = 0, Max = 200, Rounding = 0, Suffix = " studs",
+            Callback = function(bt) o.TargetMinDistance = bt end,
         })
-        FarmTab:AddToggle("TargetSkipOccupied", { Text = "Skip Targets Near Other Players", Default = CONFIG.TargetSkipOccupied })
-        Toggles.TargetSkipOccupied:OnChanged(function() CONFIG.TargetSkipOccupied = Toggles.TargetSkipOccupied.Value end)
-        FarmTab:AddSlider("TargetPickupRetries", {
-            Text = "Pickup Attempts", Default = CONFIG.TargetPickupRetries, Min = 1, Max = 10, Rounding = 0,
-            Callback = function(v) CONFIG.TargetPickupRetries = v end,
+        bs:AddToggle("TargetSkipOccupied", { Text = "Skip Targets Near Other Players", Default = o.TargetSkipOccupied })
+        bq.TargetSkipOccupied:OnChanged(function() o.TargetSkipOccupied = bq.TargetSkipOccupied.Value end)
+        bs:AddSlider("TargetPickupRetries", {
+            Text = "Pickup Attempts", Default = o.TargetPickupRetries, Min = 1, Max = 10, Rounding = 0,
+            Callback = function(bt) o.TargetPickupRetries = bt end,
         })
-        FarmTab:AddDropdown("TargetPickupMethod", {
+        bs:AddDropdown("TargetPickupMethod", {
             Values = { "All","ProximityPrompt","Touch","Click","Remote" },
-            Default = CONFIG.TargetPickupMethod, Text = "Pickup Method",
-            Callback = function(v) CONFIG.TargetPickupMethod = v end,
+            Default = o.TargetPickupMethod, Text = "Pickup Method",
+            Callback = function(bt) o.TargetPickupMethod = bt end,
         })
 
-        FarmTab:AddDivider()
-        FarmTab:AddLabel("Diagnostics")
-        FarmTab:AddButton({
+        bs:AddDivider()
+        bs:AddLabel("Diagnostics")
+        bs:AddButton({
             Text = "Scan For Targets",
             Func = function()
-                local types = getSelectedFarmTargets()
-                if #types == 0 then Util.notify("Autofarm", "No farm target selected."); return end
-                local lines = {"=== Farm Scan ==="}
-                for _, t in ipairs(types) do
-                    table.insert(lines, ("  %-10s = %d"):format(t, #findFarmTargets(t)))
+                local bt = al()
+                if #bt == 0 then y.notify("Autofarm", "No farm target selected."); return end
+                local bu = {"=== Farm Scan ==="}
+                for bv, bw in ipairs(bt) do
+                    table.insert(bu, ("  %-10s = %d"):format(bw, #aj(bw)))
                 end
-                local blob = table.concat(lines, "\n")
-                print(blob); Util.notify("Autofarm", blob)
+                local bv = table.concat(bu, "\n")
+                print(bv); y.notify("Autofarm", bv)
             end,
         })
-        FarmTab:AddButton({
+        bs:AddButton({
             Text = "Dump Workspace Names",
             Tooltip = "Lists up to 80 workspace Models/BaseParts whose names look resource-like. Use this to find the real names JB uses.",
             Func = function()
-                local hits = {}
-                local seen: {[string]: true} = {}
-                local hintWords = {"berry","fruit","meat","fish","wood","log","stone","rock","fossil","bone","egg","water","iron","gold","diamond","sapling","mushroom","loot","drop","ore","resource","plant","tree"}
-                for _, inst in ipairs(Workspace:GetDescendants()) do
-                    if inst:IsA("Model") or inst:IsA("BasePart") then
-                        local lower = inst.Name:lower()
-                        for _, w in ipairs(hintWords) do
-                            if lower:find(w, 1, true) then
-                                if not seen[inst.Name] then
-                                    seen[inst.Name] = true
-                                    table.insert(hits, inst.Name .. "  (" .. inst.ClassName .. ", " .. inst:GetFullName() .. ")")
-                                    if #hits >= 80 then break end
+                local bt = {}
+                local bu= {}
+                local bv = {"berry","fruit","meat","fish","wood","log","stone","rock","fossil","bone","egg","water","iron","gold","diamond","sapling","mushroom","loot","drop","ore","resource","plant","tree"}
+                for bw, bx in ipairs(g:GetDescendants()) do
+                    if bx:IsA("Model") or bx:IsA("BasePart") then
+                        local by = bx.Name:lower()
+                        for bz, bA in ipairs(bv) do
+                            if by:find(bA, 1, true) then
+                                if not bu[bx.Name] then
+                                    bu[bx.Name] = true
+                                    table.insert(bt, bx.Name .. "  (" .. bx.ClassName .. ", " .. bx:GetFullName() .. ")")
+                                    if #bt >= 80 then break end
                                 end
                                 break
                             end
                         end
-                        if #hits >= 80 then break end
+                        if #bt >= 80 then break end
                     end
                 end
-                local blob = "=== Workspace Resource Names ===\n" .. table.concat(hits, "\n")
-                if #hits == 0 then blob = blob .. "  (nothing matched - stand near a collectible)" end
-                print(blob)
-                local sc = _findExecFn("setclipboard")
-                if type(sc) == "function" then Util.safe(function() sc(blob) end, "clip") end
-                Util.notify("Autofarm", ("Found %d hits. Console + clipboard."):format(#hits))
+                local bw = "=== Workspace Resource Names ===\n" .. table.concat(bt, "\n")
+                if #bt == 0 then bw = bw .. "  (nothing matched - stand near a collectible)" end
+                print(bw)
+                local bx = A("setclipboard")
+                if type(bx) == "function" then y.safe(function() bx(bw) end, "clip") end
+                y.notify("Autofarm", ("Found %d hits. Console + clipboard."):format(#bt))
             end,
         })
-        FarmTab:AddButton({
+        bs:AddButton({
             Text = "Reset Skipped Targets",
             Func = function()
-                local n = 0
-                for k in pairs(UnreachableTargets) do UnreachableTargets[k] = nil; n += 1 end
-                Util.notify("Autofarm", ("Cleared %d skipped."):format(n))
+                local bt = 0
+                for bu in pairs(ai) do ai[bu] = nil; bt += 1 end
+                y.notify("Autofarm", ("Cleared %d skipped."):format(bt))
             end,
         })
-        FarmTab:AddButton({
+        bs:AddButton({
             Text = "Diagnose Autofarm",
             Func = function()
-                local lines = {"=== Autofarm Diagnostic ==="}
-                table.insert(lines, ("AutoFarm enabled : %s"):format(tostring(State.AutoFarm)))
-                table.insert(lines, ("InstantFarmTP    : %s"):format(tostring(State.InstantFarmTP)))
-                table.insert(lines, ("Character / Root : %s / %s"):format(tostring(Character ~= nil), tostring(RootPart ~= nil)))
-                table.insert(lines, ("Farm Range       : %d studs"):format(CONFIG.AutoFarmRadius))
-                local types = getSelectedFarmTargets()
-                table.insert(lines, ("Selected types   : %s"):format(#types == 0 and "(NONE)" or table.concat(types, ", ")))
-                for _, t in ipairs(types) do
-                    local found = findFarmTargets(t)
-                    local closest, dist = nil, math.huge
-                    if RootPart then
-                        for _, p in ipairs(found) do
-                            local d = (p.Position - RootPart.Position).Magnitude
-                            if d < dist then dist = d; closest = p end
+                local bt = {"=== Autofarm Diagnostic ==="}
+                table.insert(bt, ("AutoFarm enabled : %s"):format(tostring(p.AutoFarm)))
+                table.insert(bt, ("InstantFarmTP    : %s"):format(tostring(p.InstantFarmTP)))
+                table.insert(bt, ("Character / Root : %s / %s"):format(tostring(r ~= nil), tostring(t ~= nil)))
+                table.insert(bt, ("Farm Range       : %d studs"):format(o.AutoFarmRadius))
+                local bu = al()
+                table.insert(bt, ("Selected types   : %s"):format(#bu == 0 and "(NONE)" or table.concat(bu, ", ")))
+                for bv, bw in ipairs(bu) do
+                    local bx = aj(bw)
+                    local by ,bz=(math.huge
+)                    if t then
+                        for bA, bB in ipairs(bx) do
+                            local bC = (bB.Position - t.Position).Magnitude
+                            if bC < by then by = bC; bz = bB end
                         end
                     end
-                    if closest then
-                        table.insert(lines, ("  %s : %d, closest %d studs (%s)"):format(t, #found, math.floor(dist), closest:GetFullName()))
+                    if bz then
+                        table.insert(bt, ("  %s : %d, closest %d studs (%s)"):format(bw, #bx, math.floor(by), bz:GetFullName()))
                     else
-                        table.insert(lines, ("  %s : %d, RootPart missing"):format(t, #found))
+                        table.insert(bt, ("  %s : %d, RootPart missing"):format(bw, #bx))
                     end
                 end
-                local blob = table.concat(lines, "\n")
-                print(blob); Util.notify("Autofarm Diagnostic", blob)
+                local bv = table.concat(bt, "\n")
+                print(bv); y.notify("Autofarm Diagnostic", bv)
             end,
         })
 
-        bindToggle("Autofarm", "AutoFarm", function(v)
-            if not v then Util.notify("Autofarm", "Disabled."); return end
-            for k in pairs(UnreachableTargets) do UnreachableTargets[k] = nil end
-            local types = getSelectedFarmTargets()
-            if #types == 0 then Util.notify("Autofarm", "No target selected."); return end
-            local total = 0
-            for _, t in ipairs(types) do total += #findFarmTargets(t) end
-            Util.notify("Autofarm", ("Enabled (%d targets in workspace)"):format(total))
+        br("Autofarm", "AutoFarm", function(bt)
+            if not bt then y.notify("Autofarm", "Disabled."); return end
+            for bu in pairs(ai) do ai[bu] = nil end
+            local bu = al()
+            if #bu == 0 then y.notify("Autofarm", "No target selected."); return end
+            local bv = 0
+            for bw, bx in ipairs(bu) do bv += #aj(bx) end
+            y.notify("Autofarm", ("Enabled (%d targets in workspace)"):format(bv))
         end)
-        bindToggle("InstantFarmTP", "InstantFarmTP")
+        br("InstantFarmTP", "InstantFarmTP")
 
-        local ESPMain = Tabs.Main:AddRightGroupbox("Resource ESP")
-        ESPMain:AddToggle("ResourceESP", { Text = "Resource ESP", Default = State.ResourceESP })
-        bindToggle("ResourceESP", "ResourceESP", function(v)
-            if v then ResourceESP.enable() else ResourceESP.disable() end
+        local bt = bp.Main:AddRightGroupbox("Resource ESP")
+        bt:AddToggle("ResourceESP", { Text = "Resource ESP", Default = p.ResourceESP })
+        br("ResourceESP", "ResourceESP", function(bu)
+            if bu then aN.enable() else aN.disable() end
         end)
 
-        local StatsBox = Tabs.Main:AddRightGroupbox("Live Stats")
-        StatsBox:AddLabel("Items Collected: 0", false, "ItemsCollected")
-        StatsBox:AddLabel("Coins Gained: 0", false, "CoinsGained2")
-        StatsBox:AddLabel("Farm Time: 0", false, "FarmTime")
+        local bu = bp.Main:AddRightGroupbox("Live Stats")
+        bu:AddLabel("Items Collected: 0", false, "ItemsCollected")
+        bu:AddLabel("Coins Gained: 0", false, "CoinsGained2")
+        bu:AddLabel("Farm Time: 0", false, "FarmTime")
     end
 
-    --==========================================================================
-    -- PLAYER tab
-    --==========================================================================
+    
+    
+    
     do
-        local LeftTabbox  = Tabs.Player:AddLeftTabbox()
-        local SurvivalTab = LeftTabbox:AddTab("Survival")
-        SurvivalTab:AddToggle("InfHunger", { Text = "Inf Hunger", Default = State.InfHunger })
-        SurvivalTab:AddToggle("InfThirst", { Text = "Inf Thirst", Default = State.InfThirst })
-        SurvivalTab:AddToggle("InfOxygen", { Text = "Inf Oxygen", Default = State.InfOxygen })
-        SurvivalTab:AddToggle("AutoEat",   { Text = "Auto Eat at Threshold",   Default = State.AutoEat })
-        SurvivalTab:AddToggle("AutoDrink", { Text = "Auto Drink at Threshold", Default = State.AutoDrink })
-        SurvivalTab:AddToggle("AutoSleep", { Text = "Auto Sleep at Threshold", Default = State.AutoSleep })
-        SurvivalTab:AddSlider("AutoEatThreshold", {
-            Text = "Auto Eat At", Default = CONFIG.AutoEatThreshold, Min = 5, Max = 95, Rounding = 0, Suffix = "%",
-            Callback = function(v) CONFIG.AutoEatThreshold = v end,
+        local bs  = bp.Player:AddLeftTabbox()
+        local bt = bs:AddTab("Survival")
+        bt:AddToggle("InfHunger", { Text = "Inf Hunger", Default = p.InfHunger })
+        bt:AddToggle("InfThirst", { Text = "Inf Thirst", Default = p.InfThirst })
+        bt:AddToggle("InfOxygen", { Text = "Inf Oxygen", Default = p.InfOxygen })
+        bt:AddToggle("AutoEat",   { Text = "Auto Eat at Threshold",   Default = p.AutoEat })
+        bt:AddToggle("AutoDrink", { Text = "Auto Drink at Threshold", Default = p.AutoDrink })
+        bt:AddToggle("AutoSleep", { Text = "Auto Sleep at Threshold", Default = p.AutoSleep })
+        bt:AddSlider("AutoEatThreshold", {
+            Text = "Auto Eat At", Default = o.AutoEatThreshold, Min = 5, Max = 95, Rounding = 0, Suffix = "%",
+            Callback = function(bu) o.AutoEatThreshold = bu end,
         })
-        SurvivalTab:AddSlider("AutoDrinkThreshold", {
-            Text = "Auto Drink At", Default = CONFIG.AutoDrinkThreshold, Min = 5, Max = 95, Rounding = 0, Suffix = "%",
-            Callback = function(v) CONFIG.AutoDrinkThreshold = v end,
+        bt:AddSlider("AutoDrinkThreshold", {
+            Text = "Auto Drink At", Default = o.AutoDrinkThreshold, Min = 5, Max = 95, Rounding = 0, Suffix = "%",
+            Callback = function(bu) o.AutoDrinkThreshold = bu end,
         })
-        SurvivalTab:AddSlider("StopInfHungerAt", {
-            Text = "Stat Cap", Default = CONFIG.StopInfHungerAt, Min = 10, Max = 100, Rounding = 0, Suffix = "%",
-            Callback = function(v) CONFIG.StopInfHungerAt = v end,
+        bt:AddSlider("StopInfHungerAt", {
+            Text = "Stat Cap", Default = o.StopInfHungerAt, Min = 10, Max = 100, Rounding = 0, Suffix = "%",
+            Callback = function(bu) o.StopInfHungerAt = bu end,
         })
-        SurvivalTab:AddToggle("StopEatInCombat", { Text = "Stop Eating In Combat", Default = State.StopEatInCombat })
-        SurvivalTab:AddToggle("AutoRespawn", { Text = "Auto Respawn", Default = State.AutoRespawn })
-        SurvivalTab:AddButton({
+        bt:AddToggle("StopEatInCombat", { Text = "Stop Eating In Combat", Default = p.StopEatInCombat })
+        bt:AddToggle("AutoRespawn", { Text = "Auto Respawn", Default = p.AutoRespawn })
+        bt:AddButton({
             Text = "Print Diagnostics",
             Tooltip = "Dumps stats + remotes to console & clipboard so we can target JB precisely.",
             Func = function()
-                local stats = listAllStats()
-                local remotes = listAllRemotes()
-                local lines = {"=== JurassicBlocky Diagnostics ==="}
-                table.insert(lines, ("Stats found: %d"):format(#stats))
-                for _, s in ipairs(stats) do
-                    table.insert(lines, ("  %-24s = %s   (%s)"):format(s.name, tostring(s.value), s.path))
+                local bu = O()
+                local bv = P()
+                local bw = {"=== JurassicBlocky Diagnostics ==="}
+                table.insert(bw, ("Stats found: %d"):format(#bu))
+                for bx, by in ipairs(bu) do
+                    table.insert(bw, ("  %-24s = %s   (%s)"):format(by.name, tostring(by.value), by.path))
                 end
-                table.insert(lines, ("Remotes found: %d"):format(#remotes))
-                for _, r in ipairs(remotes) do
-                    table.insert(lines, ("  [%s] %s   (%s)"):format(r.class, r.name, r.path))
+                table.insert(bw, ("Remotes found: %d"):format(#bv))
+                for bx, by in ipairs(bv) do
+                    table.insert(bw, ("  [%s] %s   (%s)"):format(by.class, by.name, by.path))
                 end
-                local blob = table.concat(lines, "\n")
-                print(blob)
-                local sc = _findExecFn("setclipboard")
-                if type(sc) == "function" then Util.safe(function() sc(blob) end, "clip") end
-                Util.notify("Diagnostics", ("%d stats, %d remotes printed%s."):format(#stats, #remotes, sc and " + clipboard" or ""))
+                local bx = table.concat(bw, "\n")
+                print(bx)
+                local by = A("setclipboard")
+                if type(by) == "function" then y.safe(function() by(bx) end, "clip") end
+                y.notify("Diagnostics", ("%d stats, %d remotes printed%s."):format(#bu, #bv, by and " + clipboard" or ""))
             end,
         })
 
-        bindToggle("InfHunger", "InfHunger")
-        bindToggle("InfThirst", "InfThirst")
-        bindToggle("InfOxygen", "InfOxygen")
-        bindToggle("AutoEat",   "AutoEat")
-        bindToggle("AutoDrink", "AutoDrink")
-        bindToggle("AutoSleep", "AutoSleep")
-        bindToggle("StopEatInCombat", "StopEatInCombat")
-        bindToggle("AutoRespawn", "AutoRespawn")
+        br("InfHunger", "InfHunger")
+        br("InfThirst", "InfThirst")
+        br("InfOxygen", "InfOxygen")
+        br("AutoEat",   "AutoEat")
+        br("AutoDrink", "AutoDrink")
+        br("AutoSleep", "AutoSleep")
+        br("StopEatInCombat", "StopEatInCombat")
+        br("AutoRespawn", "AutoRespawn")
 
-        local PlayerTab = Tabs.Player:AddRightGroupbox("Movement")
-        PlayerTab:AddToggle("EnableSpeed",     { Text = "Enable Speed",     Default = State.SpeedBoost })
-        PlayerTab:AddToggle("EnableJumppower", { Text = "Enable Jumppower", Default = State.JumpBoost  })
-        PlayerTab:AddSlider("Speed", {
-            Text = "Speed", Default = CONFIG.BoostedWalkSpeed, Min = 16, Max = 500, Rounding = 0,
-            Callback = function(v) CONFIG.BoostedWalkSpeed = v; if State.SpeedBoost and Humanoid then Humanoid.WalkSpeed = v end end,
+        local bu = bp.Player:AddRightGroupbox("Movement")
+        bu:AddToggle("EnableSpeed",     { Text = "Enable Speed",     Default = p.SpeedBoost })
+        bu:AddToggle("EnableJumppower", { Text = "Enable Jumppower", Default = p.JumpBoost  })
+        bu:AddSlider("Speed", {
+            Text = "Speed", Default = o.BoostedWalkSpeed, Min = 16, Max = 500, Rounding = 0,
+            Callback = function(bv) o.BoostedWalkSpeed = bv; if p.SpeedBoost and s then s.WalkSpeed = bv end end,
         })
-        PlayerTab:AddSlider("Jumppower", {
-            Text = "Jumppower", Default = CONFIG.BoostedJumpPower, Min = 50, Max = 500, Rounding = 0,
-            Callback = function(v) CONFIG.BoostedJumpPower = v; if State.JumpBoost and Humanoid then Humanoid.JumpPower = v end end,
+        bu:AddSlider("Jumppower", {
+            Text = "Jumppower", Default = o.BoostedJumpPower, Min = 50, Max = 500, Rounding = 0,
+            Callback = function(bv) o.BoostedJumpPower = bv; if p.JumpBoost and s then s.JumpPower = bv end end,
         })
-        PlayerTab:AddToggle("InfiniteJump", { Text = "Infinite Jump", Default = State.InfiniteJump })
-        PlayerTab:AddToggle("Noclip", { Text = "Noclip", Default = State.Noclip, Risky = true })
-        PlayerTab:AddToggle("Fly",    { Text = "Fly",    Default = State.Fly })
-        PlayerTab:AddSlider("FlySpeed", {
-            Text = "Fly Speed", Default = CONFIG.FlySpeed, Min = 5, Max = 250, Rounding = 0,
-            Callback = function(v) CONFIG.FlySpeed = v end,
+        bu:AddToggle("InfiniteJump", { Text = "Infinite Jump", Default = p.InfiniteJump })
+        bu:AddToggle("Noclip", { Text = "Noclip", Default = p.Noclip, Risky = true })
+        bu:AddToggle("Fly",    { Text = "Fly",    Default = p.Fly })
+        bu:AddSlider("FlySpeed", {
+            Text = "Fly Speed", Default = o.FlySpeed, Min = 5, Max = 250, Rounding = 0,
+            Callback = function(bv) o.FlySpeed = bv end,
         })
 
-        bindToggle("EnableSpeed", "SpeedBoost", function(v)
-            if Humanoid then Humanoid.WalkSpeed = v and CONFIG.BoostedWalkSpeed or CONFIG.DefaultWalkSpeed end
+        br("EnableSpeed", "SpeedBoost", function(bv)
+            if s then s.WalkSpeed = bv and o.BoostedWalkSpeed or o.DefaultWalkSpeed end
         end)
-        bindToggle("EnableJumppower", "JumpBoost", function(v)
-            if Humanoid then Humanoid.JumpPower = v and CONFIG.BoostedJumpPower or CONFIG.DefaultJumpPower end
+        br("EnableJumppower", "JumpBoost", function(bv)
+            if s then s.JumpPower = bv and o.BoostedJumpPower or o.DefaultJumpPower end
         end)
-        bindToggle("InfiniteJump", "InfiniteJump")
-        bindToggle("Noclip", "Noclip")
-        bindToggle("Fly", "Fly", function(v) if v then Fly.start() else Fly.stop() end end)
+        br("InfiniteJump", "InfiniteJump")
+        br("Noclip", "Noclip")
+        br("Fly", "Fly", function(bv) if bv then bg.start() else bg.stop() end end)
 
-        local CombatTab = Tabs.Player:AddRightGroupbox("Combat")
-        CombatTab:AddToggle("AutoAttack",        { Text = "Auto Attack",          Default = State.AutoAttack })
-        CombatTab:AddToggle("AutoAttackPlayers", { Text = "Auto Attack Players",  Default = State.AutoAttackPlayers })
-        CombatTab:AddToggle("AutoAttackNPCs",    { Text = "Auto Attack NPCs",     Default = State.AutoAttackNPCs })
-        CombatTab:AddToggle("AutoHeal",          { Text = "Auto Heal",            Default = State.AutoHeal })
-        CombatTab:AddSlider("CombatRange", {
-            Text = "Range", Default = CONFIG.CombatRange, Min = 5, Max = 500, Rounding = 0, Suffix = " studs",
-            Callback = function(v) CONFIG.CombatRange = v end,
+        local bv = bp.Player:AddRightGroupbox("Combat")
+        bv:AddToggle("AutoAttack",        { Text = "Auto Attack",          Default = p.AutoAttack })
+        bv:AddToggle("AutoAttackPlayers", { Text = "Auto Attack Players",  Default = p.AutoAttackPlayers })
+        bv:AddToggle("AutoAttackNPCs",    { Text = "Auto Attack NPCs",     Default = p.AutoAttackNPCs })
+        bv:AddToggle("AutoHeal",          { Text = "Auto Heal",            Default = p.AutoHeal })
+        bv:AddSlider("CombatRange", {
+            Text = "Range", Default = o.CombatRange, Min = 5, Max = 500, Rounding = 0, Suffix = " studs",
+            Callback = function(bw) o.CombatRange = bw end,
         })
-        CombatTab:AddSlider("DisengageAtHP", {
-            Text = "Heal Below", Default = CONFIG.DisengageAtHP, Min = 0, Max = 500, Rounding = 0, Suffix = " HP",
-            Callback = function(v) CONFIG.DisengageAtHP = v end,
+        bv:AddSlider("DisengageAtHP", {
+            Text = "Heal Below", Default = o.DisengageAtHP, Min = 0, Max = 500, Rounding = 0, Suffix = " HP",
+            Callback = function(bw) o.DisengageAtHP = bw end,
         })
-        bindToggle("AutoAttack",        "AutoAttack")
-        bindToggle("AutoAttackPlayers", "AutoAttackPlayers")
-        bindToggle("AutoAttackNPCs",    "AutoAttackNPCs")
-        bindToggle("AutoHeal",          "AutoHeal")
+        br("AutoAttack",        "AutoAttack")
+        br("AutoAttackPlayers", "AutoAttackPlayers")
+        br("AutoAttackNPCs",    "AutoAttackNPCs")
+        br("AutoHeal",          "AutoHeal")
     end
 
-    --==========================================================================
-    -- VISUALS tab
-    --==========================================================================
+    
+    
+    
     do
-        local function espToggle(box: any, idx: string, label: string, key: string)
-            box:AddToggle(idx, { Text = label, Default = ESP.Settings[key], Callback = function(v) ESP.Settings[key] = v end })
-        end
-        local function espSlider(box: any, idx: string, label: string, key: string, mn: number, mx: number, rnd: number?, suffix: string?)
-            box:AddSlider(idx, {
-                Text = label, Default = ESP.Settings[key], Min = mn, Max = mx,
-                Rounding = rnd or 1, Suffix = suffix or "",
-                Callback = function(v) ESP.Settings[key] = v end,
+local bs=function(bs, bt, bu, bv)            
+bs:AddToggle(bt, { Text = bu, Default = aD.Settings[bv], Callback = function(bw) aD.Settings[bv] = bw end })
+end local bt=function(
+bt, bu, bv, bw, bx, by, bz, bA)            
+bt:AddSlider(bu, {
+                Text = bv, Default = aD.Settings[bw], Min = bx, Max = by,
+                Rounding = bz or 1, Suffix = bA or "",
+                Callback = function(bB) aD.Settings[bw] = bB end,
             })
-        end
-        local function espColor(box: any, idx: string, label: string, colorKey: string)
-            box:AddLabel(label):AddColorPicker(idx, {
-                Default = ESP.Settings.Colors[colorKey], Title = label,
-                Callback = function(c) ESP.Settings.Colors[colorKey] = c end,
+end local bu=function(
+bu, bv, bw, bx)            
+bu:AddLabel(bw):AddColorPicker(bv, {
+                Default = aD.Settings.Colors[bx], Title = bw,
+                Callback = function(by) aD.Settings.Colors[bx] = by end,
             })
-        end
+end
+        
+local bv = bp.Visuals:AddLeftTabbox()
+        local bw = bv:AddTab("ESP")
+        bw:AddToggle("ESP", { Text = "Master ESP", Default = p.ESP })
+        br("ESP", "ESP", function(bx) if bx then aD.enable() else aD.disable() end end)
+        bs(bw, "ESP_ShowPlayers", "Show Player Creatures", "ShowPlayers")
+        bs(bw, "ESP_ShowNPCs",    "Show Wild / NPCs", "ShowNPCs")
+        bs(bw, "ESP_ShowSelf",    "Show Self", "ShowSelf")
+        bs(bw, "ESP_ShowOwner",   "Show Owner Name", "ShowOwner")
+        bt(bw, "ESP_MaxDistance", "Max Distance", "MaxDistance", 50, 5000, 0, " studs")
+        bt(bw, "ESP_TextSize",    "Text Size", "TextSize", 8, 28, 0)
 
-        local ESPTabbox = Tabs.Visuals:AddLeftTabbox()
-        local ESPMain = ESPTabbox:AddTab("ESP")
-        ESPMain:AddToggle("ESP", { Text = "Master ESP", Default = State.ESP })
-        bindToggle("ESP", "ESP", function(v) if v then ESP.enable() else ESP.disable() end end)
-        espToggle(ESPMain, "ESP_ShowPlayers", "Show Player Creatures", "ShowPlayers")
-        espToggle(ESPMain, "ESP_ShowNPCs",    "Show Wild / NPCs", "ShowNPCs")
-        espToggle(ESPMain, "ESP_ShowSelf",    "Show Self", "ShowSelf")
-        espToggle(ESPMain, "ESP_ShowOwner",   "Show Owner Name", "ShowOwner")
-        espSlider(ESPMain, "ESP_MaxDistance", "Max Distance", "MaxDistance", 50, 5000, 0, " studs")
-        espSlider(ESPMain, "ESP_TextSize",    "Text Size", "TextSize", 8, 28, 0)
-
-        local BoxTracerTab = ESPTabbox:AddTab("Box & Tracer")
-        espToggle(BoxTracerTab, "ESP_Boxes", "Boxes", "Boxes")
-        BoxTracerTab:AddDropdown("ESP_BoxType", {
-            Values = { "2D","Corner","Filled" }, Default = ESP.Settings.BoxType, Text = "Box Type",
-            Callback = function(v) ESP.Settings.BoxType = v end,
+        local bx = bv:AddTab("Box & Tracer")
+        bs(bx, "ESP_Boxes", "Boxes", "Boxes")
+        bx:AddDropdown("ESP_BoxType", {
+            Values = { "2D","Corner","Filled" }, Default = aD.Settings.BoxType, Text = "Box Type",
+            Callback = function(by) aD.Settings.BoxType = by end,
         })
-        espSlider(BoxTracerTab, "ESP_BoxThickness", "Box Thickness", "BoxThickness", 1, 5, 0)
-        espToggle(BoxTracerTab, "ESP_Tracers", "Tracers", "Tracers")
-        BoxTracerTab:AddDropdown("ESP_TracerStyle", {
-            Values = { "Solid","Glow","Dashed","Gradient" }, Default = ESP.Settings.TracerStyle, Text = "Tracer Style",
-            Callback = function(v) ESP.Settings.TracerStyle = v end,
+        bt(bx, "ESP_BoxThickness", "Box Thickness", "BoxThickness", 1, 5, 0)
+        bs(bx, "ESP_Tracers", "Tracers", "Tracers")
+        bx:AddDropdown("ESP_TracerStyle", {
+            Values = { "Solid","Glow","Dashed","Gradient" }, Default = aD.Settings.TracerStyle, Text = "Tracer Style",
+            Callback = function(by) aD.Settings.TracerStyle = by end,
         })
-        BoxTracerTab:AddDropdown("ESP_TracerOrigin", {
-            Values = { "Top","Center","Bottom","Mouse" }, Default = ESP.Settings.TracerOrigin, Text = "Tracer Origin",
-            Callback = function(v) ESP.Settings.TracerOrigin = v end,
+        bx:AddDropdown("ESP_TracerOrigin", {
+            Values = { "Top","Center","Bottom","Mouse" }, Default = aD.Settings.TracerOrigin, Text = "Tracer Origin",
+            Callback = function(by) aD.Settings.TracerOrigin = by end,
         })
-        espSlider(BoxTracerTab, "ESP_TracerThickness", "Tracer Thickness", "TracerThickness", 1, 6, 0)
-        espToggle(BoxTracerTab, "ESP_TracerRainbow", "Rainbow Tracer", "TracerRainbow")
+        bt(bx, "ESP_TracerThickness", "Tracer Thickness", "TracerThickness", 1, 6, 0)
+        bs(bx, "ESP_TracerRainbow", "Rainbow Tracer", "TracerRainbow")
 
-        local ElementsTab = ESPTabbox:AddTab("Elements")
-        espToggle(ElementsTab, "ESP_Names",      "Species Name", "Names")
-        espToggle(ElementsTab, "ESP_Distance",   "Distance",     "Distance")
-        espToggle(ElementsTab, "ESP_HealthText", "Health Text",  "HealthText")
-        espToggle(ElementsTab, "ESP_HealthBar",  "Health Bar",   "HealthBar")
-        espToggle(ElementsTab, "ESP_HeadDot",    "Head Dot",     "HeadDot")
+        local by = bv:AddTab("Elements")
+        bs(by, "ESP_Names",      "Species Name", "Names")
+        bs(by, "ESP_Distance",   "Distance",     "Distance")
+        bs(by, "ESP_HealthText", "Health Text",  "HealthText")
+        bs(by, "ESP_HealthBar",  "Health Bar",   "HealthBar")
+        bs(by, "ESP_HeadDot",    "Head Dot",     "HeadDot")
 
-        local ChamsTab = ESPTabbox:AddTab("Chams")
-        espToggle(ChamsTab, "ESP_Chams", "Enable Chams", "Chams")
-        ChamsTab:AddDropdown("ESP_ChamsMode", {
+        local bz = bv:AddTab("Chams")
+        bs(bz, "ESP_Chams", "Enable Chams", "Chams")
+        bz:AddDropdown("ESP_ChamsMode", {
             Values = { "Standard","Outline Only","Fill Only","Rainbow","Pulse","Health-based" },
-            Default = ESP.Settings.ChamsMode, Text = "Mode",
-            Callback = function(v) ESP.Settings.ChamsMode = v end,
+            Default = aD.Settings.ChamsMode, Text = "Mode",
+            Callback = function(bA) aD.Settings.ChamsMode = bA end,
         })
-        ChamsTab:AddDropdown("ESP_ChamsDepth", {
-            Values = { "AlwaysOnTop","Occluded" }, Default = ESP.Settings.ChamsDepth, Text = "Depth Mode",
-            Callback = function(v) ESP.Settings.ChamsDepth = v end,
+        bz:AddDropdown("ESP_ChamsDepth", {
+            Values = { "AlwaysOnTop","Occluded" }, Default = aD.Settings.ChamsDepth, Text = "Depth Mode",
+            Callback = function(bA) aD.Settings.ChamsDepth = bA end,
         })
 
-        local ColorsTab = ESPTabbox:AddTab("Colors")
-        espColor(ColorsTab, "ESP_Color_Box",      "Box", "Box")
-        espColor(ColorsTab, "ESP_Color_Tracer",   "Tracer", "Tracer")
-        espColor(ColorsTab, "ESP_Color_Name",     "Name", "Name")
-        espColor(ColorsTab, "ESP_Color_Distance", "Distance", "Distance")
-        espColor(ColorsTab, "ESP_Color_Player",   "Player", "Player")
-        espColor(ColorsTab, "ESP_Color_NPC",      "NPC", "NPC")
+        local bA = bv:AddTab("Colors")
+        bu(bA, "ESP_Color_Box",      "Box", "Box")
+        bu(bA, "ESP_Color_Tracer",   "Tracer", "Tracer")
+        bu(bA, "ESP_Color_Name",     "Name", "Name")
+        bu(bA, "ESP_Color_Distance", "Distance", "Distance")
+        bu(bA, "ESP_Color_Player",   "Player", "Player")
+        bu(bA, "ESP_Color_NPC",      "NPC", "NPC")
 
-        local GenBox = Tabs.Visuals:AddRightGroupbox("General")
-        GenBox:AddSlider("FOV", {
-            Text = "FOV", Default = CONFIG.DefaultFOV, Min = 30, Max = 120, Rounding = 0,
-            Callback = function(v) CONFIG.DefaultFOV = v; setFOV(v) end,
+        local bB = bp.Visuals:AddRightGroupbox("General")
+        bB:AddSlider("FOV", {
+            Text = "FOV", Default = o.DefaultFOV, Min = 30, Max = 120, Rounding = 0,
+            Callback = function(bC) o.DefaultFOV = bC; a1(bC) end,
         })
-        GenBox:AddSlider("FreecamSpeed", {
-            Text = "Freecam Speed", Default = CONFIG.FreecamSpeed, Min = 1, Max = 50, Rounding = 0,
-            Callback = function(v) CONFIG.FreecamSpeed = v end,
+        bB:AddSlider("FreecamSpeed", {
+            Text = "Freecam Speed", Default = o.FreecamSpeed, Min = 1, Max = 50, Rounding = 0,
+            Callback = function(bC) o.FreecamSpeed = bC end,
         })
-        GenBox:AddToggle("Freecam", { Text = "Freecam", Default = State.Freecam })
-        GenBox:AddToggle("DisableLighting", { Text = "Disable Lighting Effects", Default = State.DisableLighting })
-        GenBox:AddToggle("FullBright", { Text = "Full Bright", Default = State.FullBright })
-        GenBox:AddToggle("DisableVisualRain", { Text = "Disable Visual Weather", Default = State.DisableVisualRain })
-        GenBox:AddToggle("InfiniteZoom", { Text = "Infinite Zoom", Default = State.InfiniteZoom })
-        GenBox:AddSlider("LocalPlayerTransparency", {
-            Text = "Self Transparency", Default = CONFIG.LocalPlayerTransparency, Min = 0, Max = 1, Rounding = 2,
-            Callback = function(v) CONFIG.LocalPlayerTransparency = v; applyCharTransparency(v) end,
+        bB:AddToggle("Freecam", { Text = "Freecam", Default = p.Freecam })
+        bB:AddToggle("DisableLighting", { Text = "Disable Lighting Effects", Default = p.DisableLighting })
+        bB:AddToggle("FullBright", { Text = "Full Bright", Default = p.FullBright })
+        bB:AddToggle("DisableVisualRain", { Text = "Disable Visual Weather", Default = p.DisableVisualRain })
+        bB:AddToggle("InfiniteZoom", { Text = "Infinite Zoom", Default = p.InfiniteZoom })
+        bB:AddSlider("LocalPlayerTransparency", {
+            Text = "Self Transparency", Default = o.LocalPlayerTransparency, Min = 0, Max = 1, Rounding = 2,
+            Callback = function(bC) o.LocalPlayerTransparency = bC; a4(bC) end,
         })
-        bindToggle("Freecam", "Freecam", function(v) if v then Freecam.start() else Freecam.stop() end end)
-        bindToggle("DisableLighting", "DisableLighting", function(v) setLightingEffectsEnabled(not v) end)
-        bindToggle("FullBright", "FullBright", function(v) if v then FullBright.start() else FullBright.stop() end end)
-        bindToggle("DisableVisualRain", "DisableVisualRain", function(v) setRainEnabled(not v) end)
-        bindToggle("InfiniteZoom", "InfiniteZoom", function(v) setInfiniteZoom(v) end)
+        br("Freecam", "Freecam", function(bC) if bC then bh.start() else bh.stop() end end)
+        br("DisableLighting", "DisableLighting", function(bC) a7(not bC) end)
+        br("FullBright", "FullBright", function(bC) if bC then a5.start() else a5.stop() end end)
+        br("DisableVisualRain", "DisableVisualRain", function(bC) bb(not bC) end)
+        br("InfiniteZoom", "InfiniteZoom", function(bC) a3(bC) end)
     end
 
-    --==========================================================================
-    -- MISC tab
-    --==========================================================================
+    
+    
+    
     do
-        local MiscBox = Tabs.Misc:AddLeftGroupbox("General")
-        MiscBox:AddToggle("FPSBoost", { Text = "FPS Boost", Default = State.FPSBoost })
-        MiscBox:AddToggle("KickBypass", {
-            Text = "Generic Kick Bypass (off by default)", Default = State.KickBypass,
+        local bs = bp.Misc:AddLeftGroupbox("General")
+        bs:AddToggle("FPSBoost", { Text = "FPS Boost", Default = p.FPSBoost })
+        bs:AddToggle("KickBypass", {
+            Text = "Generic Kick Bypass (off by default)", Default = p.KickBypass,
             Risky = true,
             Tooltip = "Hooks LocalPlayer:Kick to swallow client-initiated kicks. JB doesn't appear to use Kick aggressively; only enable if you're getting unexplained disconnects.",
         })
-        MiscBox:AddToggle("AntiAFK", { Text = "Anti-AFK", Default = State.AntiAFK })
-        MiscBox:AddToggle("StatMonitor", { Text = "Stat Monitor HUD", Default = State.StatMonitor })
-        MiscBox:AddToggle("DebugMode", { Text = "Debug Mode", Default = CONFIG.DebugMode,
-            Callback = function(v) CONFIG.DebugMode = v end,
+        bs:AddToggle("AntiAFK", { Text = "Anti-AFK", Default = p.AntiAFK })
+        bs:AddToggle("StatMonitor", { Text = "Stat Monitor HUD", Default = p.StatMonitor })
+        bs:AddToggle("DebugMode", { Text = "Debug Mode", Default = o.DebugMode,
+            Callback = function(bt) o.DebugMode = bt end,
         })
-        MiscBox:AddButton({ Text = "Show Kick Bypass Stats", Func = function()
-            local lines = {"=== Kick Bypass Stats ==="}
-            table.insert(lines, ("Installed     : %s"):format(tostring(KickBypass.Installed)))
-            table.insert(lines, ("Blocked kicks : %d"):format(KickBypass.BlockedCount))
-            if KickBypass.LastError then table.insert(lines, "Last error: " .. KickBypass.LastError) end
-            local blob = table.concat(lines, "\n")
-            print(blob); Util.notify("Kick Bypass", blob)
+        bs:AddButton({ Text = "Show Kick Bypass Stats", Func = function()
+            local bt = {"=== Kick Bypass Stats ==="}
+            table.insert(bt, ("Installed     : %s"):format(tostring(bk.Installed)))
+            table.insert(bt, ("Blocked kicks : %d"):format(bk.BlockedCount))
+            if bk.LastError then table.insert(bt, "Last error: " .. bk.LastError) end
+            local bu = table.concat(bt, "\n")
+            print(bu); y.notify("Kick Bypass", bu)
         end })
-        bindToggle("FPSBoost", "FPSBoost", function(v)
-            Util.safe(function() settings().Rendering.QualityLevel = v and Enum.QualityLevel.Level01 or Enum.QualityLevel.Automatic end, "FPSBoost")
+        br("FPSBoost", "FPSBoost", function(bt)
+            y.safe(function() settings().Rendering.QualityLevel = bt and Enum.QualityLevel.Level01 or Enum.QualityLevel.Automatic end, "FPSBoost")
         end)
-        bindToggle("KickBypass", "KickBypass", function(v)
-            if v then
-                local ok, msg = installKickBypass()
-                Util.notify("Kick Bypass", ok and ("Installed: " .. msg) or ("Failed: " .. msg))
+        br("KickBypass", "KickBypass", function(bt)
+            if bt then
+                local bu, bv = bl()
+                y.notify("Kick Bypass", bu and ("Installed: " .. bv) or ("Failed: " .. bv))
             else
-                Util.notify("Kick Bypass", "Disabled (reload to fully unhook).")
+                y.notify("Kick Bypass", "Disabled (reload to fully unhook).")
             end
         end)
-        bindToggle("AntiAFK", "AntiAFK")
-        bindToggle("StatMonitor", "StatMonitor")
+        br("AntiAFK", "AntiAFK")
+        br("StatMonitor", "StatMonitor")
     end
 
-    --==========================================================================
-    -- TELEPORT tab
-    --==========================================================================
+    
+    
+    
     do
-        local TBox = Tabs.Teleport:AddLeftGroupbox("Teleport")
-        TBox:AddDropdown("TPPlayer", {
+        local bs = bp.Teleport:AddLeftGroupbox("Teleport")
+        bs:AddDropdown("TPPlayer", {
             Values = {}, Default = "", SpecialType = "Player", ExcludeLocalPlayer = true, Text = "Player",
         })
-        TBox:AddButton({ Text = "Teleport To Player", Func = function()
-            local name = Options.TPPlayer and Options.TPPlayer.Value
-            if type(name) == "string" and name ~= "" then Teleport.toPlayer(name, true) end
+        bs:AddButton({ Text = "Teleport To Player", Func = function()
+            local bt = ak.TPPlayer and ak.TPPlayer.Value
+            if type(bt) == "string" and bt ~= "" then aS.toPlayer(bt, true) end
         end })
-        TBox:AddButton({ Text = "Teleport To Safety", Func = function()
-            if RootPart then RootPart.CFrame = RootPart.CFrame + Vector3.new(0,500,0) end
+        bs:AddButton({ Text = "Teleport To Safety", Func = function()
+            if t then t.CFrame = t.CFrame + Vector3.new(0,500,0) end
         end })
-        TBox:AddInput("CoordX", { Default = "0", Text = "X", Numeric = true })
-        TBox:AddInput("CoordY", { Default = "0", Text = "Y", Numeric = true })
-        TBox:AddInput("CoordZ", { Default = "0", Text = "Z", Numeric = true })
-        TBox:AddButton({ Text = "Tween to Coordinates", Func = function()
-            local x = tonumber(Options.CoordX.Value) or 0
-            local y = tonumber(Options.CoordY.Value) or 0
-            local z = tonumber(Options.CoordZ.Value) or 0
-            Util.tweenTo(CFrame.new(x, y, z), CONFIG.TweenTeleportSeconds)
+        bs:AddInput("CoordX", { Default = "0", Text = "X", Numeric = true })
+        bs:AddInput("CoordY", { Default = "0", Text = "Y", Numeric = true })
+        bs:AddInput("CoordZ", { Default = "0", Text = "Z", Numeric = true })
+        bs:AddButton({ Text = "Tween to Coordinates", Func = function()
+            local bt = tonumber(ak.CoordX.Value) or 0
+            local bu = tonumber(ak.CoordY.Value) or 0
+            local bv = tonumber(ak.CoordZ.Value) or 0
+            y.tweenTo(CFrame.new(bt, bu, bv), o.TweenTeleportSeconds)
         end })
-        TBox:AddButton({ Text = "Rejoin Server", Func = function()
-            Util.safe(function() TeleportService:Teleport(game.PlaceId, LocalPlayer) end, "Rejoin")
+        bs:AddButton({ Text = "Rejoin Server", Func = function()
+            y.safe(function() n:Teleport(game.PlaceId, q) end, "Rejoin")
         end })
-        TBox:AddButton({ Text = "Copy JobId", Func = function()
-            local sc = _findExecFn("setclipboard")
-            if type(sc) == "function" then pcall(sc, game.JobId); Util.notify("Teleport", "JobId copied.") end
+        bs:AddButton({ Text = "Copy JobId", Func = function()
+            local bt = A("setclipboard")
+            if type(bt) == "function" then pcall(bt, game.JobId); y.notify("Teleport", "JobId copied.") end
         end })
     end
 
-    --==========================================================================
-    -- STATS tab
-    --==========================================================================
+    
+    
+    
     do
-        local DinoBox = Tabs.Stats:AddLeftGroupbox("Character")
-        DinoBox:AddLabel("Health: -",    false, "DinoHealth")
-        DinoBox:AddLabel("Hunger: -",    false, "DinoHunger")
-        DinoBox:AddLabel("Thirst: -",    false, "DinoThirst")
-        DinoBox:AddLabel("Energy: -",    false, "DinoEnergy")
-        DinoBox:AddLabel("Oxygen: -",    false, "DinoOxygen")
-        DinoBox:AddLabel("Position: -",  false, "DinoPosition")
-        DinoBox:AddLabel("Walkspeed: -", false, "DinoWalkSpeed")
-        DinoBox:AddButton({ Text = "Reset Session", Func = function()
-            Session.StartTime = tick(); Session.StartCoins = Session.LastCoins
-            Session.CoinsGained = 0; Session.CoinsSpent = 0
-            Util.notify("Stats", "Session reset.")
+        local bs = bp.Stats:AddLeftGroupbox("Character")
+        bs:AddLabel("Health: -",    false, "DinoHealth")
+        bs:AddLabel("Hunger: -",    false, "DinoHunger")
+        bs:AddLabel("Thirst: -",    false, "DinoThirst")
+        bs:AddLabel("Energy: -",    false, "DinoEnergy")
+        bs:AddLabel("Oxygen: -",    false, "DinoOxygen")
+        bs:AddLabel("Position: -",  false, "DinoPosition")
+        bs:AddLabel("Walkspeed: -", false, "DinoWalkSpeed")
+        bs:AddButton({ Text = "Reset Session", Func = function()
+            aW.StartTime = tick(); aW.StartCoins = aW.LastCoins
+            aW.CoinsGained = 0; aW.CoinsSpent = 0
+            y.notify("Stats", "Session reset.")
         end })
 
         task.spawn(function()
-            while Alive.value do
+            while v.value do
                 task.wait(0.5)
-                if Library and Library.Unloaded then break end
-                Util.safe(function()
-                    if Character and Character:FindFirstChild("HumanoidRootPart") then
-                        local p = (Character.HumanoidRootPart :: BasePart).Position
-                        if Options.DinoPosition then
-                            Options.DinoPosition:SetText(("Position: %d, %d, %d"):format(math.floor(p.X), math.floor(p.Y), math.floor(p.Z)))
+                if bn and bn.Unloaded then break end
+                y.safe(function()
+                    if r and r:FindFirstChild("HumanoidRootPart") then
+                        local bt = ((r.HumanoidRootPart )).Position
+                        if ak.DinoPosition then
+                            ak.DinoPosition:SetText(("Position: %d, %d, %d"):format(math.floor(bt.X), math.floor(bt.Y), math.floor(bt.Z)))
                         end
                     end
-                    local hum = Character and Character:FindFirstChildOfClass("Humanoid")
-                    if hum then
-                        if Options.DinoHealth    then Options.DinoHealth:SetText(("Health: %d / %d"):format(math.floor(hum.Health), math.floor(hum.MaxHealth))) end
-                        if Options.DinoWalkSpeed then Options.DinoWalkSpeed:SetText(("Walkspeed: %d"):format(math.floor(hum.WalkSpeed))) end
+                    local bt = r and r:FindFirstChildOfClass("Humanoid")
+                    if bt then
+                        if ak.DinoHealth    then ak.DinoHealth:SetText(("Health: %d / %d"):format(math.floor(bt.Health), math.floor(bt.MaxHealth))) end
+                        if ak.DinoWalkSpeed then ak.DinoWalkSpeed:SetText(("Walkspeed: %d"):format(math.floor(bt.WalkSpeed))) end
                     end
-                    local function readStat(name, alias)
-                        local s = findStat(alias)
-                        if s and Options[name] then Options[name]:SetText(alias .. ": " .. tostring(math.floor((s :: any).Value))) end
-                    end
-                    readStat("DinoHunger", "Hunger")
-                    readStat("DinoThirst", "Thirst")
-                    readStat("DinoEnergy", "Energy")
-                    readStat("DinoOxygen", "Oxygen")
+local bu=function(bu, bv)                        
+local bw = N(bv)
+                        if bw and ak[bu] then ak[bu]:SetText(bv .. ": " .. tostring(math.floor((bw ).Value))) end
+end                    
+bu("DinoHunger", "Hunger")
+                    bu("DinoThirst", "Thirst")
+                    bu("DinoEnergy", "Energy")
+                    bu("DinoOxygen", "Oxygen")
                 end, "stats-live")
             end
         end)
 
-        local SessionBox = Tabs.Stats:AddRightGroupbox("Session")
-        SessionBox:AddLabel("Session Time: 0s", false, "SessionTime")
-        SessionBox:AddLabel("Coins Gained: 0",  false, "CoinsGained")
-        SessionBox:AddLabel("Coin Rate: 0/hr",  false, "CoinRate")
-        SessionBox:AddLabel("Coins Total: 0",   false, "CoinsTotal")
-        SessionBox:AddLabel("Coins Spent: 0",   false, "CoinsSpent")
-        SessionBox:AddDivider()
-        SessionBox:AddInput("WebhookLink", {
-            Default = CONFIG.WebhookLink, Text = "Webhook Link",
+        local bt = bp.Stats:AddRightGroupbox("Session")
+        bt:AddLabel("Session Time: 0s", false, "SessionTime")
+        bt:AddLabel("Coins Gained: 0",  false, "CoinsGained")
+        bt:AddLabel("Coin Rate: 0/hr",  false, "CoinRate")
+        bt:AddLabel("Coins Total: 0",   false, "CoinsTotal")
+        bt:AddLabel("Coins Spent: 0",   false, "CoinsSpent")
+        bt:AddDivider()
+        bt:AddInput("WebhookLink", {
+            Default = o.WebhookLink, Text = "Webhook Link",
             Placeholder = "https://discord.com/api/webhooks/...",
-            Callback = function(v) CONFIG.WebhookLink = v end,
+            Callback = function(bu) o.WebhookLink = bu end,
         })
-        SessionBox:AddToggle("AnonymousMode", { Text = "Anonymous Mode", Default = State.AnonymousMode })
-        SessionBox:AddButton({ Text = "Send Test Webhook", Func = function()
-            local url = CONFIG.WebhookLink
-            if (not url or url == "") and Options.WebhookLink and Options.WebhookLink.Value then
-                url = Options.WebhookLink.Value; CONFIG.WebhookLink = url
+        bt:AddToggle("AnonymousMode", { Text = "Anonymous Mode", Default = p.AnonymousMode })
+        bt:AddButton({ Text = "Send Test Webhook", Func = function()
+            local bu = o.WebhookLink
+            if (not bu or bu == "") and ak.WebhookLink and ak.WebhookLink.Value then
+                bu = ak.WebhookLink.Value; o.WebhookLink = bu
             end
-            local c = CONFIG.EmbedColor or Color3.fromRGB(85,200,110)
-            local intColor = math.floor(c.R*255)*65536 + math.floor(c.G*255)*256 + math.floor(c.B*255)
-            local username = State.AnonymousMode and "Anonymous" or LocalPlayer.Name
-            sendWebhook(url, {
-                username = username,
+            local bv = o.EmbedColor or Color3.fromRGB(85,200,110)
+            local bw = math.floor(bv.R*255)*65536 + math.floor(bv.G*255)*256 + math.floor(bv.B*255)
+            local bx = p.AnonymousMode and "Anonymous" or q.Name
+            bj(bu, {
+                username = bx,
                 embeds = {{
                     title = "JurassicBlocky -- Test",
-                    description = ("Webhook test from **%s**"):format(username),
-                    color = intColor,
+                    description = ("Webhook test from **%s**"):format(bx),
+                    color = bw,
                     timestamp = DateTime.now():ToIsoDate(),
                     footer = { text = ("PlaceId: %d"):format(game.PlaceId) },
                 }},
             })
         end })
-        bindToggle("AnonymousMode", "AnonymousMode")
+        br("AnonymousMode", "AnonymousMode")
 
-        Session.StartTime = tick()
+        aW.StartTime = tick()
         task.spawn(function()
-            while Alive.value do
+            while v.value do
                 task.wait(1)
-                if Library and Library.Unloaded then break end
-                local elapsed = tick() - Session.StartTime
-                local h = math.floor(elapsed / 3600)
-                local m = math.floor((elapsed % 3600) / 60)
-                local s = math.floor(elapsed % 60)
-                local timeStr = h > 0 and ("%dh %dm %ds"):format(h,m,s) or ("%dm %ds"):format(m,s)
-                local current = Session.LastCoins or 0
-                local rate = elapsed > 1 and math.floor(Session.CoinsGained / elapsed * 3600) or 0
-                Util.safe(function()
-                    if Options.SessionTime then Options.SessionTime:SetText("Session Time: " .. timeStr) end
-                    if Options.CoinsGained then Options.CoinsGained:SetText(("Coins Gained: %s"):format(tostring(Session.CoinsGained))) end
-                    if Options.CoinRate    then Options.CoinRate:SetText(("Coin Rate: %s/hr"):format(tostring(rate))) end
-                    if Options.CoinsTotal  then Options.CoinsTotal:SetText(("Coins Total: %s"):format(tostring(current))) end
-                    if Options.CoinsSpent  then Options.CoinsSpent:SetText(("Coins Spent: %s"):format(tostring(Session.CoinsSpent))) end
+                if bn and bn.Unloaded then break end
+                local bu = tick() - aW.StartTime
+                local bv = math.floor(bu / 3600)
+                local bw = math.floor((bu % 3600) / 60)
+                local bx = math.floor(bu % 60)
+                local by = bv > 0 and ("%dh %dm %ds"):format(bv,bw,bx) or ("%dm %ds"):format(bw,bx)
+                local bz = aW.LastCoins or 0
+                local bA = bu > 1 and math.floor(aW.CoinsGained / bu * 3600) or 0
+                y.safe(function()
+                    if ak.SessionTime then ak.SessionTime:SetText("Session Time: " .. by) end
+                    if ak.CoinsGained then ak.CoinsGained:SetText(("Coins Gained: %s"):format(tostring(aW.CoinsGained))) end
+                    if ak.CoinRate    then ak.CoinRate:SetText(("Coin Rate: %s/hr"):format(tostring(bA))) end
+                    if ak.CoinsTotal  then ak.CoinsTotal:SetText(("Coins Total: %s"):format(tostring(bz))) end
+                    if ak.CoinsSpent  then ak.CoinsSpent:SetText(("Coins Spent: %s"):format(tostring(aW.CoinsSpent))) end
                 end, "stats-tab")
             end
         end)
     end
 
-    --==========================================================================
-    -- SETTINGS tab
-    --==========================================================================
+    
+    
+    
     do
-        local Menu = Tabs.Settings:AddLeftGroupbox("Menu")
-        Menu:AddToggle("ShowCustomCursor", { Text = "Custom Cursor", Default = CONFIG.ShowCustomCursor,
-            Callback = function(v) Library.ShowCustomCursor = v end,
+        local bs = bp.Settings:AddLeftGroupbox("Menu")
+        bs:AddToggle("ShowCustomCursor", { Text = "Custom Cursor", Default = o.ShowCustomCursor,
+            Callback = function(bt) bn.ShowCustomCursor = bt end,
         })
-        local themeNames = {}
-        if Library._ThemePresets then
-            for n, _ in pairs(Library._ThemePresets) do table.insert(themeNames, n) end
-            table.sort(themeNames)
-        else themeNames = { "Jungle" } end
-        Menu:AddDropdown("Theme", {
-            Values = themeNames, Default = Library.CurrentTheme or "Jungle", Text = "Theme",
+        local bt = {}
+        if bn._ThemePresets then
+            for bu, bv in pairs(bn._ThemePresets) do table.insert(bt, bu) end
+            table.sort(bt)
+        else bt = { "Jungle" } end
+        bs:AddDropdown("Theme", {
+            Values = bt, Default = bn.CurrentTheme or "Jungle", Text = "Theme",
             Tooltip = "Pick a theme; saves to disk. Re-execute the loadstring to fully apply.",
-            Callback = function(v)
-                if Library.SetTheme then
-                    local ok = Library:SetTheme(v)
-                    if ok then Util.notify("Theme", ("Saved '%s' - reload to fully apply"):format(v)) end
+            Callback = function(bu)
+                if bn.SetTheme then
+                    local bv = bn:SetTheme(bu)
+                    if bv then y.notify("Theme", ("Saved '%s' - reload to fully apply"):format(bu)) end
                 end
             end,
         })
-        Menu:AddDropdown("NotifySide", {
-            Values = { "Left","Right" }, Default = CONFIG.NotifySide, Text = "Notification Side",
-            Callback = function(v) Library:SetNotifySide(v) end,
+        bs:AddDropdown("NotifySide", {
+            Values = { "Left","Right" }, Default = o.NotifySide, Text = "Notification Side",
+            Callback = function(bu) bn:SetNotifySide(bu) end,
         })
-        Menu:AddDropdown("DPIScale", {
+        bs:AddDropdown("DPIScale", {
             Values = { "75%","100%","125%","150%" }, Default = "100%", Text = "DPI Scale",
-            Callback = function(v) Library:SetDPIScale(tonumber((v:gsub("%%", "")))) end,
+            Callback = function(bu) bn:SetDPIScale(tonumber((bu:gsub("%%", "")))) end,
         })
-        Menu:AddLabel("Menu Keybind"):AddKeyPicker("MenuKeybind", {
-            Default = CONFIG.GUIToggleKey, NoUI = true, Text = "Toggle UI",
+        bs:AddLabel("Menu Keybind"):AddKeyPicker("MenuKeybind", {
+            Default = o.GUIToggleKey, NoUI = true, Text = "Toggle UI",
         })
-        Menu:AddButton({ Text = "Unload", Func = function() Library:Unload() end, DoubleClick = true, Risky = true })
-        Library.ToggleKeybind = Options.MenuKeybind
+        bs:AddButton({ Text = "Unload", Func = function() bn:Unload() end, DoubleClick = true, Risky = true })
+        bn.ToggleKeybind = ak.MenuKeybind
 
-        local HUD = Tabs.Settings:AddLeftGroupbox("Info HUD")
-        HUD:AddToggle("InfoHUD", { Text = "Enable HUD", Default = false,
-            Callback = function(v) if v then InfoHUD.start() else InfoHUD.stop() end end,
+        local bu = bp.Settings:AddLeftGroupbox("Info HUD")
+        bu:AddToggle("InfoHUD", { Text = "Enable HUD", Default = false,
+            Callback = function(bv) if bv then aU.start() else aU.stop() end end,
         })
-        HUD:AddToggle("HUD_FPS",    { Text = "Show FPS",    Default = true,  Callback = function(v) InfoHUD.Visible.FPS = v end })
-        HUD:AddToggle("HUD_Ping",   { Text = "Show Ping",   Default = true,  Callback = function(v) InfoHUD.Visible.Ping = v end })
-        HUD:AddToggle("HUD_Memory", { Text = "Show Memory", Default = false, Callback = function(v) InfoHUD.Visible.Memory = v end })
-        HUD:AddToggle("HUD_Coords", { Text = "Show Coords", Default = false, Callback = function(v) InfoHUD.Visible.Coords = v end })
-        HUD:AddToggle("HUD_Time",   { Text = "Show Time",   Default = false, Callback = function(v) InfoHUD.Visible.Time = v end })
-        HUD:AddDropdown("HUD_Anchor", {
-            Values = { "TopLeft","TopRight","BottomLeft","BottomRight" }, Default = InfoHUD.Anchor, Text = "HUD Corner",
-            Callback = function(v) InfoHUD.Anchor = v; InfoHUD.refreshAnchor() end,
+        bu:AddToggle("HUD_FPS",    { Text = "Show FPS",    Default = true,  Callback = function(bv) aU.Visible.FPS = bv end })
+        bu:AddToggle("HUD_Ping",   { Text = "Show Ping",   Default = true,  Callback = function(bv) aU.Visible.Ping = bv end })
+        bu:AddToggle("HUD_Memory", { Text = "Show Memory", Default = false, Callback = function(bv) aU.Visible.Memory = bv end })
+        bu:AddToggle("HUD_Coords", { Text = "Show Coords", Default = false, Callback = function(bv) aU.Visible.Coords = bv end })
+        bu:AddToggle("HUD_Time",   { Text = "Show Time",   Default = false, Callback = function(bv) aU.Visible.Time = bv end })
+        bu:AddDropdown("HUD_Anchor", {
+            Values = { "TopLeft","TopRight","BottomLeft","BottomRight" }, Default = aU.Anchor, Text = "HUD Corner",
+            Callback = function(bv) aU.Anchor = bv; aU.refreshAnchor() end,
         })
 
-        local Perf = Tabs.Settings:AddRightGroupbox("Performance")
-        Perf:AddDropdown("PerfPreset", {
+        local bv = bp.Settings:AddRightGroupbox("Performance")
+        bv:AddDropdown("PerfPreset", {
             Values = { "Default","Low","Medium","High" }, Default = "Default", Text = "Graphics Preset",
-            Callback = function(v)
-                if v == "Low" then setLightingEffectsEnabled(false); setRainEnabled(false); Lighting.GlobalShadows = false; Lighting.FogEnd = 1e6
-                    Util.notify("Performance", "Low preset applied.")
-                elseif v == "Medium" then setLightingEffectsEnabled(true); setRainEnabled(false); Lighting.GlobalShadows = false
-                    Util.notify("Performance", "Medium preset applied.")
-                elseif v == "High" then setLightingEffectsEnabled(true); setRainEnabled(true); Lighting.GlobalShadows = true
-                    Util.notify("Performance", "High preset applied.")
-                else Util.notify("Performance", "Default preset.") end
+            Callback = function(bw)
+                if bw == "Low" then a7(false); bb(false); m.GlobalShadows = false; m.FogEnd = 1e6
+                    y.notify("Performance", "Low preset applied.")
+                elseif bw == "Medium" then a7(true); bb(false); m.GlobalShadows = false
+                    y.notify("Performance", "Medium preset applied.")
+                elseif bw == "High" then a7(true); bb(true); m.GlobalShadows = true
+                    y.notify("Performance", "High preset applied.")
+                else y.notify("Performance", "Default preset.") end
             end,
         })
-        Perf:AddToggle("DisableShadows", { Text = "Disable Shadows", Default = false,
-            Callback = function(v) Lighting.GlobalShadows = not v end })
-        Perf:AddToggle("DisableFog", { Text = "Disable Fog", Default = false,
-            Callback = function(v) Lighting.FogEnd = v and 1e6 or 500 end })
-        Perf:AddSlider("CharTransparency", {
+        bv:AddToggle("DisableShadows", { Text = "Disable Shadows", Default = false,
+            Callback = function(bw) m.GlobalShadows = not bw end })
+        bv:AddToggle("DisableFog", { Text = "Disable Fog", Default = false,
+            Callback = function(bw) m.FogEnd = bw and 1e6 or 500 end })
+        bv:AddSlider("CharTransparency", {
             Text = "Character Transparency", Default = 0, Min = 0, Max = 1, Rounding = 2,
-            Callback = function(v) applyCharTransparency(v) end,
+            Callback = function(bw) a4(bw) end,
         })
-        Perf:AddSlider("CameraFOV", {
+        bv:AddSlider("CameraFOV", {
             Text = "Camera FOV", Default = 70, Min = 30, Max = 120, Rounding = 0,
-            Callback = function(v) setFOV(v) end,
+            Callback = function(bw) a1(bw) end,
         })
 
-        local Cfg = Tabs.Settings:AddRightGroupbox("Configs")
-        local cfgList = ConfigIO.list()
-        if #cfgList == 0 then cfgList = { "---" } end
-        Cfg:AddInput("ConfigName", { Text = "Config Name", Default = "default", Placeholder = "Name your config" })
-        Cfg:AddDropdown("ConfigList", { Values = cfgList, Default = cfgList[1] or "---", Text = "Saved Configs" })
-        local function refreshList()
-            local l = ConfigIO.list()
-            if #l == 0 then l = { "---" } end
-            if Options.ConfigList and Options.ConfigList.SetValues then Options.ConfigList:SetValues(l) end
-        end
-        Cfg:AddButton({ Text = "Save Config", Func = function()
-            local n = Options.ConfigName and Options.ConfigName.Value or ""
-            if n == "" then Util.notify("Config", "Type a name first."); return end
-            local ok, err = ConfigIO.save(n, Library)
-            if ok then Util.notify("Config", "Saved '" .. n .. "'"); refreshList()
-            else Util.notify("Config", "Save failed: " .. tostring(err)) end
+        local bw = bp.Settings:AddRightGroupbox("Configs")
+        local bx = aZ.list()
+        if #bx == 0 then bx = { "---" } end
+        bw:AddInput("ConfigName", { Text = "Config Name", Default = "default", Placeholder = "Name your config" })
+        bw:AddDropdown("ConfigList", { Values = bx, Default = bx[1] or "---", Text = "Saved Configs" })
+local by=function()            
+local by = aZ.list()
+            if #by == 0 then by = { "---" } end
+            if ak.ConfigList and ak.ConfigList.SetValues then ak.ConfigList:SetValues(by) end
+end        
+bw:AddButton({ Text = "Save Config", Func = function()
+            local bz = ak.ConfigName and ak.ConfigName.Value or ""
+            if bz == "" then y.notify("Config", "Type a name first."); return end
+            local bA, bB = aZ.save(bz, bn)
+            if bA then y.notify("Config", "Saved '" .. bz .. "'"); by()
+            else y.notify("Config", "Save failed: " .. tostring(bB)) end
         end })
-        Cfg:AddButton({ Text = "Load Config", Func = function()
-            local n = Options.ConfigList and Options.ConfigList.Value or ""
-            if n == "" or n == "---" then Util.notify("Config", "No config selected."); return end
-            local ok, err = ConfigIO.load(n, Library)
-            if ok then Util.notify("Config", "Loaded '" .. n .. "'")
-            else Util.notify("Config", "Load failed: " .. tostring(err)) end
+        bw:AddButton({ Text = "Load Config", Func = function()
+            local bz = ak.ConfigList and ak.ConfigList.Value or ""
+            if bz == "" or bz == "---" then y.notify("Config", "No config selected."); return end
+            local bA, bB = aZ.load(bz, bn)
+            if bA then y.notify("Config", "Loaded '" .. bz .. "'")
+            else y.notify("Config", "Load failed: " .. tostring(bB)) end
         end })
-        Cfg:AddButton({ Text = "Delete Config", Risky = true, DoubleClick = true, Func = function()
-            local n = Options.ConfigList and Options.ConfigList.Value or ""
-            if n == "" or n == "---" then Util.notify("Config", "No config selected."); return end
-            local ok, err = ConfigIO.delete(n)
-            if ok then Util.notify("Config", "Deleted '" .. n .. "'"); refreshList()
-            else Util.notify("Config", "Delete failed: " .. tostring(err)) end
+        bw:AddButton({ Text = "Delete Config", Risky = true, DoubleClick = true, Func = function()
+            local bz = ak.ConfigList and ak.ConfigList.Value or ""
+            if bz == "" or bz == "---" then y.notify("Config", "No config selected."); return end
+            local bA, bB = aZ.delete(bz)
+            if bA then y.notify("Config", "Deleted '" .. bz .. "'"); by()
+            else y.notify("Config", "Delete failed: " .. tostring(bB)) end
         end })
-        Cfg:AddButton({ Text = "Refresh List", Func = refreshList })
+        bw:AddButton({ Text = "Refresh List", Func = by })
     end
 
-    Library:OnUnload(function()
-        Alive.value = false
-        disconnectAll()
-        ESP.disable()
-        ResourceESP.disable()
-        Fly.stop()
-        Freecam.stop()
-        FullBright.stop()
-        setUnderwaterVision(false)
-        setRainEnabled(true)
-        setLightingEffectsEnabled(true)
-        setInfiniteZoom(false)
-        StatMonitor.stop()
-        InfoHUD.stop()
-        Util.debug("Library unloaded; framework cleaned up.")
+    bn:OnUnload(function()
+        v.value = false
+        x()
+        aD.disable()
+        aN.disable()
+        bg.stop()
+        bh.stop()
+        a5.stop()
+        bf(false)
+        bb(true)
+        a7(true)
+        a3(false)
+        aT.stop()
+        aU.stop()
+        y.debug("Library unloaded; framework cleaned up.")
     end)
 end
 
-------------------------------------------------------------------------------
--- 18. BOOTSTRAP
-------------------------------------------------------------------------------
-Util.safe(function()
-    Util.waitForCharacter()
-    StatMonitor.start()
-    buildUI()
-    Util.notify("JurassicBlocky " .. JB_BUILD,
+
+
+
+y.safe(function()
+    y.waitForCharacter()
+    aT.start()
+    bs()
+    y.notify("JurassicBlocky " .. a,
         "Loaded. RightCtrl toggles the menu. Run Print Diagnostics in the Player tab to surface JB's real remote/stat names.")
-    print(("[JurassicBlocky] %s loaded successfully"):format(JB_BUILD))
-    Util.debug("Bootstrap complete")
+    print(("[JurassicBlocky] %s loaded successfully"):format(a))
+    y.debug("Bootstrap complete")
 end, "Bootstrap")
 
-------------------------------------------------------------------------------
--- 19. CLEAN SHUTDOWN
---    Call JurassicBlocky_Shutdown() from the dev console to fully unload.
-------------------------------------------------------------------------------
+
+
+
+
 getgenv().JurassicBlocky_Shutdown = function()
-    Alive.value = false
-    if Library and not Library.Unloaded then
-        Library:Unload()
+    v.value = false
+    if bn and not bn.Unloaded then
+        bn:Unload()
     else
-        disconnectAll()
-        ESP.disable()
-        ResourceESP.disable()
-        Fly.stop()
-        Freecam.stop()
-        FullBright.stop()
-        setUnderwaterVision(false)
-        setRainEnabled(true)
-        setLightingEffectsEnabled(true)
-        setInfiniteZoom(false)
-        StatMonitor.stop()
+        x()
+        aD.disable()
+        aN.disable()
+        bg.stop()
+        bh.stop()
+        a5.stop()
+        bf(false)
+        bb(true)
+        a7(true)
+        a3(false)
+        aT.stop()
     end
-    Util.notify("JurassicBlocky", "Shut down cleanly.")
+    y.notify("JurassicBlocky", "Shut down cleanly.")
 end
