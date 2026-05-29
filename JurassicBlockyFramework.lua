@@ -11,7 +11,7 @@
 
 
 
-local a = "v2.0.6.2 NameHub (jb-remote-discovery-20260529)"
+local a = "v2.0.7 NameHub (jb-attack-engine-20260529)"
 
 
 
@@ -133,7 +133,20 @@ local v = {
     NotifySides = { "Right", "Left", "Top", "Bottom" },
 
     
-    JB_AttackNames    = { "successOnHit", "tap" },
+    
+    
+    
+    
+    
+    JB_AttackNames    = {
+        "successOnHit",
+        "HitboxClassRemote",
+        "requestSkill",
+        "tap",
+        "damageDealt",
+        "requestKnockback",
+        "onHeavyRequest",
+    },
     JB_LootNames      = { "collectAmber", "collect", "collectPresent" },
     JB_SpawnName      = "spawn",
 
@@ -172,7 +185,10 @@ local w = {
     
     
     
-    AutofarmMovement  = "Teleport",
+    
+    
+    
+    AutofarmMovement  = "Fly",
     
     
     StopDistance      = 10,
@@ -724,6 +740,10 @@ function K.fireAt(N)
     local O, P = K.findRemote()
     if not O or not N then return false end
 
+    
+    
+    
+    
     local Q
     if P == "successOnHit" then
         Q = {
@@ -735,14 +755,55 @@ function K.fireAt(N)
             { { Target = N.hum }   },
             { { Target = N.model } },
         }
+    elseif P == "HitboxClassRemote" then
+        
+        Q = {
+            { { N.hum }, "Attack" },
+            { { N.model }, "Attack" },
+            { N.hum, "Attack" },
+            { N.model, N.root.Position },
+            { N.hum },
+            { N.model },
+            { { N.hum } },
+        }
+    elseif P == "requestSkill" then
+        
+        Q = {
+            { "BasicAttack", { N.hum } },
+            { "BasicAttack", { N.model } },
+            { "Attack", N.hum },
+            { "Attack", N.model },
+            { N.hum },
+            { N.model },
+        }
+    elseif P == "damageDealt" then
+        
+        Q = {
+            { N.hum, 9999 },
+            { N.model, 9999 },
+            { N.hum, 1 },
+            { N.model, 1 },
+            { { Target = N.hum, Amount = 9999 } },
+        }
     elseif P == "tap" then
         Q = {
             { N.root.Position },
             { N.model },
+            { N.hum },
             { },
         }
+    elseif P == "requestKnockback" or P == "onHeavyRequest" then
+        Q = {
+            { N.hum, N.root.Position },
+            { N.model, N.root.Position },
+            { N.hum },
+            { N.model },
+        }
     else
-        Q = { { N.model }, { N.hum }, { N.root }, { N.model.Name }, { } }
+        Q = {
+            { N.model }, { N.hum }, { N.root }, { N.model.Name },
+            { N.hum, N.root.Position }, { },
+        }
     end
 
     for R, S in ipairs(Q) do
@@ -843,7 +904,13 @@ function N.start()
                         end
                     end
 
-                    if W <= w.Range and tick() >= O then
+                    
+                    
+                    
+                    
+                    
+                    
+                    if tick() >= O then
                         local X, Y = K.findRemote()
                         w._AttackRemote = Y or "(none)"
                         local Z = K.fireAt(T)
