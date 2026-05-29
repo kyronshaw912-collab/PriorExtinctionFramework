@@ -11,7 +11,7 @@
 
 
 
-local a = "v2.0.7 NameHub (jb-attack-engine-20260529)"
+local a = "v2.0.8 NameHub (jb-test-button-20260529)"
 
 
 
@@ -207,6 +207,12 @@ local w = {
     _AttackRemote     = "",
     _TargetsFound     = 0,
     _NamedFound       = 0,
+    
+    
+    
+    _LoopPhase        = "(never started)",
+    _LoopTick         = 0,
+    _LoopErr          = "",
 
     
     GoatESP           = false,
@@ -836,92 +842,109 @@ local N = {}
 function N.start()
     D.spawn(function()
         local O, P, Q = 0, 0, 0
-        while w.Alive and w.Autofarm do
+local R=function(
+
+
+R, S)            
+w._LoopPhase = R
+            local T, U = pcall(S)
+            if not T then
+                w._LoopErr = ("[%s] %s"):format(R, tostring(U or ""):sub(1, 120))
+            end
+            return T, U
+end
+        
+while w.Alive and w.Autofarm do
             Q = Q + 1
-            local R = G.root()
-            if R then
-                local S = (w.FarmPriority and #w.FarmPriority > 0) and w.FarmPriority or { w.FarmTarget }
-                local T = J.bestByPriority(S)
+            w._LoopTick = Q
+            w._LoopPhase = "tick start"
+            local S = G.root()
+            if S then
+                local T, U = R("build priority list", function()
+                    return (w.FarmPriority and #w.FarmPriority > 0) and w.FarmPriority or { w.FarmTarget }
+                end)
+                if not U then U = { w.FarmTarget or "Goat" } end
+                local V, W = R("bestByPriority", function()
+                    return J.bestByPriority(U)
+                end)
 
                 
                 
                 
                 
-                if not T then
-                    local U = math.huge
-                    for V, W in ipairs(S) do
-                        for X, Y in ipairs(J.allByName(W)) do
-                            local Z = D.distance(R, Y.root)
-                            if Z < U then T = Y; U = Z end
+                if not W then
+                    R("name fallback", function()
+                        local X = math.huge
+                        for Y, Z in ipairs(U) do
+                            for _, aa in ipairs(J.allByName(Z)) do
+                                local ab = D.distance(S, aa.root)
+                                if ab < X then W = aa; X = ab end
+                            end
+                            if W then break end
                         end
-                        if T then break end
-                    end
+                    end)
                 end
 
-                local U = G.humanoid()
-                local V = (U and w.DisengageAt > 0 and U.Health < w.DisengageAt)
+                local aa = G.humanoid()
+                local ab = (aa and w.DisengageAt > 0 and aa.Health < w.DisengageAt)
 
-                if V then
-                    w._FarmStatus = ("Retreating (HP %d < %d)"):format(math.floor(U.Health), w.DisengageAt)
+                if ab then
+                    w._FarmStatus = ("Retreating (HP %d < %d)"):format(math.floor(aa.Health), w.DisengageAt)
                     
                     
                     
                     if w.AutofarmMovement == "Fly" and FarmMove.flyActive() then
                         _fmBV.Velocity = Vector3.zero
                     end
-                elseif T and T.model.Parent and T.root then
-                    local W = D.distance(R, T.root)
-                    w._FarmStatus    = ("Engaging %s @ %.0fm"):format(T.model.Name, W)
-                    w._LastTarget    = T.model.Name
-                    w._LastDistance  = W
-                    w._TargetsFound  = (w._TargetsFound or 0)
+                elseif W and W.model and W.model.Parent and W.root then
+                    R("compute dist", function()
+                        local X = D.distance(S, W.root)
+                        w._FarmStatus    = ("Engaging %s @ %.0fm"):format(W.model.Name, X)
+                        w._LastTarget    = W.model.Name
+                        w._LastDistance  = X
+                    end)
 
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    if w.AutofarmMovement == "Fly" then
-                        if W > w.StopDistance then
-                            FarmMove.flyToward(T.root.Position)
-                        elseif FarmMove.flyActive() then
-                            _fmBV.Velocity = Vector3.zero
-                        end
-                    elseif w.AutofarmMovement == "Walk" then
-                        if W > w.StopDistance then
-                            FarmMove.walkTo(T.root.Position)
-                        end
-                    else
-                        
-                        
-                        
-                        
-                        if W > w.Range then
-                            FarmMove.tpTo(T.root.Position)
-                        end
-                    end
+                    local X = w._LastDistance or 0
 
-                    
+                    R("movement", function()
+                        if w.AutofarmMovement == "Fly" then
+                            if X > w.StopDistance then
+                                FarmMove.flyToward(W.root.Position)
+                            elseif FarmMove.flyActive() then
+                                _fmBV.Velocity = Vector3.zero
+                            end
+                        elseif w.AutofarmMovement == "Walk" then
+                            if X > w.StopDistance then
+                                FarmMove.walkTo(W.root.Position)
+                            end
+                        else
+                            if X > w.Range then
+                                FarmMove.tpTo(W.root.Position)
+                            end
+                        end
+                    end)
+
                     
                     
                     
                     
                     
                     if tick() >= O then
-                        local X, Y = K.findRemote()
-                        w._AttackRemote = Y or "(none)"
-                        local Z = K.fireAt(T)
-                        w._LastFire = Z and "OK" or "FAIL"
-                        if Z and w.StatsCounting then
+                        R("find attack remote", function()
+                            local Y, Z = K.findRemote()
+                            w._AttackRemote = Z ~= "" and Z or "(none)"
+                        end)
+                        local Y, Z = R("fire attack", function()
+                            return K.fireAt(W)
+                        end)
+                        w._LastFire = (Y and Z) and "OK" or "FAIL"
+                        if Y and Z and w.StatsCounting then
                             w.CoinsGained = w.CoinsGained + 1
                         end
                         O = tick() + 0.35
                     end
                 else
-                    w._FarmStatus = ("Searching for: %s"):format(table.concat(S, ", "))
+                    w._FarmStatus = ("Searching for: %s"):format(table.concat(U, ", "))
                     
                     if w.AutofarmMovement == "Fly" and FarmMove.flyActive() then
                         _fmBV.Velocity = Vector3.zero
@@ -930,13 +953,13 @@ function N.start()
 
                 
                 if Q % 5 == 0 then
-                    local W = #J.allWithHumanoid()
-                    local X = 0
-                    for Y, Z in ipairs(S) do
-                        X = X + #J.allByName(Z)
+                    local X = #J.allWithHumanoid()
+                    local Y = 0
+                    for Z, _ in ipairs(U) do
+                        Y = Y + #J.allByName(_)
                     end
-                    w._TargetsFound = W
-                    w._NamedFound   = X
+                    w._TargetsFound = X
+                    w._NamedFound   = Y
                 end
 
                 if w.AutoLoot and tick() >= P then
@@ -958,54 +981,54 @@ end
 
 
 
-local O = {}
+local aa = {}
 
-function O.start()
+function aa.start()
     D.spawn(function()
-        local P = 0
+        local ab = 0
         while w.Alive do
             if w.AutoAttackNearby or w.AutoAttack or w.AutoTPToPlayer then
-                local Q = G.root()
-                if Q then
-                    local R
+                local O = G.root()
+                if O then
+                    local P
                     if w.AutoTPToPlayer and w.TargetPlayer ~= "" then
-                        local S = d:FindFirstChild(w.TargetPlayer)
-                        if S and S.Character then
-                            local T = S.Character:FindFirstChild("HumanoidRootPart")
-                            local U = S.Character:FindFirstChildOfClass("Humanoid")
-                            if T and U then
-                                local V = CFrame.new(T.Position) * CFrame.new(w.OffsetX, w.OffsetY, 0)
-                                V = CFrame.lookAt(V.Position, T.Position)
-                                pcall(function() Q.CFrame = V end)
+                        local Q = d:FindFirstChild(w.TargetPlayer)
+                        if Q and Q.Character then
+                            local R = Q.Character:FindFirstChild("HumanoidRootPart")
+                            local S = Q.Character:FindFirstChildOfClass("Humanoid")
+                            if R and S then
+                                local U = CFrame.new(R.Position) * CFrame.new(w.OffsetX, w.OffsetY, 0)
+                                U = CFrame.lookAt(U.Position, R.Position)
+                                pcall(function() O.CFrame = U end)
                                 if w.AutoAttack then
-                                    R = { model = S.Character, hum = U, root = T }
+                                    P = { model = Q.Character, hum = S, root = R }
                                 end
                             end
                         end
                     end
 
-                    if not R and w.AutoAttackNearby then
-                        R = J.bestByPriority({ "Players" })
+                    if not P and w.AutoAttackNearby then
+                        P = J.bestByPriority({ "Players" })
                     end
-                    if not R and w.AutoAttack then
-                        R = J.bestByPriority(w.FarmPriority)
+                    if not P and w.AutoAttack then
+                        P = J.bestByPriority(w.FarmPriority)
                     end
 
-                    if R and tick() >= P then
-                        local S = D.distance(Q, R.root)
-                        if S <= w.Range then
-                            local T = G.humanoid()
-                            if not T or T.Health >= w.DisengageAt or w.DisengageAt == 0 then
-                                K.fireAt(R)
-                                P = tick() + 0.35
+                    if P and tick() >= ab then
+                        local Q = D.distance(O, P.root)
+                        if Q <= w.Range then
+                            local R = G.humanoid()
+                            if not R or R.Health >= w.DisengageAt or w.DisengageAt == 0 then
+                                K.fireAt(P)
+                                ab = tick() + 0.35
                             end
                         end
                     end
 
-                    if w.TargetPOV and R and R.root then
+                    if w.TargetPOV and P and P.root then
                         pcall(function()
                             p.CameraType    = Enum.CameraType.Scriptable
-                            p.CFrame        = CFrame.new(R.root.Position + Vector3.new(0, 8, 12), R.root.Position)
+                            p.CFrame        = CFrame.new(P.root.Position + Vector3.new(0, 8, 12), P.root.Position)
                         end)
                     end
                 end
@@ -1022,138 +1045,138 @@ end
 
 
 
-local P = {}
+local ab = {}
 
-function P.clearAll()
-    for Q, R in pairs(y) do
-        if R and R.Parent then R:Destroy() end
-        y[Q] = nil
+function ab.clearAll()
+    for O, P in pairs(y) do
+        if P and P.Parent then P:Destroy() end
+        y[O] = nil
     end
 end
 
-function P.applyHighlight(Q, R)
-    if y[Q] then return end
-    local S = Instance.new("Highlight")
-    S.Adornee = Q
-    S.FillColor = R
-    S.OutlineColor = R
-    S.FillTransparency    = w.FillTransparency
-    S.OutlineTransparency = w.OutlineTransparency
-    S.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-    S.Parent = Q
-    y[Q] = S
+function ab.applyHighlight(O, P)
+    if y[O] then return end
+    local Q = Instance.new("Highlight")
+    Q.Adornee = O
+    Q.FillColor = P
+    Q.OutlineColor = P
+    Q.FillTransparency    = w.FillTransparency
+    Q.OutlineTransparency = w.OutlineTransparency
+    Q.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+    Q.Parent = O
+    y[O] = Q
 end
 
-function P.refresh()
+function ab.refresh()
     
-    for Q, R in pairs(y) do
-        if R and R.Parent then
-            R.FillTransparency    = w.FillTransparency
-            R.OutlineTransparency = w.OutlineTransparency
+    for O, P in pairs(y) do
+        if P and P.Parent then
+            P.FillTransparency    = w.FillTransparency
+            P.OutlineTransparency = w.OutlineTransparency
         end
     end
 end
 
-function P.start()
+function ab.start()
     D.spawn(function()
         while w.Alive do
             
-            for Q, R in pairs(y) do
-                if not Q.Parent or not R.Parent then
-                    if R.Parent then R:Destroy() end
-                    y[Q] = nil
+            for O, P in pairs(y) do
+                if not O.Parent or not P.Parent then
+                    if P.Parent then P:Destroy() end
+                    y[O] = nil
                 end
             end
 
             if w.GoatESP or w.AmberESP then
-                for Q, R in ipairs(J.allWithHumanoid()) do
-                    local S = R.model.Name:lower()
-                    if w.GoatESP and (S:find("goat", 1, true) or S:find("dino", 1, true) or d:GetPlayerFromCharacter(R.model) == nil) then
-                        P.applyHighlight(R.model, w.GoatESPColor)
+                for O, P in ipairs(J.allWithHumanoid()) do
+                    local Q = P.model.Name:lower()
+                    if w.GoatESP and (Q:find("goat", 1, true) or Q:find("dino", 1, true) or d:GetPlayerFromCharacter(P.model) == nil) then
+                        ab.applyHighlight(P.model, w.GoatESPColor)
                     end
                 end
                 if w.AmberESP then
-                    for Q, R in ipairs(h:GetDescendants()) do
-                        if R:IsA("Model") or R:IsA("BasePart") then
-                            local S = R.Name:lower()
-                            if S:find("amber", 1, true) and not y[R] then
-                                P.applyHighlight(R, w.AmberESPColor)
+                    for O, P in ipairs(h:GetDescendants()) do
+                        if P:IsA("Model") or P:IsA("BasePart") then
+                            local Q = P.Name:lower()
+                            if Q:find("amber", 1, true) and not y[P] then
+                                ab.applyHighlight(P, w.AmberESPColor)
                             end
                         end
                     end
                 end
             else
-                P.clearAll()
+                ab.clearAll()
             end
             task.wait(0.5)
         end
-        P.clearAll()
+        ab.clearAll()
     end, "ESP.loop")
 end
 
 
 
 
-local Q = {}
-local R, S, T
+local O = {}
+local P, Q, R
 
-function Q.enable()
-    local U = G.get(); if not U then return end
-    local V = G.root(); if not V then return end
-    local W = G.humanoid()
+function O.enable()
+    local S = G.get(); if not S then return end
+    local U = G.root(); if not U then return end
+    local V = G.humanoid()
 
-    Q.disable()
-    T = {}
+    O.disable()
+    R = {}
 
-    R = Instance.new("BodyVelocity")
-    R.MaxForce = Vector3.new(9e9, 9e9, 9e9)
-    R.Velocity = Vector3.zero
-    R.Parent = V
+    P = Instance.new("BodyVelocity")
+    P.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+    P.Velocity = Vector3.zero
+    P.Parent = U
 
-    S = Instance.new("BodyGyro")
-    S.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
-    S.P = 1000
-    S.CFrame = V.CFrame
-    S.Parent = V
+    Q = Instance.new("BodyGyro")
+    Q.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+    Q.P = 1000
+    Q.CFrame = U.CFrame
+    Q.Parent = U
 
-    if W then W.PlatformStand = true end
+    if V then V.PlatformStand = true end
 
-    D.conn("fly_input_began", f.InputBegan:Connect(function(X, Y)
-        if Y then return end
-        T[X.KeyCode] = true
+    D.conn("fly_input_began", f.InputBegan:Connect(function(W, X)
+        if X then return end
+        R[W.KeyCode] = true
     end))
-    D.conn("fly_input_ended", f.InputEnded:Connect(function(X)
-        T[X.KeyCode] = false
+    D.conn("fly_input_ended", f.InputEnded:Connect(function(W)
+        R[W.KeyCode] = false
     end))
 
     D.conn("fly_step", e.RenderStepped:Connect(function()
-        if not (w.Fly and R and R.Parent) then return end
-        local X = p
-        if not X then return end
-        local Y = Vector3.zero
-        if T[Enum.KeyCode.W]      then Y = Y + X.CFrame.LookVector end
-        if T[Enum.KeyCode.S]      then Y = Y - X.CFrame.LookVector end
-        if T[Enum.KeyCode.A]      then Y = Y - X.CFrame.RightVector end
-        if T[Enum.KeyCode.D]      then Y = Y + X.CFrame.RightVector end
-        if T[Enum.KeyCode.Space]  then Y = Y + Vector3.new(0, 1, 0) end
-        if T[Enum.KeyCode.LeftControl] then Y = Y - Vector3.new(0, 1, 0) end
+        if not (w.Fly and P and P.Parent) then return end
+        local W = p
+        if not W then return end
+        local X = Vector3.zero
+        if R[Enum.KeyCode.W]      then X = X + W.CFrame.LookVector end
+        if R[Enum.KeyCode.S]      then X = X - W.CFrame.LookVector end
+        if R[Enum.KeyCode.A]      then X = X - W.CFrame.RightVector end
+        if R[Enum.KeyCode.D]      then X = X + W.CFrame.RightVector end
+        if R[Enum.KeyCode.Space]  then X = X + Vector3.new(0, 1, 0) end
+        if R[Enum.KeyCode.LeftControl] then X = X - Vector3.new(0, 1, 0) end
 
-        if Y.Magnitude > 0 then Y = Y.Unit * w.FlySpeed
-        else Y = Vector3.zero end
-        R.Velocity = Y
-        S.CFrame = X.CFrame
+        if X.Magnitude > 0 then X = X.Unit * w.FlySpeed
+        else X = Vector3.zero end
+        P.Velocity = X
+        Q.CFrame = W.CFrame
     end))
 end
 
-function Q.disable()
+function O.disable()
     D.disconnect("fly_input_began")
     D.disconnect("fly_input_ended")
     D.disconnect("fly_step")
-    if R then pcall(function() R:Destroy() end); R = nil end
-    if S then pcall(function() S:Destroy() end); S = nil end
-    local U = G.humanoid()
-    if U then pcall(function() U.PlatformStand = false end) end
-    T = nil
+    if P then pcall(function() P:Destroy() end); P = nil end
+    if Q then pcall(function() Q:Destroy() end); Q = nil end
+    local S = G.humanoid()
+    if S then pcall(function() S.PlatformStand = false end) end
+    R = nil
 end
 
 
@@ -1161,90 +1184,90 @@ end
 
 
 
-local U = {}
-local V, W
+local S = {}
+local U, V
 
-function U.startFly()
-    local X = G.root(); if not X then return end
-    U.stopFly()
-    V = Instance.new("BodyVelocity")
-    V.MaxForce = Vector3.new(9e9, 9e9, 9e9)
-    V.Velocity = Vector3.zero
-    V.Parent = X
-    W = Instance.new("BodyGyro")
-    W.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
-    W.P = 1000
-    W.CFrame = X.CFrame
-    W.Parent = X
-    local Y = G.humanoid()
-    if Y then Y.PlatformStand = true end
+function S.startFly()
+    local W = G.root(); if not W then return end
+    S.stopFly()
+    U = Instance.new("BodyVelocity")
+    U.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+    U.Velocity = Vector3.zero
+    U.Parent = W
+    V = Instance.new("BodyGyro")
+    V.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+    V.P = 1000
+    V.CFrame = W.CFrame
+    V.Parent = W
+    local X = G.humanoid()
+    if X then X.PlatformStand = true end
 end
 
-function U.stopFly()
+function S.stopFly()
+    if U then pcall(function() U:Destroy() end); U = nil end
     if V then pcall(function() V:Destroy() end); V = nil end
-    if W then pcall(function() W:Destroy() end); W = nil end
     
     if not w.Fly then
-        local X = G.humanoid()
-        if X then pcall(function() X.PlatformStand = false end) end
+        local W = G.humanoid()
+        if W then pcall(function() W.PlatformStand = false end) end
     end
 end
 
 
 
-function U.flyActive()
-    return V ~= nil and V.Parent ~= nil
+function S.flyActive()
+    return U ~= nil and U.Parent ~= nil
 end
 
 
 
-function U.flyToward(X)
-    local Y = G.root(); if not Y then return end
-    if not U.flyActive() then U.startFly() end
-    if not V then return end
-    local Z = X - Y.Position
-    local _ = Z.Magnitude
-    if _ < 0.5 then
-        V.Velocity = Vector3.zero
+function S.flyToward(W)
+    local X = G.root(); if not X then return end
+    if not S.flyActive() then S.startFly() end
+    if not U then return end
+    local Y = W - X.Position
+    local Z = Y.Magnitude
+    if Z < 0.5 then
+        U.Velocity = Vector3.zero
         return
     end
-    V.Velocity = Z.Unit * w.FlySpeed
-    if W then W.CFrame = CFrame.lookAt(Y.Position, X) end
+    U.Velocity = Y.Unit * w.FlySpeed
+    if V then V.CFrame = CFrame.lookAt(X.Position, W) end
 end
 
 
-function U.tpTo(X)
-    local Y = G.root(); if not Y then return end
-    local Z = CFrame.new(X) * CFrame.new(w.OffsetX, w.OffsetY, math.min(8, w.Range * 0.2))
-    Z = CFrame.lookAt(Z.Position, X)
-    pcall(function() Y.CFrame = Z end)
+function S.tpTo(W)
+    local X = G.root(); if not X then return end
+    local Y = CFrame.new(W) * CFrame.new(w.OffsetX, w.OffsetY, math.min(8, w.Range * 0.2))
+    Y = CFrame.lookAt(Y.Position, W)
+    pcall(function() X.CFrame = Y end)
 end
 
 
-function U.walkTo(X)
-    local Y = G.humanoid()
-    if Y then pcall(function() Y:MoveTo(X) end) end
+function S.walkTo(W)
+    local X = G.humanoid()
+    if X then pcall(function() X:MoveTo(W) end) end
 end
 
 
 
 
-local X = {}
+local W = {}
 
-function X.respawn()
-    local Y = G.humanoid()
-    if Y then
-        Y.Health = 0
+function W.respawn()
+    local X = G.humanoid()
+    if X then
+        X.Health = 0
     else
         pcall(function() q.Character:BreakJoints() end)
     end
 end
 
-function X.openMenu()
-    local Y = H.remoteByKeywords(v.MenuKeywords)
-    if Y then
+function W.openMenu()
+    local X = H.remoteByKeywords(v.MenuKeywords)
+    if X then
         pcall(function()
-            if Y:IsA("RemoteEvent") then Y:FireServer() else Y:InvokeServer() end
+            if X:IsA("RemoteEvent") then X:FireServer() else X:InvokeServer() end
         end)
         return
     end
@@ -1252,11 +1275,11 @@ function X.openMenu()
     pcall(function() k:CaptureController() end)
 end
 
-function X.attachAutoRespawn()
-    D.conn("char_died_watch", q.CharacterAdded:Connect(function(Y)
-        local Z = Y:WaitForChild("Humanoid", 5)
-        if not Z then return end
-        Z.Died:Connect(function()
+function W.attachAutoRespawn()
+    D.conn("char_died_watch", q.CharacterAdded:Connect(function(X)
+        local Y = X:WaitForChild("Humanoid", 5)
+        if not Y then return end
+        Y.Died:Connect(function()
             if not w.AutoRespawn then return end
             task.wait(w.RespawnDelay)
             if not w.AutoRespawn then return end
@@ -1269,52 +1292,52 @@ end
 
 
 
-local Y = {}
+local X = {}
 
-function Y.fetchServers()
-    local Z = game.PlaceId
-    local _ = ("https://games.roblox.com/v1/games/%d/servers/Public?sortOrder=Asc&limit=100"):format(Z)
-    local aa = c({ Url = _, Method = "GET" })
-    if not aa or aa.StatusCode ~= 200 then return {} end
-    local ab = E.decode(aa.Body or "")
-    local ac = {}
-    for ad, ae in ipairs(ab.data or {}) do
-        if ae.id and ae.id ~= game.JobId then
-            ac[#ac + 1] = { id = ae.id, playing = ae.playing or 0, max = ae.maxPlayers or 0 }
+function X.fetchServers()
+    local Y = game.PlaceId
+    local Z = ("https://games.roblox.com/v1/games/%d/servers/Public?sortOrder=Asc&limit=100"):format(Y)
+    local _ = c({ Url = Z, Method = "GET" })
+    if not _ or _.StatusCode ~= 200 then return {} end
+    local ac = E.decode(_.Body or "")
+    local ad = {}
+    for ae, af in ipairs(ac.data or {}) do
+        if af.id and af.id ~= game.JobId then
+            ad[#ad + 1] = { id = af.id, playing = af.playing or 0, max = af.maxPlayers or 0 }
         end
     end
-    return ac
+    return ad
 end
 
-function Y.joinJobId(aa)
-    if not aa or aa == "" then return end
-    pcall(function() n:TeleportToPlaceInstance(game.PlaceId, aa, q) end)
+function X.joinJobId(ac)
+    if not ac or ac == "" then return end
+    pcall(function() n:TeleportToPlaceInstance(game.PlaceId, ac, q) end)
 end
 
-function Y.rejoin()
+function X.rejoin()
     pcall(function() n:TeleportToPlaceInstance(game.PlaceId, game.JobId, q) end)
 end
 
-function Y.randomHop()
-    local aa = Y.fetchServers()
-    if #aa == 0 then F.send("No servers found.") return end
-    local ab = aa[math.random(1, #aa)]
-    Y.joinJobId(ab.id)
+function X.randomHop()
+    local ac = X.fetchServers()
+    if #ac == 0 then F.send("No servers found.") return end
+    local ad = ac[math.random(1, #ac)]
+    X.joinJobId(ad.id)
 end
 
-function Y.attachWatchers()
+function X.attachWatchers()
     
-    D.conn("friend_watch", d.PlayerAdded:Connect(function(aa)
+    D.conn("friend_watch", d.PlayerAdded:Connect(function(ac)
         if not w.HopOnFriend then return end
-        local ab, ac = pcall(function() return q:IsFriendsWith(aa.UserId) end)
-        if ab and ac then Y.randomHop() end
+        local ad, ae = pcall(function() return q:IsFriendsWith(ac.UserId) end)
+        if ad and ae then X.randomHop() end
     end))
 
     
     D.spawn(function()
         while w.Alive do
             if w.HopOnPlayerCount > 0 and #d:GetPlayers() <= w.HopOnPlayerCount then
-                Y.randomHop()
+                X.randomHop()
                 task.wait(10)
             end
             task.wait(5)
@@ -1325,23 +1348,23 @@ end
 
 
 
-local aa = {}
+local ac = {}
 
-function aa.isAdmin(ab)
-    ab = ab:lower()
-    for ac, ad in ipairs(w.AdminList) do
-        if ab:find(ad, 1, true) then return true end
+function ac.isAdmin(ad)
+    ad = ad:lower()
+    for ae, af in ipairs(w.AdminList) do
+        if ad:find(af, 1, true) then return true end
     end
     return false
 end
 
-function aa.attach()
-    D.conn("admin_watch", d.PlayerAdded:Connect(function(ab)
+function ac.attach()
+    D.conn("admin_watch", d.PlayerAdded:Connect(function(ad)
         if not w.KickOnAdmin then return end
-        if aa.isAdmin(ab.Name) or aa.isAdmin(ab.DisplayName or "") then
-            F.send("Admin detected: " .. ab.Name .. " — kicking self.", 5)
+        if ac.isAdmin(ad.Name) or ac.isAdmin(ad.DisplayName or "") then
+            F.send("Admin detected: " .. ad.Name .. " — kicking self.", 5)
             task.wait(0.3)
-            pcall(function() q:Kick("[NameHub] Admin detected: " .. ab.Name) end)
+            pcall(function() q:Kick("[NameHub] Admin detected: " .. ad.Name) end)
         end
     end))
 
@@ -1349,11 +1372,11 @@ function aa.attach()
     D.spawn(function()
         task.wait(2)
         if not w.KickOnAdmin then return end
-        for ab, ac in ipairs(d:GetPlayers()) do
-            if ac ~= q and (aa.isAdmin(ac.Name) or aa.isAdmin(ac.DisplayName or "")) then
-                F.send("Admin in server: " .. ac.Name .. " — kicking self.", 5)
+        for ad, ae in ipairs(d:GetPlayers()) do
+            if ae ~= q and (ac.isAdmin(ae.Name) or ac.isAdmin(ae.DisplayName or "")) then
+                F.send("Admin in server: " .. ae.Name .. " — kicking self.", 5)
                 task.wait(0.3)
-                pcall(function() q:Kick("[NameHub] Admin in server: " .. ac.Name) end)
+                pcall(function() q:Kick("[NameHub] Admin in server: " .. ae.Name) end)
                 return
             end
         end
@@ -1363,22 +1386,22 @@ end
 
 
 
-local ab = {}
-local ac = 0
+local ad = {}
+local ae = 0
 
-function ab.send(ad)
-    if not ad and w.WebhookLink == "" then return end
+function ad.send(af)
+    if not af and w.WebhookLink == "" then return end
     if w.WebhookLink == "" then F.send("Set a webhook URL first.") return end
 
-    local ae = w.StartTime and (os.time() - w.StartTime) or 0
-    local Z    = ae > 0 and (w.CoinsGained / (ae / 60)) or 0
+    local Y = w.StartTime and (os.time() - w.StartTime) or 0
+    local Z    = Y > 0 and (w.CoinsGained / (Y / 60)) or 0
 
     local _ = w.WebhookAnonymous and "Anonymous" or q.Name
-    local af       = w.WebhookTimezone
-    local ag   = os.time() + af * 3600
-    local ah   = os.date("!%Y-%m-%d %H:%M:%S", ag) .. (" UTC%+d"):format(af)
+    local ag       = w.WebhookTimezone
+    local ah   = os.time() + ag * 3600
+    local ai   = os.date("!%Y-%m-%d %H:%M:%S", ah) .. (" UTC%+d"):format(ag)
 
-    local ai = {
+    local aj = {
         username = "NameHub JB",
         embeds = {{
             title  = "NameHub Jurassic Blocky — Stats",
@@ -1386,10 +1409,10 @@ function ab.send(ad)
             fields = {
                 { name = "User",          value = _,                                inline = true },
                 { name = "Server",        value = ("`%s`"):format(game.JobId or "n/a"),    inline = true },
-                { name = "Time",          value = ah,                                  inline = false },
+                { name = "Time",          value = ai,                                  inline = false },
                 { name = "Coins Gained",  value = tostring(w.CoinsGained),                 inline = true },
                 { name = "Rate (per min)",value = string.format("%.1f", Z),             inline = true },
-                { name = "Elapsed",       value = D.fmtTime(ae),                      inline = true },
+                { name = "Elapsed",       value = D.fmtTime(Y),                      inline = true },
                 { name = "Auto-Farm",     value = w.Autofarm and "ON" or "OFF",            inline = true },
                 { name = "Target",        value = w.FarmTarget,                            inline = true },
                 { name = "Dino",          value = w.AutofarmDino,                          inline = true },
@@ -1397,36 +1420,36 @@ function ab.send(ad)
             footer = { text = a },
         }},
     }
-    local aj = E.encode(ai)
-    local ak = pcall(function()
+    local ak = E.encode(aj)
+    local al = pcall(function()
         c({
             Url     = w.WebhookLink,
             Method  = "POST",
             Headers = { ["Content-Type"] = "application/json" },
-            Body    = aj,
+            Body    = ak,
         })
     end)
-    if ak then
-        ac = tick()
-        if ad then F.send("Webhook sent.") end
-    elseif ad then
+    if al then
+        ae = tick()
+        if af then F.send("Webhook sent.") end
+    elseif af then
         F.send("Webhook failed.")
     end
 end
 
-function ab.attachInterval()
+function ad.attachInterval()
     D.spawn(function()
         while w.Alive do
             if w.WebhookLink ~= "" and w.WebhookInterval > 0 then
-                if tick() - ac >= w.WebhookInterval * 60 then
-                    ab.send(false)
+                if tick() - ae >= w.WebhookInterval * 60 then
+                    ad.send(false)
                 end
             end
             task.wait(30)
         end
     end, "Webhook.interval")
 end
-local ad=function()    
+local af=function()    
 
 
 
@@ -1489,56 +1512,56 @@ A = {
     },
 }
 
-local ae = {}
+local ag = {}
 
-function ae.applyValues(af)
-    w.BgColor       = af.Bg
-    w.MainColor     = af.Main
-    w.AccentColor   = af.Accent
-    w.OutlineColor  = af.Outline
-    w.FontColor     = af.Font
+function ag.applyValues(ah)
+    w.BgColor       = ah.Bg
+    w.MainColor     = ah.Main
+    w.AccentColor   = ah.Accent
+    w.OutlineColor  = ah.Outline
+    w.FontColor     = ah.Font
 end
 
-function ae.apply()
-    for af, ag in pairs(z) do
-        if ag.themeUpdate then pcall(ag.themeUpdate) end
+function ag.apply()
+    for ah, ai in pairs(z) do
+        if ai.themeUpdate then pcall(ai.themeUpdate) end
     end
 end
 
-function ae.load(af)
-    local ag = A[af]
-    if not ag then return end
-    w.Theme = af
-    ae.applyValues(ag)
-    ae.apply()
+function ag.load(ah)
+    local ai = A[ah]
+    if not ai then return end
+    w.Theme = ah
+    ag.applyValues(ai)
+    ag.apply()
 end
 
-function ae.listNames()
-    local af = {}
-    for ag in pairs(A) do af[#af + 1] = ag end
-    table.sort(af)
-    return af
+function ag.listNames()
+    local ah = {}
+    for ai in pairs(A) do ah[#ah + 1] = ai end
+    table.sort(ah)
+    return ah
 end
 
-function ae.saveCurrent(af)
-    if not af or af == "" then return false end
-    local ag = {
+function ag.saveCurrent(ah)
+    if not ah or ah == "" then return false end
+    local ai = {
         Bg      = D.color3ToTable(w.BgColor),
         Main    = D.color3ToTable(w.MainColor),
         Accent  = D.color3ToTable(w.AccentColor),
         Outline = D.color3ToTable(w.OutlineColor),
         Font    = D.color3ToTable(w.FontColor),
     }
-    pcall(b.writefile, t .. "/" .. af .. ".json", E.encode(ag))
+    pcall(b.writefile, t .. "/" .. ah .. ".json", E.encode(ai))
     return true
 end
 
 
 
 
-local af = {}
+local ah = {}
 
-local ag = {
+local ai = {
     "Autofarm", "FarmTarget", "FarmPriority", "Speed", "AutofarmDino", "SkipPlayers", "AutoLoot",
     "AutofarmMovement", "StopDistance", "ManualAttackRemote",
     "GoatESP", "GoatESPColor", "AmberESP", "AmberESPColor", "NoPromptDelay",
@@ -1553,99 +1576,99 @@ local ag = {
     "FontFace", "MenuBind", "Autoexecute", "NotificationSide",
     "UIScale", "_ZoomPick",
 }
-local ah=function()    
+local aj=function()    
 
-local ah = {}
-    for ai, aj in ipairs(ag) do
-        local ak = w[aj]
-        if typeof(ak) == "Color3" then
-            ah[aj] = { _c3 = true, v = D.color3ToTable(ak) }
+local aj = {}
+    for ak, al in ipairs(ai) do
+        local Y = w[al]
+        if typeof(Y) == "Color3" then
+            aj[al] = { _c3 = true, v = D.color3ToTable(Y) }
         else
-            ah[aj] = ak
+            aj[al] = Y
         end
     end
-    return ah
-end local ai=function(
+    return aj
+end local ak=function(
 
-ai)    
-for aj, ak in pairs(ai or {}) do
-        if type(ak) == "table" and ak._c3 then
-            w[aj] = D.tableToColor3(ak.v)
+ak)    
+for al, Y in pairs(ak or {}) do
+        if type(Y) == "table" and Y._c3 then
+            w[al] = D.tableToColor3(Y.v)
         else
-            w[aj] = ak
+            w[al] = Y
         end
     end
 end
 
-function af.save(aj)
-    if not aj or aj == "" then F.send("Config name required.") return end
-    pcall(b.writefile, s .. "/" .. aj .. ".json", E.encode(ah()))
-    F.send("Saved config: " .. aj)
+function ah.save(al)
+    if not al or al == "" then F.send("Config name required.") return end
+    pcall(b.writefile, s .. "/" .. al .. ".json", E.encode(aj()))
+    F.send("Saved config: " .. al)
 end
 
-function af.load(aj)
-    if not aj or aj == "" then return end
-    if not b.isfile(s .. "/" .. aj .. ".json") then F.send("No config: " .. aj) return end
-    local ak = ""
-    pcall(function() ak = b.readfile(s .. "/" .. aj .. ".json") end)
-    ai(E.decode(ak))
+function ah.load(al)
+    if not al or al == "" then return end
+    if not b.isfile(s .. "/" .. al .. ".json") then F.send("No config: " .. al) return end
+    local Y = ""
+    pcall(function() Y = b.readfile(s .. "/" .. al .. ".json") end)
+    ak(E.decode(Y))
     
     for Z, _ in pairs(z) do
         if _.refresh then pcall(_.refresh) end
     end
-    ae.apply()
+    ag.apply()
     if C and C.uiScale then C.uiScale.Scale = w.UIScale or 1 end
-    F.send("Loaded config: " .. aj)
+    F.send("Loaded config: " .. al)
 end
 
-function af.delete(aj)
-    if not aj or aj == "" then return end
-    pcall(b.delfile, s .. "/" .. aj .. ".json")
-    F.send("Deleted config: " .. aj)
+function ah.delete(al)
+    if not al or al == "" then return end
+    pcall(b.delfile, s .. "/" .. al .. ".json")
+    F.send("Deleted config: " .. al)
 end
 
-function af.list()
-    local aj = {}
-    local ak, Z = pcall(b.listfiles, s)
-    if not ak or type(Z) ~= "table" then return aj end
-    for _, al in ipairs(Z) do
-        local am = al:match("([^/\\]+)%.json$")
-        if am then aj[#aj + 1] = am end
+function ah.list()
+    local al = {}
+    local Y, Z = pcall(b.listfiles, s)
+    if not Y or type(Z) ~= "table" then return al end
+    for _, am in ipairs(Z) do
+        local an = am:match("([^/\\]+)%.json$")
+        if an then al[#al + 1] = an end
     end
-    table.sort(aj)
-    return aj
+    table.sort(al)
+    return al
 end
 
-function af.setAutoload(aj)
-    pcall(b.writefile, u, aj or "")
-    w.AutoloadConfig = aj or ""
+function ah.setAutoload(al)
+    pcall(b.writefile, u, al or "")
+    w.AutoloadConfig = al or ""
 end
 
-function af.resetAutoload()
+function ah.resetAutoload()
     pcall(b.delfile, u)
     w.AutoloadConfig = ""
 end
 
-function af.getAutoload()
+function ah.getAutoload()
     if not b.isfile(u) then return "" end
-    local aj = ""
-    pcall(function() aj = b.readfile(u) end)
-    return (aj or ""):gsub("%s+$", "")
+    local al = ""
+    pcall(function() al = b.readfile(u) end)
+    return (al or ""):gsub("%s+$", "")
 end
 
-function af.exportCurrent()
-    return E.encode(ah())
+function ah.exportCurrent()
+    return E.encode(aj())
 end
 
-function af.importString(aj)
-    if not aj or aj == "" then F.send("Nothing to import.") return end
-    local ak = E.decode(aj)
-    if not ak or not next(ak) then F.send("Invalid import data.") return end
-    ai(ak)
-    for al, am in pairs(z) do
-        if am.refresh then pcall(am.refresh) end
+function ah.importString(al)
+    if not al or al == "" then F.send("Nothing to import.") return end
+    local am = E.decode(al)
+    if not am or not next(am) then F.send("Invalid import data.") return end
+    ak(am)
+    for an, Y in pairs(z) do
+        if Y.refresh then pcall(Y.refresh) end
     end
-    ae.apply()
+    ag.apply()
     if C and C.uiScale then C.uiScale.Scale = w.UIScale or 1 end
     F.send("Imported config.")
 end
@@ -1654,55 +1677,55 @@ end
 
 
 
-local aj = {}
-local ak=function(
-ak, al, am)    
-local Z = Instance.new(ak)
-    for _, an in pairs(al or {}) do Z[_] = an end
-    if am then for an, _ in ipairs(am) do _.Parent = Z end end
+local al = {}
+local am=function(
+am, an, Y)    
+local Z = Instance.new(am)
+    for _, ao in pairs(an or {}) do Z[_] = ao end
+    if Y then for ao, _ in ipairs(Y) do _.Parent = Z end end
     return Z
-end local al=function()
+end local an=function()
 
 return Enum.Font[w.FontFace] or Enum.Font.Gotham end
 
 
-function aj.newWindow(am)
-    am = am or {}
-    local an = ak("ScreenGui", {
+function al.newWindow(ao)
+    ao = ao or {}
+    local Y = am("ScreenGui", {
         Name = D.rand("_NHJB_"),
         IgnoreGuiInset = true,
         ResetOnSpawn   = false,
         ZIndexBehavior = Enum.ZIndexBehavior.Global,
         DisplayOrder   = 2000000,
     })
-    local Z = pcall(function() an.Parent = m end)
+    local Z = pcall(function() Y.Parent = m end)
     if not Z then
         local _ = q:WaitForChild("PlayerGui", 5)
-        if _ then an.Parent = _ end
+        if _ then Y.Parent = _ end
     end
 
-    local _ = ak("Frame", {
+    local _ = am("Frame", {
         Name = "Window",
         Position = UDim2.fromOffset(60, 60),
-        Size     = UDim2.fromOffset(am.width or 760, am.height or 520),
+        Size     = UDim2.fromOffset(ao.width or 760, ao.height or 520),
         BackgroundColor3 = w.BgColor,
         BorderSizePixel  = 0,
         Active           = true,
-        Parent           = an,
+        Parent           = Y,
     })
-    ak("UICorner", { CornerRadius = UDim.new(0, 10), Parent = _ })
-    local ao = ak("UIStroke", { Color = w.OutlineColor, Transparency = 0.6, Thickness = 1, Parent = _ })
+    am("UICorner", { CornerRadius = UDim.new(0, 10), Parent = _ })
+    local ap = am("UIStroke", { Color = w.OutlineColor, Transparency = 0.6, Thickness = 1, Parent = _ })
 
     
     
     
     
-    local ap = Instance.new("UIScale")
-    ap.Scale  = w.UIScale or 1
-    ap.Parent = _
+    local aq = Instance.new("UIScale")
+    aq.Scale  = w.UIScale or 1
+    aq.Parent = _
 
     
-    local aq = ak("TextLabel", {
+    local ar = am("TextLabel", {
         Parent = _,
         AnchorPoint = Vector2.new(1, 0),
         Position = UDim2.new(1, -16, 0, 16),
@@ -1714,24 +1737,24 @@ function aj.newWindow(am)
         TextColor3 = w.FontColor,
     })
     
-    local ar = ak("Frame", {
+    local as = am("Frame", {
         Parent = _,
         Size = UDim2.new(0, 150, 1, 0),
         BackgroundColor3 = w.MainColor,
         BorderSizePixel = 0,
     })
-    ak("UICorner", { CornerRadius = UDim.new(0, 10), Parent = ar })
+    am("UICorner", { CornerRadius = UDim.new(0, 10), Parent = as })
     
-    ak("Frame", {
-        Parent = ar,
+    am("Frame", {
+        Parent = as,
         Position = UDim2.new(1, -12, 0, 0),
         Size = UDim2.new(0, 12, 1, 0),
         BackgroundColor3 = w.MainColor,
         BorderSizePixel = 0,
     })
 
-    local as = ak("TextLabel", {
-        Parent = ar,
+    local at = am("TextLabel", {
+        Parent = as,
         Size = UDim2.new(1, -20, 0, 36),
         Position = UDim2.fromOffset(20, 18),
         BackgroundTransparency = 1,
@@ -1742,37 +1765,37 @@ function aj.newWindow(am)
         TextXAlignment = Enum.TextXAlignment.Left,
     })
 
-    local at = ak("Frame", {
-        Parent = ar,
+    local au = am("Frame", {
+        Parent = as,
         Position = UDim2.fromOffset(0, 70),
         Size = UDim2.new(1, 0, 1, -90),
         BackgroundTransparency = 1,
     })
-    local au = ak("UIListLayout", {
-        Parent = at,
+    local av = am("UIListLayout", {
+        Parent = au,
         SortOrder = Enum.SortOrder.LayoutOrder,
         Padding = UDim.new(0, 4),
     })
 
     
-    local av = ak("Frame", {
+    local aw = am("Frame", {
         Parent = _,
         Position = UDim2.new(0, 150, 0, 0),
         Size = UDim2.new(1, -150, 0, 60),
         BackgroundTransparency = 1,
     })
 
-    local aw = ak("Frame", {
-        Parent = av,
+    local ax = am("Frame", {
+        Parent = aw,
         Position = UDim2.fromOffset(20, 16),
         Size = UDim2.new(1, -80, 0, 28),
         BackgroundColor3 = w.MainColor,
         BorderSizePixel = 0,
     })
-    ak("UICorner", { CornerRadius = UDim.new(0, 6), Parent = aw })
+    am("UICorner", { CornerRadius = UDim.new(0, 6), Parent = ax })
 
-    local ax = ak("TextLabel", {
-        Parent = aw,
+    local ay = am("TextLabel", {
+        Parent = ax,
         Size = UDim2.fromOffset(28, 28),
         Position = UDim2.fromOffset(2, 0),
         BackgroundTransparency = 1,
@@ -1782,8 +1805,8 @@ function aj.newWindow(am)
         TextColor3 = w.FontColor,
     })
 
-    local ay = ak("TextBox", {
-        Parent = aw,
+    local az = am("TextBox", {
+        Parent = ax,
         Position = UDim2.fromOffset(30, 0),
         Size = UDim2.new(1, -36, 1, 0),
         BackgroundTransparency = 1,
@@ -1791,7 +1814,7 @@ function aj.newWindow(am)
         PlaceholderText = "Search",
         TextColor3 = w.FontColor,
         PlaceholderColor3 = Color3.fromRGB(120, 130, 140),
-        Font = al(),
+        Font = an(),
         TextSize = 13,
         TextXAlignment = Enum.TextXAlignment.Left,
         ClearTextOnFocus = false,
@@ -1804,55 +1827,55 @@ function aj.newWindow(am)
     
     
     do
-        local az, aA, aB
-local aC=function(
-aC, aD)            
-if not aD or not aD.Parent then return false end
-            local aE, aF = aD.AbsolutePosition, aD.AbsoluteSize
-            return aC.X >= aE.X and aC.X <= aE.X + aF.X
-               and aC.Y >= aE.Y and aC.Y <= aE.Y + aF.Y
-end local aD=function(
-
+        local aA, aB, aC
+local aD=function(
 aD, aE)            
-aD.Active = true
-            aD.InputBegan:Connect(function(aF)
-                if aF.UserInputType ~= Enum.UserInputType.MouseButton1
-                   and aF.UserInputType ~= Enum.UserInputType.Touch then return end
-                local aG = aF.Position
-                if aE then
-                    for aH, aI in ipairs(aE) do
-                        if aC(aG, aI) then return end
+if not aE or not aE.Parent then return false end
+            local aF, aG = aE.AbsolutePosition, aE.AbsoluteSize
+            return aD.X >= aF.X and aD.X <= aF.X + aG.X
+               and aD.Y >= aF.Y and aD.Y <= aF.Y + aG.Y
+end local aE=function(
+
+aE, aF)            
+aE.Active = true
+            aE.InputBegan:Connect(function(aG)
+                if aG.UserInputType ~= Enum.UserInputType.MouseButton1
+                   and aG.UserInputType ~= Enum.UserInputType.Touch then return end
+                local aH = aG.Position
+                if aF then
+                    for aI, aJ in ipairs(aF) do
+                        if aD(aH, aJ) then return end
                     end
                 end
-                az  = true
-                aA = Vector2.new(aG.X, aG.Y)
-                aB  = _.Position
-                aF.Changed:Connect(function()
-                    if aF.UserInputState == Enum.UserInputState.End then az = false end
+                aA  = true
+                aB = Vector2.new(aH.X, aH.Y)
+                aC  = _.Position
+                aG.Changed:Connect(function()
+                    if aG.UserInputState == Enum.UserInputState.End then aA = false end
                 end)
             end)
 end
         
-aD(aq)
-        aD(as)
-        aD(av, { aw })
-        aD(ar, { at })   
+aE(ar)
+        aE(at)
+        aE(aw, { ax })
+        aE(as, { au })   
 
-        f.InputChanged:Connect(function(aE)
-            if not az then return end
-            if aE.UserInputType ~= Enum.UserInputType.MouseMovement
-               and aE.UserInputType ~= Enum.UserInputType.Touch then return end
-            local aF = aE.Position
-            local aG = Vector2.new(aF.X, aF.Y) - aA
+        f.InputChanged:Connect(function(aF)
+            if not aA then return end
+            if aF.UserInputType ~= Enum.UserInputType.MouseMovement
+               and aF.UserInputType ~= Enum.UserInputType.Touch then return end
+            local aG = aF.Position
+            local aH = Vector2.new(aG.X, aG.Y) - aB
             _.Position = UDim2.new(
-                aB.X.Scale, aB.X.Offset + aG.X,
-                aB.Y.Scale, aB.Y.Offset + aG.Y
+                aC.X.Scale, aC.X.Offset + aH.X,
+                aC.Y.Scale, aC.Y.Offset + aH.Y
             )
         end)
     end
 
     
-    local az = ak("Frame", {
+    local aA = am("Frame", {
         Parent = _,
         Position = UDim2.new(0, 150, 0, 60),
         Size = UDim2.new(1, -150, 1, -84),
@@ -1860,23 +1883,23 @@ aD(aq)
     })
 
     
-    local aA = ak("Frame", {
+    local aB = am("Frame", {
         Parent = _,
         Position = UDim2.new(0, 150, 1, -24),
         Size = UDim2.new(1, -150, 0, 24),
         BackgroundTransparency = 1,
     })
-    ak("TextLabel", {
-        Parent = aA,
+    am("TextLabel", {
+        Parent = aB,
         Size = UDim2.new(1, -30, 1, 0),
         BackgroundTransparency = 1,
         Text = v.SubBrand,
-        Font = al(),
+        Font = an(),
         TextSize = 12,
         TextColor3 = Color3.fromRGB(120, 130, 140),
     })
-    local aB = ak("TextLabel", {
-        Parent = aA,
+    local aC = am("TextLabel", {
+        Parent = aB,
         AnchorPoint = Vector2.new(1, 0),
         Position = UDim2.new(1, -8, 0, 0),
         Size = UDim2.fromOffset(20, 20),
@@ -1889,194 +1912,194 @@ aD(aq)
     })
     
     do
-        local aC, aD, aE
-        aB.InputBegan:Connect(function(aF)
-            if aF.UserInputType == Enum.UserInputType.MouseButton1 or aF.UserInputType == Enum.UserInputType.Touch then
-                aC = true
-                aD = aF.Position
-                aE = _.Size
-                aF.Changed:Connect(function()
-                    if aF.UserInputState == Enum.UserInputState.End then aC = false end
+        local aD, aE, aF
+        aC.InputBegan:Connect(function(aG)
+            if aG.UserInputType == Enum.UserInputType.MouseButton1 or aG.UserInputType == Enum.UserInputType.Touch then
+                aD = true
+                aE = aG.Position
+                aF = _.Size
+                aG.Changed:Connect(function()
+                    if aG.UserInputState == Enum.UserInputState.End then aD = false end
                 end)
             end
         end)
-        f.InputChanged:Connect(function(aF)
-            if aC and (aF.UserInputType == Enum.UserInputType.MouseMovement or aF.UserInputType == Enum.UserInputType.Touch) then
-                local aG = aF.Position - aD
+        f.InputChanged:Connect(function(aG)
+            if aD and (aG.UserInputType == Enum.UserInputType.MouseMovement or aG.UserInputType == Enum.UserInputType.Touch) then
+                local aH = aG.Position - aE
                 
                 
-                local aH = (ap.Scale > 0) and ap.Scale or 1
-                _.Size = UDim2.new(0, math.max(560, aE.X.Offset + aG.X / aH),
-                                     0, math.max(380, aE.Y.Offset + aG.Y / aH))
+                local aI = (aq.Scale > 0) and aq.Scale or 1
+                _.Size = UDim2.new(0, math.max(560, aF.X.Offset + aH.X / aI),
+                                     0, math.max(380, aF.Y.Offset + aH.Y / aI))
             end
         end)
     end
 
-    local aC = {
-        gui = an, win = _, sidebar = ar, pageList = at,
-        content = az, header = av, searchBox = ay, dragHandle = aq,
+    local aD = {
+        gui = Y, win = _, sidebar = as, pageList = au,
+        content = aA, header = aw, searchBox = az, dragHandle = ar,
         pages = {},   
         active = nil,
-        winStroke = ao, resize = aB,
-        uiScale = ap,
+        winStroke = ap, resize = aC,
+        uiScale = aq,
     }
 
     
     table.insert(z, {
         themeUpdate = function()
             _.BackgroundColor3 = w.BgColor
-            ao.Color = w.OutlineColor
-            ar.BackgroundColor3 = w.MainColor
-            for aD, aE in ipairs(ar:GetChildren()) do
-                if aE:IsA("Frame") then aE.BackgroundColor3 = w.MainColor end
+            ap.Color = w.OutlineColor
+            as.BackgroundColor3 = w.MainColor
+            for aE, aF in ipairs(as:GetChildren()) do
+                if aF:IsA("Frame") then aF.BackgroundColor3 = w.MainColor end
             end
-            as.TextColor3 = w.AccentColor
-            as.Font = al()
-            aw.BackgroundColor3 = w.MainColor
-            ax.TextColor3 = w.FontColor
+            at.TextColor3 = w.AccentColor
+            at.Font = an()
+            ax.BackgroundColor3 = w.MainColor
             ay.TextColor3 = w.FontColor
-            ay.Font = al()
-            aq.TextColor3 = w.FontColor
-            aB.TextColor3 = w.FontColor
-            for aD, aE in pairs(aC.pages) do
-                if aE.refreshTheme then pcall(aE.refreshTheme) end
+            az.TextColor3 = w.FontColor
+            az.Font = an()
+            ar.TextColor3 = w.FontColor
+            aC.TextColor3 = w.FontColor
+            for aE, aF in pairs(aD.pages) do
+                if aF.refreshTheme then pcall(aF.refreshTheme) end
             end
         end
     })
 
-    function aC:addPage(aD)
-        local aE = ak("TextButton", {
-            Parent = at,
-            LayoutOrder = #at:GetChildren(),
+    function aD:addPage(aE)
+        local aF = am("TextButton", {
+            Parent = au,
+            LayoutOrder = #au:GetChildren(),
             Size = UDim2.new(1, 0, 0, 32),
             BackgroundColor3 = w.MainColor,
             BorderSizePixel = 0,
             Text = "",
             AutoButtonColor = false,
         })
-        local aF = ak("TextLabel", {
-            Parent = aE,
+        local aG = am("TextLabel", {
+            Parent = aF,
             Size = UDim2.new(1, -30, 1, 0),
             Position = UDim2.fromOffset(20, 0),
             BackgroundTransparency = 1,
-            Text = aD,
-            Font = al(),
+            Text = aE,
+            Font = an(),
             TextSize = 13,
             TextColor3 = w.FontColor,
             TextXAlignment = Enum.TextXAlignment.Left,
         })
-        local aG = ak("Frame", {
-            Parent = aE,
+        local aH = am("Frame", {
+            Parent = aF,
             Size = UDim2.new(0, 3, 0.6, 0),
             Position = UDim2.new(0, 0, 0.2, 0),
             BackgroundColor3 = w.AccentColor,
             BorderSizePixel = 0,
             Visible = false,
         })
-local aH=function()            
+local aI=function()            
 
 
-aE.BackgroundColor3 = w.MainColor
-            aF.TextColor3 = w.FontColor
-            aF.Font = al()
-            aG.BackgroundColor3 = w.AccentColor
+aF.BackgroundColor3 = w.MainColor
+            aG.TextColor3 = w.FontColor
+            aG.Font = an()
+            aH.BackgroundColor3 = w.AccentColor
 end
         
-local aI = ak("Frame", {
-            Parent = az,
+local aJ = am("Frame", {
+            Parent = aA,
             Size = UDim2.new(1, 0, 1, 0),
             BackgroundTransparency = 1,
             Visible = false,
         })
 
-        aC.pages[aD] = {
-            btn = aE, frame = aI, label = aF, indicator = aG,
-            refreshTheme = aH,
+        aD.pages[aE] = {
+            btn = aF, frame = aJ, label = aG, indicator = aH,
+            refreshTheme = aI,
         }
 
-        aE.MouseButton1Click:Connect(function() aC:selectPage(aD) end)
-        if not aC.active then aC:selectPage(aD) end
-        return aI
+        aF.MouseButton1Click:Connect(function() aD:selectPage(aE) end)
+        if not aD.active then aD:selectPage(aE) end
+        return aJ
     end
 
-    function aC:selectPage(aD)
-        for aE, aF in pairs(aC.pages) do
-            local aG = (aE == aD)
-            aF.frame.Visible = aG
-            aF.indicator.Visible = aG
-            aF.label.TextColor3 = aG and w.AccentColor or w.FontColor
+    function aD:selectPage(aE)
+        for aF, aG in pairs(aD.pages) do
+            local aH = (aF == aE)
+            aG.frame.Visible = aH
+            aG.indicator.Visible = aH
+            aG.label.TextColor3 = aH and w.AccentColor or w.FontColor
         end
-        aC.active = aD
+        aD.active = aE
     end
 
-    return aC
+    return aD
 end
 
 
-function aj.newColumn(am, an)
-    local ao = ak("Frame", {
-        Parent = am,
-        Size = UDim2.new(an or 0.5, -12, 1, -20),
+function al.newColumn(ao, ap)
+    local aq = am("Frame", {
+        Parent = ao,
+        Size = UDim2.new(ap or 0.5, -12, 1, -20),
         BackgroundTransparency = 1,
     })
-    local ap = ak("UIListLayout", {
-        Parent = ao,
+    local ar = am("UIListLayout", {
+        Parent = aq,
         SortOrder = Enum.SortOrder.LayoutOrder,
         Padding = UDim.new(0, 8),
     })
-    return ao, ap
+    return aq, ar
 end
 
 
-function aj.newCard(am, an)
-    an = an or {}
-    local ao = ak("Frame", {
-        Parent = am,
-        LayoutOrder = an.order or 0,
-        Size = UDim2.new(1, 0, 0, an.height or 200),
+function al.newCard(ao, ap)
+    ap = ap or {}
+    local aq = am("Frame", {
+        Parent = ao,
+        LayoutOrder = ap.order or 0,
+        Size = UDim2.new(1, 0, 0, ap.height or 200),
         BackgroundColor3 = w.MainColor,
         BorderSizePixel = 0,
     })
-    ak("UICorner", { CornerRadius = UDim.new(0, 8), Parent = ao })
+    am("UICorner", { CornerRadius = UDim.new(0, 8), Parent = aq })
 
     table.insert(z, {
-        themeUpdate = function() ao.BackgroundColor3 = w.MainColor end
+        themeUpdate = function() aq.BackgroundColor3 = w.MainColor end
     })
 
-    local ap
-    local aq = ak("Frame", {
-        Parent = ao,
-        Size = UDim2.new(1, 0, 1, an.tabs and -34 or 0),
-        Position = UDim2.fromOffset(0, an.tabs and 34 or 0),
+    local ar
+    local as = am("Frame", {
+        Parent = aq,
+        Size = UDim2.new(1, 0, 1, ap.tabs and -34 or 0),
+        Position = UDim2.fromOffset(0, ap.tabs and 34 or 0),
         BackgroundTransparency = 1,
     })
 
-    local ar = {}
-    if an.tabs then
-        ap = ak("Frame", {
-            Parent = ao,
+    local at = {}
+    if ap.tabs then
+        ar = am("Frame", {
+            Parent = aq,
             Size = UDim2.new(1, -20, 0, 28),
             Position = UDim2.fromOffset(10, 4),
             BackgroundTransparency = 1,
         })
-        local as = 1 / #an.tabs
-        for at, au in ipairs(an.tabs) do
-            local av = ak("TextButton", {
-                Parent = ap,
-                Size = UDim2.new(as, -4, 1, 0),
-                Position = UDim2.new((at - 1) * as, 2, 0, 0),
+        local au = 1 / #ap.tabs
+        for av, aw in ipairs(ap.tabs) do
+            local ax = am("TextButton", {
+                Parent = ar,
+                Size = UDim2.new(au, -4, 1, 0),
+                Position = UDim2.new((av - 1) * au, 2, 0, 0),
                 BackgroundColor3 = w.BgColor,
                 BorderSizePixel = 0,
-                Text = au,
-                Font = al(),
+                Text = aw,
+                Font = an(),
                 TextSize = 12,
                 TextColor3 = w.FontColor,
                 AutoButtonColor = false,
             })
-            ak("UICorner", { CornerRadius = UDim.new(0, 6), Parent = av })
+            am("UICorner", { CornerRadius = UDim.new(0, 6), Parent = ax })
 
-            local aw = ak("ScrollingFrame", {
-                Parent = aq,
+            local ay = am("ScrollingFrame", {
+                Parent = as,
                 Size = UDim2.new(1, -16, 1, -8),
                 Position = UDim2.fromOffset(8, 4),
                 BackgroundTransparency = 1,
@@ -2086,33 +2109,33 @@ function aj.newCard(am, an)
                 CanvasSize = UDim2.new(0, 0, 0, 0),
                 AutomaticCanvasSize = Enum.AutomaticSize.Y,
                 ScrollingDirection = Enum.ScrollingDirection.Y,
-                Visible = (at == 1),
+                Visible = (av == 1),
             })
-            ak("UIListLayout", { Parent = aw, SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 6) })
-            ar[au] = { btn = av, frame = aw }
+            am("UIListLayout", { Parent = ay, SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 6) })
+            at[aw] = { btn = ax, frame = ay }
 
-            av.MouseButton1Click:Connect(function()
-                for ax, ay in pairs(ar) do
-                    ay.frame.Visible = (ax == au)
-                    ay.btn.BackgroundColor3 = (ax == au) and w.AccentColor or w.BgColor
+            ax.MouseButton1Click:Connect(function()
+                for az, aA in pairs(at) do
+                    aA.frame.Visible = (az == aw)
+                    aA.btn.BackgroundColor3 = (az == aw) and w.AccentColor or w.BgColor
                 end
             end)
 
-            if at == 1 then av.BackgroundColor3 = w.AccentColor end
+            if av == 1 then ax.BackgroundColor3 = w.AccentColor end
 
             table.insert(z, {
                 themeUpdate = function()
-                    av.Font = al()
-                    av.TextColor3 = w.FontColor
-                    if aw.Visible then av.BackgroundColor3 = w.AccentColor else av.BackgroundColor3 = w.BgColor end
-                    aw.ScrollBarImageColor3 = w.AccentColor
+                    ax.Font = an()
+                    ax.TextColor3 = w.FontColor
+                    if ay.Visible then ax.BackgroundColor3 = w.AccentColor else ax.BackgroundColor3 = w.BgColor end
+                    ay.ScrollBarImageColor3 = w.AccentColor
                 end
             })
         end
-        return ao, ar
+        return aq, at
     else
-        local as = ak("ScrollingFrame", {
-            Parent = aq,
+        local au = am("ScrollingFrame", {
+            Parent = as,
             Size = UDim2.new(1, -16, 1, -8),
             Position = UDim2.fromOffset(8, 4),
             BackgroundTransparency = 1,
@@ -2123,28 +2146,28 @@ function aj.newCard(am, an)
             AutomaticCanvasSize = Enum.AutomaticSize.Y,
             ScrollingDirection = Enum.ScrollingDirection.Y,
         })
-        ak("UIListLayout", { Parent = as, SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 6) })
+        am("UIListLayout", { Parent = au, SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 6) })
 
-        if an.title then
-            local at = ak("TextLabel", {
-                Parent = ao,
+        if ap.title then
+            local av = am("TextLabel", {
+                Parent = aq,
                 Size = UDim2.new(1, -20, 0, 28),
                 Position = UDim2.fromOffset(10, 4),
                 BackgroundTransparency = 1,
-                Text = an.title,
+                Text = ap.title,
                 Font = Enum.Font.GothamBold,
                 TextSize = 13,
                 TextColor3 = w.FontColor,
                 TextXAlignment = Enum.TextXAlignment.Center,
             })
-            aq.Position = UDim2.fromOffset(0, 30)
-            aq.Size = UDim2.new(1, 0, 1, -30)
+            as.Position = UDim2.fromOffset(0, 30)
+            as.Size = UDim2.new(1, 0, 1, -30)
             table.insert(z, {
-                themeUpdate = function() at.TextColor3 = w.FontColor; at.Font = Enum.Font.GothamBold end
+                themeUpdate = function() av.TextColor3 = w.FontColor; av.Font = Enum.Font.GothamBold end
             })
         end
 
-        return ao, as
+        return aq, au
     end
 end
 
@@ -2152,70 +2175,70 @@ end
 
 
 
-function aj.label(am, an, ao)
-    ao = ao or {}
-    local ap = ak("TextLabel", {
-        Parent = am,
-        LayoutOrder = ao.order or 0,
-        Size = UDim2.new(1, 0, 0, ao.height or 18),
+function al.label(ao, ap, aq)
+    aq = aq or {}
+    local ar = am("TextLabel", {
+        Parent = ao,
+        LayoutOrder = aq.order or 0,
+        Size = UDim2.new(1, 0, 0, aq.height or 18),
         BackgroundTransparency = 1,
-        Text = an,
-        Font = al(),
-        TextSize = ao.size or 12,
+        Text = ap,
+        Font = an(),
+        TextSize = aq.size or 12,
         TextColor3 = w.FontColor,
         TextXAlignment = Enum.TextXAlignment.Left,
     })
-    local aq = { instance = ap, setText = function(aq, ar) ap.Text = ar end }
-    function aq.themeUpdate() ap.TextColor3 = w.FontColor; ap.Font = al() end
-    table.insert(z, aq)
-    return aq
+    local as = { instance = ar, setText = function(as, at) ar.Text = at end }
+    function as.themeUpdate() ar.TextColor3 = w.FontColor; ar.Font = an() end
+    table.insert(z, as)
+    return as
 end
 
-function aj.button(am, an, ao)
-    local ap = ak("TextButton", {
-        Parent = am,
-        LayoutOrder = #am:GetChildren(),
+function al.button(ao, ap, aq)
+    local ar = am("TextButton", {
+        Parent = ao,
+        LayoutOrder = #ao:GetChildren(),
         Size = UDim2.new(1, 0, 0, 28),
         BackgroundColor3 = w.BgColor,
         BorderSizePixel = 0,
-        Text = an,
-        Font = al(),
+        Text = ap,
+        Font = an(),
         TextSize = 12,
         TextColor3 = w.FontColor,
         AutoButtonColor = true,
     })
-    ak("UICorner", { CornerRadius = UDim.new(0, 6), Parent = ap })
-    ap.MouseButton1Click:Connect(function() pcall(ao) end)
+    am("UICorner", { CornerRadius = UDim.new(0, 6), Parent = ar })
+    ar.MouseButton1Click:Connect(function() pcall(aq) end)
 
-    local aq = { instance = ap, label = an }
-    function aq.themeUpdate()
-        ap.BackgroundColor3 = w.BgColor
-        ap.TextColor3 = w.FontColor
-        ap.Font = al()
+    local as = { instance = ar, label = ap }
+    function as.themeUpdate()
+        ar.BackgroundColor3 = w.BgColor
+        ar.TextColor3 = w.FontColor
+        ar.Font = an()
     end
-    table.insert(z, aq)
-    return aq
+    table.insert(z, as)
+    return as
 end
 
-function aj.toggle(am, an, ao, ap)
-    local aq = ak("Frame", {
-        Parent = am,
-        LayoutOrder = #am:GetChildren(),
+function al.toggle(ao, ap, aq, ar)
+    local as = am("Frame", {
+        Parent = ao,
+        LayoutOrder = #ao:GetChildren(),
         Size = UDim2.new(1, 0, 0, 26),
         BackgroundTransparency = 1,
     })
-    local ar = ak("TextLabel", {
-        Parent = aq,
+    local at = am("TextLabel", {
+        Parent = as,
         Size = UDim2.new(1, -50, 1, 0),
         BackgroundTransparency = 1,
-        Text = an,
-        Font = al(),
+        Text = ap,
+        Font = an(),
         TextSize = 12,
         TextColor3 = w.FontColor,
         TextXAlignment = Enum.TextXAlignment.Left,
     })
-    local as = ak("TextButton", {
-        Parent = aq,
+    local au = am("TextButton", {
+        Parent = as,
         AnchorPoint = Vector2.new(1, 0.5),
         Position = UDim2.new(1, 0, 0.5, 0),
         Size = UDim2.fromOffset(36, 18),
@@ -2224,145 +2247,145 @@ function aj.toggle(am, an, ao, ap)
         AutoButtonColor = false,
         BorderSizePixel = 0,
     })
-    ak("UICorner", { CornerRadius = UDim.new(1, 0), Parent = as })
-    local at = ak("Frame", {
-        Parent = as,
+    am("UICorner", { CornerRadius = UDim.new(1, 0), Parent = au })
+    local av = am("Frame", {
+        Parent = au,
         AnchorPoint = Vector2.new(0, 0.5),
         Position = UDim2.new(0, 2, 0.5, 0),
         Size = UDim2.fromOffset(14, 14),
         BackgroundColor3 = w.FontColor,
         BorderSizePixel = 0,
     })
-    ak("UICorner", { CornerRadius = UDim.new(1, 0), Parent = at })
-local au=function()        
-
-local au = w[ao]
-        if au then
-            as.BackgroundColor3 = w.AccentColor
-            at.Position = UDim2.new(1, -16, 0.5, 0)
-        else
-            as.BackgroundColor3 = w.BgColor
-            at.Position = UDim2.new(0, 2, 0.5, 0)
-        end
-        at.BackgroundColor3 = w.FontColor
-end
-    
-au()
-
-    as.MouseButton1Click:Connect(function()
-        w[ao] = not w[ao]
-        au()
-        if ap then pcall(ap, w[ao]) end
-    end)
-
-    local av = { instance = aq, label = an, key = ao }
-    function av.themeUpdate() ar.TextColor3 = w.FontColor; ar.Font = al(); au() end
-    function av.refresh() au() end
-    table.insert(z, av)
-    return av
-end
-
-function aj.slider(am, an, ao, ap, aq, ar, as)
-    ar = ar or 1
-    local at = ak("Frame", {
-        Parent = am,
-        LayoutOrder = #am:GetChildren(),
-        Size = UDim2.new(1, 0, 0, 24),
-        BackgroundColor3 = w.BgColor,
-        BorderSizePixel = 0,
-    })
-    ak("UICorner", { CornerRadius = UDim.new(0, 4), Parent = at })
-
-    local au = ak("Frame", {
-        Parent = at,
-        Size = UDim2.new(0, 0, 1, 0),
-        BackgroundColor3 = w.AccentColor,
-        BorderSizePixel = 0,
-    })
-    ak("UICorner", { CornerRadius = UDim.new(0, 4), Parent = au })
-
-    local av = ak("TextLabel", {
-        Parent = at,
-        Size = UDim2.new(1, 0, 1, 0),
-        BackgroundTransparency = 1,
-        Text = "",
-        Font = al(),
-        TextSize = 12,
-        TextColor3 = w.FontColor,
-    })
+    am("UICorner", { CornerRadius = UDim.new(1, 0), Parent = av })
 local aw=function()        
 
-local aw = tonumber(w[ao]) or ap
-        aw = math.clamp(aw, ap, aq)
-        local ax = (aq == ap) and 0 or (aw - ap) / (aq - ap)
-        au.Size = UDim2.new(ax, 0, 1, 0)
-        local ay
-        if ar < 1 then ay = string.format("%s: %.2f", an, aw) else ay = string.format("%s: %d", an, math.floor(aw + 0.5)) end
-        av.Text = ay
+local aw = w[aq]
+        if aw then
+            au.BackgroundColor3 = w.AccentColor
+            av.Position = UDim2.new(1, -16, 0.5, 0)
+        else
+            au.BackgroundColor3 = w.BgColor
+            av.Position = UDim2.new(0, 2, 0.5, 0)
+        end
+        av.BackgroundColor3 = w.FontColor
 end
     
 aw()
 
-    local ax = false
-local ay=function(ay)        
-local az = (ay - at.AbsolutePosition.X) / at.AbsoluteSize.X
-        az = math.clamp(az, 0, 1)
-        local aA = ap + az * (aq - ap)
-        aA = math.floor(aA / ar + 0.5) * ar
-        aA = math.clamp(aA, ap, aq)
-        w[ao] = aA
+    au.MouseButton1Click:Connect(function()
+        w[aq] = not w[aq]
         aw()
-        if as then pcall(as, aA) end
+        if ar then pcall(ar, w[aq]) end
+    end)
+
+    local ax = { instance = as, label = ap, key = aq }
+    function ax.themeUpdate() at.TextColor3 = w.FontColor; at.Font = an(); aw() end
+    function ax.refresh() aw() end
+    table.insert(z, ax)
+    return ax
+end
+
+function al.slider(ao, ap, aq, ar, as, at, au)
+    at = at or 1
+    local av = am("Frame", {
+        Parent = ao,
+        LayoutOrder = #ao:GetChildren(),
+        Size = UDim2.new(1, 0, 0, 24),
+        BackgroundColor3 = w.BgColor,
+        BorderSizePixel = 0,
+    })
+    am("UICorner", { CornerRadius = UDim.new(0, 4), Parent = av })
+
+    local aw = am("Frame", {
+        Parent = av,
+        Size = UDim2.new(0, 0, 1, 0),
+        BackgroundColor3 = w.AccentColor,
+        BorderSizePixel = 0,
+    })
+    am("UICorner", { CornerRadius = UDim.new(0, 4), Parent = aw })
+
+    local ax = am("TextLabel", {
+        Parent = av,
+        Size = UDim2.new(1, 0, 1, 0),
+        BackgroundTransparency = 1,
+        Text = "",
+        Font = an(),
+        TextSize = 12,
+        TextColor3 = w.FontColor,
+    })
+local ay=function()        
+
+local ay = tonumber(w[aq]) or ar
+        ay = math.clamp(ay, ar, as)
+        local az = (as == ar) and 0 or (ay - ar) / (as - ar)
+        aw.Size = UDim2.new(az, 0, 1, 0)
+        local aA
+        if at < 1 then aA = string.format("%s: %.2f", ap, ay) else aA = string.format("%s: %d", ap, math.floor(ay + 0.5)) end
+        ax.Text = aA
 end
     
-at.InputBegan:Connect(function(az)
-        if az.UserInputType == Enum.UserInputType.MouseButton1 or az.UserInputType == Enum.UserInputType.Touch then
-            ax = true
-            ay(az.Position.X)
+ay()
+
+    local az = false
+local aA=function(aA)        
+local aB = (aA - av.AbsolutePosition.X) / av.AbsoluteSize.X
+        aB = math.clamp(aB, 0, 1)
+        local aC = ar + aB * (as - ar)
+        aC = math.floor(aC / at + 0.5) * at
+        aC = math.clamp(aC, ar, as)
+        w[aq] = aC
+        ay()
+        if au then pcall(au, aC) end
+end
+    
+av.InputBegan:Connect(function(aB)
+        if aB.UserInputType == Enum.UserInputType.MouseButton1 or aB.UserInputType == Enum.UserInputType.Touch then
+            az = true
+            aA(aB.Position.X)
         end
     end)
-    at.InputEnded:Connect(function(az)
-        if az.UserInputType == Enum.UserInputType.MouseButton1 or az.UserInputType == Enum.UserInputType.Touch then
-            ax = false
+    av.InputEnded:Connect(function(aB)
+        if aB.UserInputType == Enum.UserInputType.MouseButton1 or aB.UserInputType == Enum.UserInputType.Touch then
+            az = false
         end
     end)
-    f.InputChanged:Connect(function(az)
-        if ax and (az.UserInputType == Enum.UserInputType.MouseMovement or az.UserInputType == Enum.UserInputType.Touch) then
-            ay(az.Position.X)
+    f.InputChanged:Connect(function(aB)
+        if az and (aB.UserInputType == Enum.UserInputType.MouseMovement or aB.UserInputType == Enum.UserInputType.Touch) then
+            aA(aB.Position.X)
         end
     end)
 
-    local az = { instance = at, label = an, key = ao }
-    function az.themeUpdate()
-        at.BackgroundColor3 = w.BgColor
-        au.BackgroundColor3 = w.AccentColor
-        av.TextColor3 = w.FontColor
-        av.Font = al()
+    local aB = { instance = av, label = ap, key = aq }
+    function aB.themeUpdate()
+        av.BackgroundColor3 = w.BgColor
+        aw.BackgroundColor3 = w.AccentColor
+        ax.TextColor3 = w.FontColor
+        ax.Font = an()
     end
-    function az.refresh() aw() end
-    table.insert(z, az)
-    return az
+    function aB.refresh() ay() end
+    table.insert(z, aB)
+    return aB
 end
 
-function aj.dropdown(am, an, ao, ap, aq)
-    local ar = ak("Frame", {
-        Parent = am,
-        LayoutOrder = #am:GetChildren(),
+function al.dropdown(ao, ap, aq, ar, as)
+    local at = am("Frame", {
+        Parent = ao,
+        LayoutOrder = #ao:GetChildren(),
         Size = UDim2.new(1, 0, 0, 44),
         BackgroundTransparency = 1,
     })
-    local as = ak("TextLabel", {
-        Parent = ar,
+    local au = am("TextLabel", {
+        Parent = at,
         Size = UDim2.new(1, 0, 0, 16),
         BackgroundTransparency = 1,
-        Text = an,
-        Font = al(),
+        Text = ap,
+        Font = an(),
         TextSize = 12,
         TextColor3 = w.FontColor,
         TextXAlignment = Enum.TextXAlignment.Left,
     })
-    local at = ak("TextButton", {
-        Parent = ar,
+    local av = am("TextButton", {
+        Parent = at,
         Position = UDim2.fromOffset(0, 18),
         Size = UDim2.new(1, 0, 0, 24),
         BackgroundColor3 = w.BgColor,
@@ -2370,20 +2393,20 @@ function aj.dropdown(am, an, ao, ap, aq)
         Text = "",
         AutoButtonColor = false,
     })
-    ak("UICorner", { CornerRadius = UDim.new(0, 4), Parent = at })
-    local au = ak("TextLabel", {
-        Parent = at,
+    am("UICorner", { CornerRadius = UDim.new(0, 4), Parent = av })
+    local aw = am("TextLabel", {
+        Parent = av,
         Size = UDim2.new(1, -24, 1, 0),
         Position = UDim2.fromOffset(8, 0),
         BackgroundTransparency = 1,
-        Text = tostring(w[ao] or "---"),
-        Font = al(),
+        Text = tostring(w[aq] or "---"),
+        Font = an(),
         TextSize = 12,
         TextColor3 = w.FontColor,
         TextXAlignment = Enum.TextXAlignment.Left,
     })
-    local av = ak("TextLabel", {
-        Parent = at,
+    local ax = am("TextLabel", {
+        Parent = av,
         AnchorPoint = Vector2.new(1, 0.5),
         Position = UDim2.new(1, -8, 0.5, 0),
         Size = UDim2.fromOffset(12, 12),
@@ -2395,28 +2418,28 @@ function aj.dropdown(am, an, ao, ap, aq)
     })
 
     
-    local aw
-local ax=function()        
-if aw then aw:Destroy(); aw = nil; return end
-        local ax = ar:FindFirstAncestorOfClass("ScreenGui")
-        if not ax then return end
-        aw = ak("Frame", {
-            Parent = ax,
+    local ay
+local az=function()        
+if ay then ay:Destroy(); ay = nil; return end
+        local az = at:FindFirstAncestorOfClass("ScreenGui")
+        if not az then return end
+        ay = am("Frame", {
+            Parent = az,
             BackgroundColor3 = w.MainColor,
             BorderSizePixel = 0,
             ZIndex = 50,
         })
-        ak("UICorner", { CornerRadius = UDim.new(0, 4), Parent = aw })
-        ak("UIStroke", { Color = w.OutlineColor, Transparency = 0.5, Parent = aw })
+        am("UICorner", { CornerRadius = UDim.new(0, 4), Parent = ay })
+        am("UIStroke", { Color = w.OutlineColor, Transparency = 0.5, Parent = ay })
 
-        local ay = at.AbsolutePosition
-        local az = at.AbsoluteSize
-        local aA = math.min(160, #ap * 22 + 4)
-        aw.Position = UDim2.fromOffset(ay.X, ay.Y + az.Y + 2)
-        aw.Size = UDim2.fromOffset(az.X, aA)
+        local aA = av.AbsolutePosition
+        local aB = av.AbsoluteSize
+        local aC = math.min(160, #ar * 22 + 4)
+        ay.Position = UDim2.fromOffset(aA.X, aA.Y + aB.Y + 2)
+        ay.Size = UDim2.fromOffset(aB.X, aC)
 
-        local aB = ak("ScrollingFrame", {
-            Parent = aw,
+        local aD = am("ScrollingFrame", {
+            Parent = ay,
             Size = UDim2.new(1, -4, 1, -4),
             Position = UDim2.fromOffset(2, 2),
             BackgroundTransparency = 1,
@@ -2427,69 +2450,69 @@ if aw then aw:Destroy(); aw = nil; return end
             AutomaticCanvasSize = Enum.AutomaticSize.Y,
             ZIndex = 51,
         })
-        ak("UIListLayout", { Parent = aB, SortOrder = Enum.SortOrder.LayoutOrder })
+        am("UIListLayout", { Parent = aD, SortOrder = Enum.SortOrder.LayoutOrder })
 
-        for aC, aD in ipairs(ap) do
-            local aE = ak("TextButton", {
-                Parent = aB,
+        for aE, aF in ipairs(ar) do
+            local aG = am("TextButton", {
+                Parent = aD,
                 Size = UDim2.new(1, 0, 0, 22),
                 BackgroundColor3 = w.BgColor,
                 BorderSizePixel = 0,
-                Text = tostring(aD),
-                Font = al(),
+                Text = tostring(aF),
+                Font = an(),
                 TextSize = 12,
                 TextColor3 = w.FontColor,
                 AutoButtonColor = true,
                 ZIndex = 52,
             })
-            aE.MouseButton1Click:Connect(function()
-                w[ao] = aD
-                au.Text = tostring(aD)
-                if aw then aw:Destroy(); aw = nil end
-                if aq then pcall(aq, aD) end
+            aG.MouseButton1Click:Connect(function()
+                w[aq] = aF
+                aw.Text = tostring(aF)
+                if ay then ay:Destroy(); ay = nil end
+                if as then pcall(as, aF) end
             end)
         end
 end
     
-at.MouseButton1Click:Connect(ax)
+av.MouseButton1Click:Connect(az)
 
-    local ay = { instance = ar, label = an, key = ao, options = ap }
-    function ay.setOptions(az, aA)
-        ap = aA or {}
-        ay.options = ap
-        if aw then aw:Destroy(); aw = nil end
+    local aA = { instance = at, label = ap, key = aq, options = ar }
+    function aA.setOptions(aB, aC)
+        ar = aC or {}
+        aA.options = ar
+        if ay then ay:Destroy(); ay = nil end
     end
-    function ay.themeUpdate()
-        as.TextColor3 = w.FontColor; as.Font = al()
-        at.BackgroundColor3 = w.BgColor
-        au.TextColor3 = w.FontColor; au.Font = al()
-        av.TextColor3 = w.FontColor
+    function aA.themeUpdate()
+        au.TextColor3 = w.FontColor; au.Font = an()
+        av.BackgroundColor3 = w.BgColor
+        aw.TextColor3 = w.FontColor; aw.Font = an()
+        ax.TextColor3 = w.FontColor
     end
-    function ay.refresh() au.Text = tostring(w[ao] or "---") end
-    table.insert(z, ay)
-    return ay
+    function aA.refresh() aw.Text = tostring(w[aq] or "---") end
+    table.insert(z, aA)
+    return aA
 end
 
-function aj.multiDropdown(am, an, ao, ap, aq)
+function al.multiDropdown(ao, ap, aq, ar, as)
     
-    local ar = ak("Frame", {
-        Parent = am,
-        LayoutOrder = #am:GetChildren(),
+    local at = am("Frame", {
+        Parent = ao,
+        LayoutOrder = #ao:GetChildren(),
         Size = UDim2.new(1, 0, 0, 44),
         BackgroundTransparency = 1,
     })
-    local as = ak("TextLabel", {
-        Parent = ar,
+    local au = am("TextLabel", {
+        Parent = at,
         Size = UDim2.new(1, 0, 0, 16),
         BackgroundTransparency = 1,
-        Text = an,
-        Font = al(),
+        Text = ap,
+        Font = an(),
         TextSize = 12,
         TextColor3 = w.FontColor,
         TextXAlignment = Enum.TextXAlignment.Left,
     })
-    local at = ak("TextButton", {
-        Parent = ar,
+    local av = am("TextButton", {
+        Parent = at,
         Position = UDim2.fromOffset(0, 18),
         Size = UDim2.new(1, 0, 0, 24),
         BackgroundColor3 = w.BgColor,
@@ -2497,20 +2520,20 @@ function aj.multiDropdown(am, an, ao, ap, aq)
         Text = "",
         AutoButtonColor = false,
     })
-    ak("UICorner", { CornerRadius = UDim.new(0, 4), Parent = at })
-    local au = ak("TextLabel", {
-        Parent = at,
+    am("UICorner", { CornerRadius = UDim.new(0, 4), Parent = av })
+    local aw = am("TextLabel", {
+        Parent = av,
         Size = UDim2.new(1, -24, 1, 0),
         Position = UDim2.fromOffset(8, 0),
         BackgroundTransparency = 1,
         Text = "",
-        Font = al(),
+        Font = an(),
         TextSize = 12,
         TextColor3 = w.FontColor,
         TextXAlignment = Enum.TextXAlignment.Left,
     })
-    local av = ak("TextLabel", {
-        Parent = at,
+    local ax = am("TextLabel", {
+        Parent = av,
         AnchorPoint = Vector2.new(1, 0.5),
         Position = UDim2.new(1, -8, 0.5, 0),
         Size = UDim2.fromOffset(12, 12),
@@ -2520,35 +2543,35 @@ function aj.multiDropdown(am, an, ao, ap, aq)
         TextSize = 12,
         TextColor3 = w.FontColor,
     })
-local aw=function()        
-
-local aw = w[ao] or {}
-        au.Text = (#aw > 0) and table.concat(aw, ", ") or "---"
-end    
-aw()
-
-    local ax
 local ay=function()        
-if ax then ax:Destroy(); ax = nil; return end
-        local ay = ar:FindFirstAncestorOfClass("ScreenGui")
-        if not ay then return end
-        ax = ak("Frame", {
-            Parent = ay,
+
+local ay = w[aq] or {}
+        aw.Text = (#ay > 0) and table.concat(ay, ", ") or "---"
+end    
+ay()
+
+    local az
+local aA=function()        
+if az then az:Destroy(); az = nil; return end
+        local aA = at:FindFirstAncestorOfClass("ScreenGui")
+        if not aA then return end
+        az = am("Frame", {
+            Parent = aA,
             BackgroundColor3 = w.MainColor,
             BorderSizePixel = 0,
             ZIndex = 50,
         })
-        ak("UICorner", { CornerRadius = UDim.new(0, 4), Parent = ax })
-        ak("UIStroke", { Color = w.OutlineColor, Transparency = 0.5, Parent = ax })
+        am("UICorner", { CornerRadius = UDim.new(0, 4), Parent = az })
+        am("UIStroke", { Color = w.OutlineColor, Transparency = 0.5, Parent = az })
 
-        local az = at.AbsolutePosition
-        local aA = at.AbsoluteSize
-        local aB = math.min(220, #ap * 24 + 4)
-        ax.Position = UDim2.fromOffset(az.X, az.Y + aA.Y + 2)
-        ax.Size = UDim2.fromOffset(aA.X, aB)
+        local aB = av.AbsolutePosition
+        local aC = av.AbsoluteSize
+        local aD = math.min(220, #ar * 24 + 4)
+        az.Position = UDim2.fromOffset(aB.X, aB.Y + aC.Y + 2)
+        az.Size = UDim2.fromOffset(aC.X, aD)
 
-        local aC = ak("ScrollingFrame", {
-            Parent = ax,
+        local aE = am("ScrollingFrame", {
+            Parent = az,
             Size = UDim2.new(1, -4, 1, -4),
             Position = UDim2.fromOffset(2, 2),
             BackgroundTransparency = 1,
@@ -2559,347 +2582,347 @@ if ax then ax:Destroy(); ax = nil; return end
             AutomaticCanvasSize = Enum.AutomaticSize.Y,
             ZIndex = 51,
         })
-        ak("UIListLayout", { Parent = aC, SortOrder = Enum.SortOrder.LayoutOrder })
+        am("UIListLayout", { Parent = aE, SortOrder = Enum.SortOrder.LayoutOrder })
 
-        for aD, aE in ipairs(ap) do
-            local aF = ak("Frame", {
-                Parent = aC,
+        for aF, aG in ipairs(ar) do
+            local aH = am("Frame", {
+                Parent = aE,
                 Size = UDim2.new(1, 0, 0, 24),
                 BackgroundColor3 = w.BgColor,
                 BorderSizePixel = 0,
                 ZIndex = 52,
             })
-            local aG = ak("TextLabel", {
-                Parent = aF,
+            local aI = am("TextLabel", {
+                Parent = aH,
                 Size = UDim2.fromOffset(20, 24),
                 BackgroundTransparency = 1,
-                Text = D.contains(w[ao] or {}, aE) and "[X]" or "[ ]",
+                Text = D.contains(w[aq] or {}, aG) and "[X]" or "[ ]",
                 Font = Enum.Font.GothamBold,
                 TextSize = 11,
                 TextColor3 = w.AccentColor,
                 TextXAlignment = Enum.TextXAlignment.Center,
                 ZIndex = 53,
             })
-            local aH = ak("TextLabel", {
-                Parent = aF,
+            local aJ = am("TextLabel", {
+                Parent = aH,
                 Position = UDim2.fromOffset(24, 0),
                 Size = UDim2.new(1, -24, 1, 0),
                 BackgroundTransparency = 1,
-                Text = tostring(aE),
-                Font = al(),
+                Text = tostring(aG),
+                Font = an(),
                 TextSize = 12,
                 TextColor3 = w.FontColor,
                 TextXAlignment = Enum.TextXAlignment.Left,
                 ZIndex = 53,
             })
-            local aI = ak("TextButton", {
-                Parent = aF,
+            local Y = am("TextButton", {
+                Parent = aH,
                 Size = UDim2.new(1, 0, 1, 0),
                 BackgroundTransparency = 1,
                 Text = "",
                 AutoButtonColor = false,
                 ZIndex = 54,
             })
-            aI.MouseButton1Click:Connect(function()
-                w[ao] = w[ao] or {}
-                local Z = w[ao]
+            Y.MouseButton1Click:Connect(function()
+                w[aq] = w[aq] or {}
+                local Z = w[aq]
                 local _
-                for aJ, aK in ipairs(Z) do if aK == aE then _ = aJ break end end
-                if _ then table.remove(Z, _) else table.insert(Z, aE) end
-                aG.Text = D.contains(Z, aE) and "[X]" or "[ ]"
-                aw()
-                if aq then pcall(aq, Z) end
+                for aK, aL in ipairs(Z) do if aL == aG then _ = aK break end end
+                if _ then table.remove(Z, _) else table.insert(Z, aG) end
+                aI.Text = D.contains(Z, aG) and "[X]" or "[ ]"
+                ay()
+                if as then pcall(as, Z) end
             end)
         end
 end
     
-at.MouseButton1Click:Connect(ay)
+av.MouseButton1Click:Connect(aA)
 
-    local az = { instance = ar, label = an, key = ao, options = ap }
-    function az.themeUpdate()
-        as.TextColor3 = w.FontColor; as.Font = al()
-        at.BackgroundColor3 = w.BgColor
-        au.TextColor3 = w.FontColor; au.Font = al()
-        av.TextColor3 = w.FontColor
+    local aB = { instance = at, label = ap, key = aq, options = ar }
+    function aB.themeUpdate()
+        au.TextColor3 = w.FontColor; au.Font = an()
+        av.BackgroundColor3 = w.BgColor
+        aw.TextColor3 = w.FontColor; aw.Font = an()
+        ax.TextColor3 = w.FontColor
     end
-    function az.refresh() aw() end
-    table.insert(z, az)
-    return az
+    function aB.refresh() ay() end
+    table.insert(z, aB)
+    return aB
 end
 
-function aj.colorPicker(am, an, ao, ap)
-    local aq = ak("Frame", {
-        Parent = am,
-        LayoutOrder = #am:GetChildren(),
+function al.colorPicker(ao, ap, aq, ar)
+    local as = am("Frame", {
+        Parent = ao,
+        LayoutOrder = #ao:GetChildren(),
         Size = UDim2.new(1, 0, 0, 26),
         BackgroundTransparency = 1,
     })
-    local ar = ak("TextLabel", {
-        Parent = aq,
+    local at = am("TextLabel", {
+        Parent = as,
         Size = UDim2.new(1, -40, 1, 0),
         BackgroundTransparency = 1,
-        Text = an,
-        Font = al(),
+        Text = ap,
+        Font = an(),
         TextSize = 12,
         TextColor3 = w.FontColor,
         TextXAlignment = Enum.TextXAlignment.Left,
     })
-    local as = ak("TextButton", {
-        Parent = aq,
+    local au = am("TextButton", {
+        Parent = as,
         AnchorPoint = Vector2.new(1, 0.5),
         Position = UDim2.new(1, 0, 0.5, 0),
         Size = UDim2.fromOffset(28, 18),
-        BackgroundColor3 = w[ao] or Color3.new(1, 1, 1),
+        BackgroundColor3 = w[aq] or Color3.new(1, 1, 1),
         BorderSizePixel = 0,
         AutoButtonColor = false,
         Text = "",
     })
-    ak("UICorner", { CornerRadius = UDim.new(0, 3), Parent = as })
-    ak("UIStroke", { Color = w.OutlineColor, Transparency = 0.5, Parent = as })
+    am("UICorner", { CornerRadius = UDim.new(0, 3), Parent = au })
+    am("UIStroke", { Color = w.OutlineColor, Transparency = 0.5, Parent = au })
 
-    local at
-local au=function()        
-as.BackgroundColor3 = w[ao] or Color3.new(1, 1, 1)
-end local av=function()        
+    local av
+local aw=function()        
+au.BackgroundColor3 = w[aq] or Color3.new(1, 1, 1)
+end local ax=function()        
 
 
-if at then at:Destroy(); at = nil; return end
-        local av = aq:FindFirstAncestorOfClass("ScreenGui")
-        if not av then return end
-        at = ak("Frame", {
-            Parent = av,
+if av then av:Destroy(); av = nil; return end
+        local ax = as:FindFirstAncestorOfClass("ScreenGui")
+        if not ax then return end
+        av = am("Frame", {
+            Parent = ax,
             BackgroundColor3 = w.MainColor,
             BorderSizePixel = 0,
             ZIndex = 50,
         })
-        ak("UICorner", { CornerRadius = UDim.new(0, 6), Parent = at })
-        ak("UIStroke", { Color = w.OutlineColor, Transparency = 0.5, Parent = at })
+        am("UICorner", { CornerRadius = UDim.new(0, 6), Parent = av })
+        am("UIStroke", { Color = w.OutlineColor, Transparency = 0.5, Parent = av })
 
-        local aw = as.AbsolutePosition
-        at.Position = UDim2.fromOffset(aw.X - 160, aw.Y + 24)
-        at.Size = UDim2.fromOffset(190, 130)
-local ax=function(
-ax, ay, az)            
-local aA = ak("Frame", {
-                Parent = at,
-                Position = UDim2.fromOffset(36, az),
+        local ay = au.AbsolutePosition
+        av.Position = UDim2.fromOffset(ay.X - 160, ay.Y + 24)
+        av.Size = UDim2.fromOffset(190, 130)
+local az=function(
+az, aA, aB)            
+local aC = am("Frame", {
+                Parent = av,
+                Position = UDim2.fromOffset(36, aB),
                 Size = UDim2.fromOffset(140, 16),
                 BackgroundColor3 = w.BgColor,
                 BorderSizePixel = 0,
                 ZIndex = 51,
             })
-            ak("UICorner", { CornerRadius = UDim.new(0, 3), Parent = aA })
-            local aB = ak("Frame", {
-                Parent = aA,
-                Size = UDim2.new((w[ao][ay] or 1), 0, 1, 0),
-                BackgroundColor3 = ay == "R" and Color3.fromRGB(220, 38, 38)
-                                or ay == "G" and Color3.fromRGB(34, 197, 94)
+            am("UICorner", { CornerRadius = UDim.new(0, 3), Parent = aC })
+            local aD = am("Frame", {
+                Parent = aC,
+                Size = UDim2.new((w[aq][aA] or 1), 0, 1, 0),
+                BackgroundColor3 = aA == "R" and Color3.fromRGB(220, 38, 38)
+                                or aA == "G" and Color3.fromRGB(34, 197, 94)
                                 or                    Color3.fromRGB(59, 130, 246),
                 BorderSizePixel = 0,
                 ZIndex = 52,
             })
-            ak("UICorner", { CornerRadius = UDim.new(0, 3), Parent = aB })
-            local aC = ak("TextLabel", {
-                Parent = at,
-                Position = UDim2.fromOffset(8, az),
+            am("UICorner", { CornerRadius = UDim.new(0, 3), Parent = aD })
+            local aE = am("TextLabel", {
+                Parent = av,
+                Position = UDim2.fromOffset(8, aB),
                 Size = UDim2.fromOffset(24, 16),
                 BackgroundTransparency = 1,
-                Text = ax,
+                Text = az,
                 Font = Enum.Font.GothamBold,
                 TextSize = 12,
                 TextColor3 = w.FontColor,
                 ZIndex = 51,
             })
-            local aD = ak("TextLabel", {
-                Parent = at,
-                Position = UDim2.fromOffset(178, az),
+            local aF = am("TextLabel", {
+                Parent = av,
+                Position = UDim2.fromOffset(178, aB),
                 Size = UDim2.fromOffset(0, 16),
                 BackgroundTransparency = 1,
                 Text = "",
-                Font = al(),
+                Font = an(),
                 TextSize = 11,
                 TextColor3 = w.FontColor,
                 ZIndex = 51,
             })
-local aE=function(aE)                
-aE = math.clamp(aE, 0, 1)
-                local aF = w[ao]
-                local aG, aH, aI = aF.R, aF.G, aF.B
-                if ay == "R" then aG = aE end
-                if ay == "G" then aH = aE end
-                if ay == "B" then aI = aE end
-                w[ao] = Color3.new(aG, aH, aI)
-                aB.Size = UDim2.new(aE, 0, 1, 0)
-                aD.Text = tostring(math.floor(aE * 255 + 0.5))
-                au()
-                if ap then pcall(ap, w[ao]) end
+local aG=function(aG)                
+aG = math.clamp(aG, 0, 1)
+                local aH = w[aq]
+                local aI, aJ, aK = aH.R, aH.G, aH.B
+                if aA == "R" then aI = aG end
+                if aA == "G" then aJ = aG end
+                if aA == "B" then aK = aG end
+                w[aq] = Color3.new(aI, aJ, aK)
+                aD.Size = UDim2.new(aG, 0, 1, 0)
+                aF.Text = tostring(math.floor(aG * 255 + 0.5))
+                aw()
+                if ar then pcall(ar, w[aq]) end
 end            
-aD.Text = tostring(math.floor((w[ao][ay] or 0) * 255 + 0.5))
+aF.Text = tostring(math.floor((w[aq][aA] or 0) * 255 + 0.5))
 
-            local aF
-            aA.InputBegan:Connect(function(aG)
-                if aG.UserInputType == Enum.UserInputType.MouseButton1 or aG.UserInputType == Enum.UserInputType.Touch then
-                    aF = true
-                    aE((aG.Position.X - aA.AbsolutePosition.X) / aA.AbsoluteSize.X)
+            local aH
+            aC.InputBegan:Connect(function(aI)
+                if aI.UserInputType == Enum.UserInputType.MouseButton1 or aI.UserInputType == Enum.UserInputType.Touch then
+                    aH = true
+                    aG((aI.Position.X - aC.AbsolutePosition.X) / aC.AbsoluteSize.X)
                 end
             end)
-            aA.InputEnded:Connect(function(aG)
-                if aG.UserInputType == Enum.UserInputType.MouseButton1 or aG.UserInputType == Enum.UserInputType.Touch then
-                    aF = false
+            aC.InputEnded:Connect(function(aI)
+                if aI.UserInputType == Enum.UserInputType.MouseButton1 or aI.UserInputType == Enum.UserInputType.Touch then
+                    aH = false
                 end
             end)
-            f.InputChanged:Connect(function(aG)
-                if aF and (aG.UserInputType == Enum.UserInputType.MouseMovement or aG.UserInputType == Enum.UserInputType.Touch) then
-                    aE((aG.Position.X - aA.AbsolutePosition.X) / aA.AbsoluteSize.X)
+            f.InputChanged:Connect(function(aI)
+                if aH and (aI.UserInputType == Enum.UserInputType.MouseMovement or aI.UserInputType == Enum.UserInputType.Touch) then
+                    aG((aI.Position.X - aC.AbsolutePosition.X) / aC.AbsoluteSize.X)
                 end
             end)
 end
         
-ax("R", "R", 10)
-        ax("G", "G", 36)
-        ax("B", "B", 62)
+az("R", "R", 10)
+        az("G", "G", 36)
+        az("B", "B", 62)
 
-        local ay = ak("TextButton", {
-            Parent = at,
+        local aA = am("TextButton", {
+            Parent = av,
             Position = UDim2.fromOffset(36, 92),
             Size = UDim2.fromOffset(140, 24),
             BackgroundColor3 = w.AccentColor,
             BorderSizePixel = 0,
             Text = "Done",
-            Font = al(),
+            Font = an(),
             TextSize = 12,
             TextColor3 = w.FontColor,
             AutoButtonColor = true,
             ZIndex = 51,
         })
-        ak("UICorner", { CornerRadius = UDim.new(0, 4), Parent = ay })
-        ay.MouseButton1Click:Connect(function()
-            if at then at:Destroy(); at = nil end
+        am("UICorner", { CornerRadius = UDim.new(0, 4), Parent = aA })
+        aA.MouseButton1Click:Connect(function()
+            if av then av:Destroy(); av = nil end
         end)
 end
     
-as.MouseButton1Click:Connect(av)
+au.MouseButton1Click:Connect(ax)
 
-    local aw = { instance = aq, label = an, key = ao }
-    function aw.themeUpdate()
-        ar.TextColor3 = w.FontColor; ar.Font = al()
-        au()
+    local ay = { instance = as, label = ap, key = aq }
+    function ay.themeUpdate()
+        at.TextColor3 = w.FontColor; at.Font = an()
+        aw()
     end
-    function aw.refresh() au() end
-    table.insert(z, aw)
-    return aw
+    function ay.refresh() aw() end
+    table.insert(z, ay)
+    return ay
 end
 
-function aj.textInput(am, an, ao, ap, aq)
-    local ar = ak("Frame", {
-        Parent = am,
-        LayoutOrder = #am:GetChildren(),
+function al.textInput(ao, ap, aq, ar, as)
+    local at = am("Frame", {
+        Parent = ao,
+        LayoutOrder = #ao:GetChildren(),
         Size = UDim2.new(1, 0, 0, 44),
         BackgroundTransparency = 1,
     })
-    local as = ak("TextLabel", {
-        Parent = ar,
+    local au = am("TextLabel", {
+        Parent = at,
         Size = UDim2.new(1, 0, 0, 16),
         BackgroundTransparency = 1,
-        Text = an,
-        Font = al(),
+        Text = ap,
+        Font = an(),
         TextSize = 12,
         TextColor3 = w.FontColor,
         TextXAlignment = Enum.TextXAlignment.Left,
     })
-    local at = ak("TextBox", {
-        Parent = ar,
+    local av = am("TextBox", {
+        Parent = at,
         Position = UDim2.fromOffset(0, 18),
         Size = UDim2.new(1, 0, 0, 24),
         BackgroundColor3 = w.BgColor,
         BorderSizePixel = 0,
-        Text = tostring(w[ao] or ""),
-        PlaceholderText = ap or "",
-        Font = al(),
+        Text = tostring(w[aq] or ""),
+        PlaceholderText = ar or "",
+        Font = an(),
         TextSize = 12,
         TextColor3 = w.FontColor,
         PlaceholderColor3 = Color3.fromRGB(120, 130, 140),
         TextXAlignment = Enum.TextXAlignment.Left,
         ClearTextOnFocus = false,
     })
-    ak("UICorner", { CornerRadius = UDim.new(0, 4), Parent = at })
-    local au = ak("UIPadding", { Parent = at, PaddingLeft = UDim.new(0, 8), PaddingRight = UDim.new(0, 8) })
+    am("UICorner", { CornerRadius = UDim.new(0, 4), Parent = av })
+    local aw = am("UIPadding", { Parent = av, PaddingLeft = UDim.new(0, 8), PaddingRight = UDim.new(0, 8) })
 
-    at.FocusLost:Connect(function()
-        w[ao] = at.Text
-        if aq then pcall(aq, at.Text) end
+    av.FocusLost:Connect(function()
+        w[aq] = av.Text
+        if as then pcall(as, av.Text) end
     end)
 
-    local av = { instance = ar, label = an, key = ao }
-    function av.themeUpdate()
-        as.TextColor3 = w.FontColor; as.Font = al()
-        at.BackgroundColor3 = w.BgColor
-        at.TextColor3 = w.FontColor
-        at.Font = al()
+    local ax = { instance = at, label = ap, key = aq }
+    function ax.themeUpdate()
+        au.TextColor3 = w.FontColor; au.Font = an()
+        av.BackgroundColor3 = w.BgColor
+        av.TextColor3 = w.FontColor
+        av.Font = an()
     end
-    function av.refresh() at.Text = tostring(w[ao] or "") end
-    table.insert(z, av)
-    return av
+    function ax.refresh() av.Text = tostring(w[aq] or "") end
+    table.insert(z, ax)
+    return ax
 end
 
-function aj.keybind(am, an, ao, ap)
-    local aq = ak("Frame", {
-        Parent = am,
-        LayoutOrder = #am:GetChildren(),
+function al.keybind(ao, ap, aq, ar)
+    local as = am("Frame", {
+        Parent = ao,
+        LayoutOrder = #ao:GetChildren(),
         Size = UDim2.new(1, 0, 0, 26),
         BackgroundTransparency = 1,
     })
-    local ar = ak("TextLabel", {
-        Parent = aq,
+    local at = am("TextLabel", {
+        Parent = as,
         Size = UDim2.new(1, -100, 1, 0),
         BackgroundTransparency = 1,
-        Text = an,
-        Font = al(),
+        Text = ap,
+        Font = an(),
         TextSize = 12,
         TextColor3 = w.FontColor,
         TextXAlignment = Enum.TextXAlignment.Left,
     })
-    local as = ak("TextButton", {
-        Parent = aq,
+    local au = am("TextButton", {
+        Parent = as,
         AnchorPoint = Vector2.new(1, 0.5),
         Position = UDim2.new(1, 0, 0.5, 0),
         Size = UDim2.fromOffset(96, 22),
         BackgroundColor3 = w.BgColor,
         BorderSizePixel = 0,
-        Text = tostring(w[ao] or "None"),
-        Font = al(),
+        Text = tostring(w[aq] or "None"),
+        Font = an(),
         TextSize = 12,
         TextColor3 = w.FontColor,
         AutoButtonColor = true,
     })
-    ak("UICorner", { CornerRadius = UDim.new(0, 4), Parent = as })
+    am("UICorner", { CornerRadius = UDim.new(0, 4), Parent = au })
 
-    local at = false
-    as.MouseButton1Click:Connect(function()
-        at = true
-        as.Text = "..."
+    local av = false
+    au.MouseButton1Click:Connect(function()
+        av = true
+        au.Text = "..."
     end)
-    f.InputBegan:Connect(function(au, av)
-        if not at then return end
-        if au.UserInputType ~= Enum.UserInputType.Keyboard then return end
-        at = false
-        local aw = au.KeyCode.Name
-        w[ao] = aw
-        as.Text = aw
-        if ap then pcall(ap, aw) end
+    f.InputBegan:Connect(function(aw, ax)
+        if not av then return end
+        if aw.UserInputType ~= Enum.UserInputType.Keyboard then return end
+        av = false
+        local ay = aw.KeyCode.Name
+        w[aq] = ay
+        au.Text = ay
+        if ar then pcall(ar, ay) end
     end)
 
-    local au = { instance = aq, label = an, key = ao }
-    function au.themeUpdate()
-        ar.TextColor3 = w.FontColor; ar.Font = al()
-        as.BackgroundColor3 = w.BgColor
-        as.TextColor3 = w.FontColor; as.Font = al()
+    local aw = { instance = as, label = ap, key = aq }
+    function aw.themeUpdate()
+        at.TextColor3 = w.FontColor; at.Font = an()
+        au.BackgroundColor3 = w.BgColor
+        au.TextColor3 = w.FontColor; au.Font = an()
     end
-    function au.refresh() as.Text = tostring(w[ao] or "None") end
-    table.insert(z, au)
-    return au
+    function aw.refresh() au.Text = tostring(w[aq] or "None") end
+    table.insert(z, aw)
+    return aw
 end
-local am=function()    
+local ao=function()    
 
 
 
@@ -2911,29 +2934,29 @@ w.Alive = false
     w.AutoAttackNearby = false
     w.AutoTPToPlayer = false
 
-    Q.disable()
-    P.clearAll()
+    O.disable()
+    ab.clearAll()
     D.disconnectAll()
     if p.CameraType == Enum.CameraType.Scriptable then
         pcall(function() p.CameraType = Enum.CameraType.Custom end)
     end
 
-    local am = G.humanoid()
-    if am then pcall(function() am.WalkSpeed = v.DefaultWS; am.JumpPower = v.DefaultJP end) end
-    local an = G.root()
-    if an then pcall(function() an.Anchored = false end) end
-local ao=function(
+    local ao = G.humanoid()
+    if ao then pcall(function() ao.WalkSpeed = v.DefaultWS; ao.JumpPower = v.DefaultJP end) end
+    local ap = G.root()
+    if ap then pcall(function() ap.Anchored = false end) end
+local aq=function(
 
-ao)        
-if not ao then return end
-        for ap, aq in ipairs(ao:GetChildren()) do
-            if aq:IsA("ScreenGui") and (aq.Name:sub(1, 6) == "_NHJB_" or aq.Name:sub(1, 9) == "_NHJB_NF_") then
-                pcall(function() aq:Destroy() end)
+aq)        
+if not aq then return end
+        for ar, as in ipairs(aq:GetChildren()) do
+            if as:IsA("ScreenGui") and (as.Name:sub(1, 6) == "_NHJB_" or as.Name:sub(1, 9) == "_NHJB_NF_") then
+                pcall(function() as:Destroy() end)
             end
         end
 end    
-ao(m)
-    if q then ao(q:FindFirstChild("PlayerGui")) end
+aq(m)
+    if q then aq(q:FindFirstChild("PlayerGui")) end
     _G._NHJB_NotifyGui = nil
 
     getgenv()._NameHubJB_Alive  = false
@@ -2943,26 +2966,26 @@ end
 
 
 
-C = aj.newWindow({ width = 760, height = 520 })
-local an, ao, ap, aq
-local ar, as, at, au
+C = al.newWindow({ width = 760, height = 520 })
+local ap, aq, ar, as
+local at, au, av, aw
 
 
-local av = C:addPage("Main")
+local ax = C:addPage("Main")
 
-local aw  = aj.newColumn(av, 0.5)
-aw.Position = UDim2.fromOffset(8, 8)
+local ay  = al.newColumn(ax, 0.5)
+ay.Position = UDim2.fromOffset(8, 8)
 
-local ax = aj.newColumn(av, 0.5)
-ax.Position = UDim2.new(0.5, 4, 0, 8)
+local az = al.newColumn(ax, 0.5)
+az.Position = UDim2.new(0.5, 4, 0, 8)
 
 
-local ay, az = aj.newCard(aw, { tabs = { "Main", "ESP" }, height = 360 })
+local aA, aB = al.newCard(ay, { tabs = { "Main", "ESP" }, height = 360 })
 
 do
-    local aA = az["Main"].frame
-    aj.toggle(aA, "Autofarm", "Autofarm", function(aB)
-        if aB then
+    local aC = aB["Main"].frame
+    al.toggle(aC, "Autofarm", "Autofarm", function(aD)
+        if aD then
             w.StartTime = w.StartTime or os.time()
             w.StatsCounting = true
             N.start()
@@ -2970,47 +2993,47 @@ do
             G.applySpeed()
         end
     end)
-    aj.dropdown(aA, "Farm Targets", "FarmTarget", v.FarmTargetOptions, function(aB)
+    al.dropdown(aC, "Farm Targets", "FarmTarget", v.FarmTargetOptions, function(aD)
         
-        if #w.FarmPriority == 0 then w.FarmPriority = { aB } end
+        if #w.FarmPriority == 0 then w.FarmPriority = { aD } end
     end)
-    aj.multiDropdown(aA, "Farm Priority List", "FarmPriority", v.FarmTargetOptions)
-    aj.toggle(aA, "Skip Players (NPC-only autofarm)", "SkipPlayers")
+    al.multiDropdown(aC, "Farm Priority List", "FarmPriority", v.FarmTargetOptions)
+    al.toggle(aC, "Skip Players (NPC-only autofarm)", "SkipPlayers")
     
-    aj.dropdown(aA, "Movement Mode", "AutofarmMovement", v.MovementOptions, function(aB)
+    al.dropdown(aC, "Movement Mode", "AutofarmMovement", v.MovementOptions, function(aD)
         
         
-        if aB ~= "Fly" then U.stopFly() end
+        if aD ~= "Fly" then S.stopFly() end
     end)
-    aj.slider(aA, "Stop Distance (Fly/Walk only)", "StopDistance", 2, 30, 1)
-    aj.slider(aA, "Speed", "Speed", 16, 200, 1, function() G.applySpeed() end)
-    aj.dropdown(aA, "Autofarm Dino", "AutofarmDino", v.DinoOptions, function(aB)
-        local aC = H.remoteByKeywords(v.DinoChangeKeywords)
-        if aC then
+    al.slider(aC, "Stop Distance (Fly/Walk only)", "StopDistance", 2, 30, 1)
+    al.slider(aC, "Speed", "Speed", 16, 200, 1, function() G.applySpeed() end)
+    al.dropdown(aC, "Autofarm Dino", "AutofarmDino", v.DinoOptions, function(aD)
+        local aE = H.remoteByKeywords(v.DinoChangeKeywords)
+        if aE then
             pcall(function()
-                if aC:IsA("RemoteEvent") then aC:FireServer(aB) else aC:InvokeServer(aB) end
+                if aE:IsA("RemoteEvent") then aE:FireServer(aD) else aE:InvokeServer(aD) end
             end)
         end
     end)
 
-    local aB = aj.label(aA, "Coins Gained: 0")
-    local aC  = aj.label(aA, "Rate: N/A")
-    local aD = aj.label(aA, "Time Elapsed: N/A")
-    an, ap, ao = aB, aC, aD
+    local aD = al.label(aC, "Coins Gained: 0")
+    local aE  = al.label(aC, "Rate: N/A")
+    local aF = al.label(aC, "Time Elapsed: N/A")
+    ap, ar, aq = aD, aE, aF
 
     
     
     
-    local aE  = aj.label(aA, "Status: Idle")
-    local aF   = aj.label(aA, "Targets: 0 humanoids / 0 by name")
-    local aG  = aj.label(aA, "Attack remote: (not discovered)")
-    local aH = aj.label(aA, "Last fire: -")
-    _G._JB_StatusLbl  = aE
-    _G._JB_FoundLbl   = aF
-    _G._JB_RemoteLbl  = aG
-    _G._JB_LastFireLbl = aH
+    local aG  = al.label(aC, "Status: Idle")
+    local aH   = al.label(aC, "Targets: 0 humanoids / 0 by name")
+    local aI  = al.label(aC, "Attack remote: (not discovered)")
+    local aJ = al.label(aC, "Last fire: -")
+    _G._JB_StatusLbl  = aG
+    _G._JB_FoundLbl   = aH
+    _G._JB_RemoteLbl  = aI
+    _G._JB_LastFireLbl = aJ
 
-    aj.button(aA, "Start Counting Stats", function()
+    al.button(aC, "Start Counting Stats", function()
         w.CoinsGained = 0
         w.StartTime = os.time()
         w.StatsCounting = true
@@ -3021,7 +3044,7 @@ do
     
     
     
-    aj.textInput(aA, "Manual Attack Remote (override)", "ManualAttackRemote",
+    al.textInput(aC, "Manual Attack Remote (override)", "ManualAttackRemote",
         "blank = auto-discover", function()
             K.invalidateCache()
         end)
@@ -3029,276 +3052,379 @@ do
     
     
     
-    aj.button(aA, "Copy All Remotes to Clipboard", function()
-        local aI = H.allRemotes(600)
-        local aJ = {
-            "=== NameHub JB Remote Dump ===",
+    
+    
+    
+    
+    
+    al.button(aC, "Test All Attack Remotes", function()
+        local aK = G.root()
+        if not aK then
+            F.send("No character - spawn first.", 5)
+            return
+        end
+
+        
+        local aL = (w.FarmPriority and #w.FarmPriority > 0) and w.FarmPriority or { w.FarmTarget }
+        local Y, Z
+        for _, aM in ipairs(aL) do
+            for aN, aO in ipairs(J.allByName(aM)) do
+                local aP = D.distance(aK, aO.root)
+                if not Z or aP < Z then Y, Z = aO, aP end
+            end
+        end
+        if not Y then
+            for aM, aN in ipairs(J.allWithHumanoid()) do
+                local aO = D.distance(aK, aN.root)
+                if not Z or aO < Z then Y, Z = aN, aO end
+            end
+        end
+        if not Y then
+            F.send("No target found anywhere - server may be empty.", 5)
+            return
+        end
+
+        local aM = {
+            "=== NameHub JB Attack Remote Test ===",
             "Build: " .. a,
-            ("Found %d remotes across ReplicatedStorage / Character / Workspace"):format(#aI),
+            ("Target: %s @ %.1fm  (hum=%s)"):format(
+                Y.model.Name, Z or -1,
+                Y.hum and "yes" or "no"),
             "",
         }
-        for aK, Z in ipairs(aI) do aJ[#aJ + 1] = Z end
-        local aK = table.concat(aJ, "\n")
-        pcall(setclipboard, aK)
-        F.send(("Copied %d remotes to clipboard."):format(#aI), 5)
-    end)
 
-    
-    
-    
-    
-    aj.button(aA, "Copy Diagnostics", function()
-        local aI = { "=== NameHub JB Diagnostics ===", "Build: " .. a }
-        aI[#aI + 1] = "FarmTarget: " .. tostring(w.FarmTarget)
-        aI[#aI + 1] = "FarmPriority: " .. table.concat(w.FarmPriority or {}, ", ")
-        aI[#aI + 1] = "SkipPlayers: " .. tostring(w.SkipPlayers)
-        aI[#aI + 1] = "Status: " .. tostring(w._FarmStatus)
-        aI[#aI + 1] = "LastTarget: " .. tostring(w._LastTarget) .. " @ " .. tostring(math.floor(w._LastDistance or 0)) .. "m"
-        aI[#aI + 1] = "AttackRemote: " .. tostring(w._AttackRemote)
-        aI[#aI + 1] = "LastFire: " .. tostring(w._LastFire)
-        aI[#aI + 1] = "TargetsFound (humanoid): " .. tostring(w._TargetsFound)
-        aI[#aI + 1] = "TargetsFound (name fallback): " .. tostring(w._NamedFound)
-        aI[#aI + 1] = ""
-        aI[#aI + 1] = "--- Nearby humanoid targets (top 20) ---"
-        for aJ, aK in ipairs(J.dump(20)) do
-            aI[#aI + 1] = aK
-        end
-        aI[#aI + 1] = ""
-        aI[#aI + 1] = "--- Name-fallback matches per priority ---"
-        local aJ = G.root()
-        for aK, Z in ipairs(w.FarmPriority or {}) do
-            aI[#aI + 1] = ("> %s:"):format(Z)
-            local _ = J.allByName(Z)
-            local aL = 0
-            for aM, aN in ipairs(_) do
-                if aL >= 10 then break end
-                local aO = aJ and D.distance(aJ, aN.root) or -1
-                aI[#aI + 1] = ("    %-30s dist=%-6.1f hum=%s"):format(
-                    aN.model.Name:sub(1, 30), aO, aN.hum and "yes" or "no")
-                aL = aL + 1
+        
+        
+        
+        local aN = 0
+        local aO  = 0
+        for aP, _ in ipairs(v.JB_AttackNames) do
+            local aQ = H.remoteByName(_)
+            if not aQ then
+                aM[#aM + 1] = ("- %s: NOT FOUND"):format(_)
+            else
+                aM[#aM + 1] = ("+ %s [%s] @ %s"):format(
+                    _, aQ.ClassName, aQ:GetFullName())
+                
+                local aR = {
+                    { entry = "hum",            args = { Y.hum } },
+                    { entry = "model",          args = { Y.model } },
+                    { entry = "root",           args = { Y.root } },
+                    { entry = "hum+pos",        args = { Y.hum, Y.root.Position } },
+                    { entry = "model+pos",      args = { Y.model, Y.root.Position } },
+                    { entry = "name(str)",      args = { Y.model.Name } },
+                    { entry = "{hum} (table)",  args = { { Y.hum } } },
+                    { entry = "{model}",        args = { { Y.model } } },
+                    { entry = "BasicAttack+hum",args = { "BasicAttack", Y.hum } },
+                    { entry = "Attack+{hum}",   args = { "Attack", { Y.hum } } },
+                    { entry = "hum,9999",       args = { Y.hum, 9999 } },
+                    { entry = "no args",        args = {} },
+                }
+                if Y.hum then aR[#aR + 1] = { entry = "hum table key", args = { { Target = Y.hum } } } end
+
+                for aS, aT in ipairs(aR) do
+                    aN = aN + 1
+                    local aU, aV = pcall(function()
+                        if aQ:IsA("RemoteEvent") then
+                            aQ:FireServer(table.unpack(aT.args))
+                        else
+                            aQ:InvokeServer(table.unpack(aT.args))
+                        end
+                    end)
+                    if aU then
+                        aO = aO + 1
+                        aM[#aM + 1] = ("    OK   %s"):format(aT.entry)
+                    else
+                        local aW = tostring(aV or ""):sub(1, 80)
+                        aM[#aM + 1] = ("    FAIL %s  --  %s"):format(aT.entry, aW)
+                    end
+                end
+                aM[#aM + 1] = ""
             end
-            if #_ == 0 then aI[#aI + 1] = "    (none found)" end
         end
-        aI[#aI + 1] = ""
-        aI[#aI + 1] = "--- Remotes across RS / Character / Workspace (top 200) ---"
-        for aK, aL in ipairs(H.allRemotes(200)) do
-            aI[#aI + 1] = aL
-        end
-        local aK = table.concat(aI, "\n")
-        pcall(setclipboard, aK)
-        F.send(("Diagnostics copied to clipboard (%d lines). Paste in Discord."):format(#aI), 5)
+
+        aM[#aM + 1] = ("Summary: %d/%d calls succeeded."):format(aO, aN)
+        aM[#aM + 1] = "If the target's HP dropped or coins went up while this ran, the OK shape just above the change is the winner. Paste into Discord."
+
+        local aP = table.concat(aM, "\n")
+        pcall(setclipboard, aP)
+        F.send(("Test complete: %d/%d remote calls succeeded. Pasted to clipboard."):format(aO, aN), 8)
     end)
-end
 
-do
-    local aA = az["ESP"].frame
-    aj.toggle(aA, "Goat ESP", "GoatESP", function(aB)
-        if aB then P.start() end
+    al.button(aC, "Copy All Remotes to Clipboard", function()
+        local aK = H.allRemotes(600)
+        local aL = {
+            "=== NameHub JB Remote Dump ===",
+            "Build: " .. a,
+            ("Found %d remotes across ReplicatedStorage / Character / Workspace"):format(#aK),
+            "",
+        }
+        for aM, aN in ipairs(aK) do aL[#aL + 1] = aN end
+        local aM = table.concat(aL, "\n")
+        pcall(setclipboard, aM)
+        F.send(("Copied %d remotes to clipboard."):format(#aK), 5)
     end)
-    aj.colorPicker(aA, "Goat ESP Color", "GoatESPColor")
-    aj.toggle(aA, "Amber ESP", "AmberESP", function(aB)
-        if aB then P.start() end
-    end)
-    aj.colorPicker(aA, "Amber ESP Color", "AmberESPColor")
-    aj.toggle(aA, "No Prompt Delay", "NoPromptDelay")
-    aj.slider(aA, "Outline Transparency", "OutlineTransparency", 0, 1, 0.05, function() P.refresh() end)
-    aj.slider(aA, "Fill Transparency", "FillTransparency", 0, 1, 0.05, function() P.refresh() end)
-end
 
-
-local aA, aB = aj.newCard(ax, { tabs = { "Player", "Combat" }, height = 360 })
-
-do
-    local aC = aB["Player"].frame
-    aj.toggle(aC, "Fly", "Fly", function(aD)
-        if aD then Q.enable() else Q.disable() end
-    end)
-    aj.slider(aC, "Fly Speed", "FlySpeed", 10, 300, 1)
-    aj.button(aC, "Respawn", function() X.respawn() end)
-    aj.button(aC, "Menu", function() X.openMenu() end)
-    aj.slider(aC, "Respawn Delay", "RespawnDelay", 0, 30, 1)
-    aj.toggle(aC, "Auto Respawn", "AutoRespawn")
-    aj.toggle(aC, "Anchored", "Anchored", function() G.applyAnchor() end)
-end
-
-do
-    local aC = aB["Combat"].frame
-    aj.slider(aC, "Offset (X-axis)", "OffsetX", -20, 20, 1)
-    aj.slider(aC, "Offset (Y-axis)", "OffsetY", -20, 20, 1)
-    aj.slider(aC, "Range", "Range", 5, 200, 1)
-    aj.slider(aC, "Max Target HP", "MaxTargetHP", 0, 5000, 10)
-    aj.slider(aC, "Min Target HP", "MinTargetHP", 0, 5000, 10)
-    aj.slider(aC, "Disengage At", "DisengageAt", 0, 1000, 10)
-    aj.toggle(aC, "Target POV", "TargetPOV")
-    aj.toggle(aC, "Auto Attack Nearby Player", "AutoAttackNearby")
-    aj.toggle(aC, "Auto Attack", "AutoAttack")
-    aj.toggle(aC, "Auto TP to Player", "AutoTPToPlayer")
-local aD=function()        
-
-
-local aD = { "" }
-        for aE, aF in ipairs(d:GetPlayers()) do
-            if aF ~= q then aD[#aD + 1] = aF.Name end
-        end
-        return aD
-end    
-au = aj.dropdown(aC, "Target Player", "TargetPlayer", aD())
     
-    D.conn("tp_player_add", d.PlayerAdded:Connect(function() au:setOptions(aD()) end))
-    D.conn("tp_player_rem", d.PlayerRemoving:Connect(function() au:setOptions(aD()) end))
+    
+    
+    
+    al.button(aC, "Copy Diagnostics", function()
+        local aK = { "=== NameHub JB Diagnostics ===", "Build: " .. a }
+        aK[#aK + 1] = "FarmTarget: " .. tostring(w.FarmTarget)
+        aK[#aK + 1] = "FarmPriority: " .. table.concat(w.FarmPriority or {}, ", ")
+        aK[#aK + 1] = "SkipPlayers: " .. tostring(w.SkipPlayers)
+        aK[#aK + 1] = "Status: " .. tostring(w._FarmStatus)
+        aK[#aK + 1] = "LastTarget: " .. tostring(w._LastTarget) .. " @ " .. tostring(math.floor(w._LastDistance or 0)) .. "m"
+        aK[#aK + 1] = "AttackRemote: " .. tostring(w._AttackRemote)
+        aK[#aK + 1] = "LastFire: " .. tostring(w._LastFire)
+        aK[#aK + 1] = ("LoopTick: %d  LoopPhase: %s"):format(w._LoopTick or 0, tostring(w._LoopPhase))
+        if w._LoopErr ~= "" then
+            aK[#aK + 1] = "LoopErr: " .. tostring(w._LoopErr)
+        end
+        aK[#aK + 1] = "TargetsFound (humanoid): " .. tostring(w._TargetsFound)
+        aK[#aK + 1] = "TargetsFound (name fallback): " .. tostring(w._NamedFound)
+        aK[#aK + 1] = ""
+        aK[#aK + 1] = "--- Nearby humanoid targets (top 20) ---"
+        for aL, aM in ipairs(J.dump(20)) do
+            aK[#aK + 1] = aM
+        end
+        aK[#aK + 1] = ""
+        aK[#aK + 1] = "--- Name-fallback matches per priority ---"
+        local aL = G.root()
+        for aM, aN in ipairs(w.FarmPriority or {}) do
+            aK[#aK + 1] = ("> %s:"):format(aN)
+            local aO = J.allByName(aN)
+            local aP = 0
+            for aQ, aR in ipairs(aO) do
+                if aP >= 10 then break end
+                local aS = aL and D.distance(aL, aR.root) or -1
+                aK[#aK + 1] = ("    %-30s dist=%-6.1f hum=%s"):format(
+                    aR.model.Name:sub(1, 30), aS, aR.hum and "yes" or "no")
+                aP = aP + 1
+            end
+            if #aO == 0 then aK[#aK + 1] = "    (none found)" end
+        end
+        aK[#aK + 1] = ""
+        aK[#aK + 1] = "--- Remotes across RS / Character / Workspace (top 200) ---"
+        for aM, aN in ipairs(H.allRemotes(200)) do
+            aK[#aK + 1] = aN
+        end
+        local aM = table.concat(aK, "\n")
+        pcall(setclipboard, aM)
+        F.send(("Diagnostics copied to clipboard (%d lines). Paste in Discord."):format(#aK), 5)
+    end)
+end
+
+do
+    local aC = aB["ESP"].frame
+    al.toggle(aC, "Goat ESP", "GoatESP", function(aD)
+        if aD then ab.start() end
+    end)
+    al.colorPicker(aC, "Goat ESP Color", "GoatESPColor")
+    al.toggle(aC, "Amber ESP", "AmberESP", function(aD)
+        if aD then ab.start() end
+    end)
+    al.colorPicker(aC, "Amber ESP Color", "AmberESPColor")
+    al.toggle(aC, "No Prompt Delay", "NoPromptDelay")
+    al.slider(aC, "Outline Transparency", "OutlineTransparency", 0, 1, 0.05, function() ab.refresh() end)
+    al.slider(aC, "Fill Transparency", "FillTransparency", 0, 1, 0.05, function() ab.refresh() end)
 end
 
 
-local aC = C:addPage("Teleport")
-local aD  = aj.newColumn(aC, 0.5)
-aD.Position = UDim2.fromOffset(8, 8)
-local aE, aF = aj.newCard(aD, { title = "Server Hop", height = 460 })
+local aC, aD = al.newCard(az, { tabs = { "Player", "Combat" }, height = 360 })
 
 do
-    aj.button(aF, "Join selected server", function()
-        if w.SelectedJobId ~= "" then Y.joinJobId(w.SelectedJobId) end
+    local aE = aD["Player"].frame
+    al.toggle(aE, "Fly", "Fly", function(aF)
+        if aF then O.enable() else O.disable() end
     end)
-    aj.button(aF, "Refresh Server List", function()
+    al.slider(aE, "Fly Speed", "FlySpeed", 10, 300, 1)
+    al.button(aE, "Respawn", function() W.respawn() end)
+    al.button(aE, "Menu", function() W.openMenu() end)
+    al.slider(aE, "Respawn Delay", "RespawnDelay", 0, 30, 1)
+    al.toggle(aE, "Auto Respawn", "AutoRespawn")
+    al.toggle(aE, "Anchored", "Anchored", function() G.applyAnchor() end)
+end
+
+do
+    local aE = aD["Combat"].frame
+    al.slider(aE, "Offset (X-axis)", "OffsetX", -20, 20, 1)
+    al.slider(aE, "Offset (Y-axis)", "OffsetY", -20, 20, 1)
+    al.slider(aE, "Range", "Range", 5, 200, 1)
+    al.slider(aE, "Max Target HP", "MaxTargetHP", 0, 5000, 10)
+    al.slider(aE, "Min Target HP", "MinTargetHP", 0, 5000, 10)
+    al.slider(aE, "Disengage At", "DisengageAt", 0, 1000, 10)
+    al.toggle(aE, "Target POV", "TargetPOV")
+    al.toggle(aE, "Auto Attack Nearby Player", "AutoAttackNearby")
+    al.toggle(aE, "Auto Attack", "AutoAttack")
+    al.toggle(aE, "Auto TP to Player", "AutoTPToPlayer")
+local aF=function()        
+
+
+local aF = { "" }
+        for aG, aH in ipairs(d:GetPlayers()) do
+            if aH ~= q then aF[#aF + 1] = aH.Name end
+        end
+        return aF
+end    
+aw = al.dropdown(aE, "Target Player", "TargetPlayer", aF())
+    
+    D.conn("tp_player_add", d.PlayerAdded:Connect(function() aw:setOptions(aF()) end))
+    D.conn("tp_player_rem", d.PlayerRemoving:Connect(function() aw:setOptions(aF()) end))
+end
+
+
+local aE = C:addPage("Teleport")
+local aF  = al.newColumn(aE, 0.5)
+aF.Position = UDim2.fromOffset(8, 8)
+local aG, aH = al.newCard(aF, { title = "Server Hop", height = 460 })
+
+do
+    al.button(aH, "Join selected server", function()
+        if w.SelectedJobId ~= "" then X.joinJobId(w.SelectedJobId) end
+    end)
+    al.button(aH, "Refresh Server List", function()
         F.send("Fetching servers...")
         D.spawn(function()
-            local aG = Y.fetchServers()
-            w.ServerListCache = aG
-            local aH = {}
-            for aI, aJ in ipairs(aG) do aH[#aH + 1] = ("%s  (%d/%d)"):format(aJ.id:sub(1, 8), aJ.playing, aJ.max) end
-            if #aH == 0 then aH = { "(no servers)" } end
-            ar:setOptions(aH)
-            F.send(("Fetched %d servers"):format(#aG))
+            local aI = X.fetchServers()
+            w.ServerListCache = aI
+            local aJ = {}
+            for aK, aL in ipairs(aI) do aJ[#aJ + 1] = ("%s  (%d/%d)"):format(aL.id:sub(1, 8), aL.playing, aL.max) end
+            if #aJ == 0 then aJ = { "(no servers)" } end
+            at:setOptions(aJ)
+            F.send(("Fetched %d servers"):format(#aI))
         end)
     end)
-    ar = aj.dropdown(aF, "Server List", "SelectedJobId", { "---" }, function(aG)
-        for aH, aI in ipairs(w.ServerListCache or {}) do
-            if aG:sub(1, 8) == aI.id:sub(1, 8) then w.SelectedJobId = aI.id; return end
+    at = al.dropdown(aH, "Server List", "SelectedJobId", { "---" }, function(aI)
+        for aJ, aK in ipairs(w.ServerListCache or {}) do
+            if aI:sub(1, 8) == aK.id:sub(1, 8) then w.SelectedJobId = aK.id; return end
         end
     end)
-    aj.button(aF, "Get PlayerCount", function()
-        for aG, aH in ipairs(w.ServerListCache or {}) do
-            if aH.id == w.SelectedJobId then
-                F.send(("Server %s: %d/%d players"):format(aH.id:sub(1,8), aH.playing, aH.max))
+    al.button(aH, "Get PlayerCount", function()
+        for aI, aJ in ipairs(w.ServerListCache or {}) do
+            if aJ.id == w.SelectedJobId then
+                F.send(("Server %s: %d/%d players"):format(aJ.id:sub(1,8), aJ.playing, aJ.max))
                 return
             end
         end
         F.send("Refresh server list first.")
     end)
-    aj.button(aF, "Copy JobId", function()
+    al.button(aH, "Copy JobId", function()
         pcall(setclipboard, w.SelectedJobId)
         F.send("Copied JobId.")
     end)
-    aj.button(aF, "Join Selected JobId", function()
-        Y.joinJobId(w.SelectedJobId)
+    al.button(aH, "Join Selected JobId", function()
+        X.joinJobId(w.SelectedJobId)
     end)
-    aj.textInput(aF, "JobId", "SelectedJobId", "Enter JobId here")
-    aj.button(aF, "Rejoin Server", function() Y.rejoin() end)
-    aj.button(aF, "Server Hop", function() Y.randomHop() end)
-    aj.slider(aF, "Hop On Player Count", "HopOnPlayerCount", 0, 30, 1)
-    aj.toggle(aF, "Hop On Friend Detection", "HopOnFriend")
+    al.textInput(aH, "JobId", "SelectedJobId", "Enter JobId here")
+    al.button(aH, "Rejoin Server", function() X.rejoin() end)
+    al.button(aH, "Server Hop", function() X.randomHop() end)
+    al.slider(aH, "Hop On Player Count", "HopOnPlayerCount", 0, 30, 1)
+    al.toggle(aH, "Hop On Friend Detection", "HopOnFriend")
 end
 
 
-local aG = C:addPage("Safety")
-local aH = aj.newColumn(aG, 0.5)
-aH.Position = UDim2.fromOffset(8, 8)
-local aI, aJ = aj.newCard(aH, { title = "Admin Detection", height = 80 })
-aj.toggle(aJ, "Kick On Detection", "KickOnAdmin")
+local aI = C:addPage("Safety")
+local aJ = al.newColumn(aI, 0.5)
+aJ.Position = UDim2.fromOffset(8, 8)
+local aK, aL = al.newCard(aJ, { title = "Admin Detection", height = 80 })
+al.toggle(aL, "Kick On Detection", "KickOnAdmin")
 
 
-local aK = C:addPage("Webhook")
-local aL  = aj.newColumn(aK, 0.5)
-aL.Position = UDim2.fromOffset(8, 8)
-local aM, aN = aj.newCard(aL, { title = "Webhook", height = 280 })
+local aM = C:addPage("Webhook")
+local aN  = al.newColumn(aM, 0.5)
+aN.Position = UDim2.fromOffset(8, 8)
+local aO, aP = al.newCard(aN, { title = "Webhook", height = 280 })
 do
-    aj.textInput(aN, "Webhook Link", "WebhookLink", "https://discord.com/api/webhooks/...")
-    aj.slider(aN, "Webhook Interval (minutes)", "WebhookInterval", 1, 60, 1)
-    aj.slider(aN, "Timezone (UTC offset)", "WebhookTimezone", -12, 12, 1)
-    aj.colorPicker(aN, "Embed Color", "WebhookColor")
-    aj.toggle(aN, "Anonymous Mode", "WebhookAnonymous")
-    aj.button(aN, "Force Send Webhook Request", function() ab.send(true) end)
+    al.textInput(aP, "Webhook Link", "WebhookLink", "https://discord.com/api/webhooks/...")
+    al.slider(aP, "Webhook Interval (minutes)", "WebhookInterval", 1, 60, 1)
+    al.slider(aP, "Timezone (UTC offset)", "WebhookTimezone", -12, 12, 1)
+    al.colorPicker(aP, "Embed Color", "WebhookColor")
+    al.toggle(aP, "Anonymous Mode", "WebhookAnonymous")
+    al.button(aP, "Force Send Webhook Request", function() ad.send(true) end)
 end
 
 
-local aO = C:addPage("Settings")
+local aQ = C:addPage("Settings")
 
-local Z  = aj.newColumn(aO, 0.5)
-Z.Position = UDim2.fromOffset(8, 8)
-local _ = aj.newColumn(aO, 0.5)
-_.Position = UDim2.new(0.5, 4, 0, 8)
+local aR  = al.newColumn(aQ, 0.5)
+aR.Position = UDim2.fromOffset(8, 8)
+local aS = al.newColumn(aQ, 0.5)
+aS.Position = UDim2.new(0.5, 4, 0, 8)
 
-local aP, aQ = aj.newCard(Z, { title = "Themes", height = 280 })
+local aT, aU = al.newCard(aR, { title = "Themes", height = 280 })
 do
-    aj.colorPicker(aQ, "Background color", "BgColor",   function() ae.apply() end)
-    aj.colorPicker(aQ, "Main color",        "MainColor", function() ae.apply() end)
-    aj.colorPicker(aQ, "Accent color",      "AccentColor", function() ae.apply() end)
-    aj.colorPicker(aQ, "Outline color",     "OutlineColor", function() ae.apply() end)
-    aj.colorPicker(aQ, "Font color",        "FontColor", function() ae.apply() end)
-    aj.dropdown(aQ, "Font Face", "FontFace", v.FontOptions, function() ae.apply() end)
-    at = aj.dropdown(aQ, "Theme list", "Theme", ae.listNames())
-    aj.button(aQ, "Load theme", function() ae.load(w.Theme) end)
-    aj.button(aQ, "Overwrite theme", function()
-        if ae.saveCurrent(w.Theme) then F.send("Saved theme: " .. w.Theme) end
+    al.colorPicker(aU, "Background color", "BgColor",   function() ag.apply() end)
+    al.colorPicker(aU, "Main color",        "MainColor", function() ag.apply() end)
+    al.colorPicker(aU, "Accent color",      "AccentColor", function() ag.apply() end)
+    al.colorPicker(aU, "Outline color",     "OutlineColor", function() ag.apply() end)
+    al.colorPicker(aU, "Font color",        "FontColor", function() ag.apply() end)
+    al.dropdown(aU, "Font Face", "FontFace", v.FontOptions, function() ag.apply() end)
+    av = al.dropdown(aU, "Theme list", "Theme", ag.listNames())
+    al.button(aU, "Load theme", function() ag.load(w.Theme) end)
+    al.button(aU, "Overwrite theme", function()
+        if ag.saveCurrent(w.Theme) then F.send("Saved theme: " .. w.Theme) end
     end)
 end
 
-local aR, aS = aj.newCard(_, { title = "Configuration", height = 320 })
+local aV, aW = al.newCard(aS, { title = "Configuration", height = 320 })
 do
-    aj.textInput(aS, "Config name", "_cfgName", "name")
-    aj.button(aS, "Create config", function() af.save(w._cfgName or "") end)
-    as = aj.dropdown(aS, "Config list", "_cfgPicked", af.list())
-    aj.button(aS, "Refresh list", function() as:setOptions(af.list()) end)
-    aj.button(aS, "Load config",      function() af.load(w._cfgPicked or "") end)
-    aj.button(aS, "Overwrite config", function() af.save(w._cfgPicked or "") end)
-    aj.button(aS, "Delete config",    function()
-        af.delete(w._cfgPicked or "")
-        as:setOptions(af.list())
+    al.textInput(aW, "Config name", "_cfgName", "name")
+    al.button(aW, "Create config", function() ah.save(w._cfgName or "") end)
+    au = al.dropdown(aW, "Config list", "_cfgPicked", ah.list())
+    al.button(aW, "Refresh list", function() au:setOptions(ah.list()) end)
+    al.button(aW, "Load config",      function() ah.load(w._cfgPicked or "") end)
+    al.button(aW, "Overwrite config", function() ah.save(w._cfgPicked or "") end)
+    al.button(aW, "Delete config",    function()
+        ah.delete(w._cfgPicked or "")
+        au:setOptions(ah.list())
     end)
-    aj.button(aS, "Set autoload",   function()
+    al.button(aW, "Set autoload",   function()
         if w._cfgPicked and w._cfgPicked ~= "" then
-            af.setAutoload(w._cfgPicked)
-            if aq then aq:setText("Current autoload config: " .. w.AutoloadConfig) end
+            ah.setAutoload(w._cfgPicked)
+            if as then as:setText("Current autoload config: " .. w.AutoloadConfig) end
             F.send("Autoload set: " .. w.AutoloadConfig)
         end
     end)
-    aj.button(aS, "Reset autoload", function()
-        af.resetAutoload()
-        if aq then aq:setText("Current autoload config: none") end
+    al.button(aW, "Reset autoload", function()
+        ah.resetAutoload()
+        if as then as:setText("Current autoload config: none") end
     end)
-    aq = aj.label(aS,
-        "Current autoload config: " .. (af.getAutoload() ~= "" and af.getAutoload() or "none"))
-    aj.textInput(aS, "Import Data", "_importData", "paste exported config here")
-    aj.button(aS, "Export config", function()
-        local aT = af.exportCurrent()
-        pcall(setclipboard, aT)
+    as = al.label(aW,
+        "Current autoload config: " .. (ah.getAutoload() ~= "" and ah.getAutoload() or "none"))
+    al.textInput(aW, "Import Data", "_importData", "paste exported config here")
+    al.button(aW, "Export config", function()
+        local Y = ah.exportCurrent()
+        pcall(setclipboard, Y)
         F.send("Exported to clipboard.")
     end)
-    aj.button(aS, "Import config", function() af.importString(w._importData or "") end)
+    al.button(aW, "Import config", function() ah.importString(w._importData or "") end)
 end
 
-local aT, aU = aj.newCard(Z, { title = "Menu", height = 160 })
+local Y, Z = al.newCard(aR, { title = "Menu", height = 160 })
 do
-    aj.keybind(aU, "Menu bind", "MenuBind")
-    aj.toggle(aU, "Autoexecute", "Autoexecute", function(aV)
-        if aV then
+    al.keybind(Z, "Menu bind", "MenuBind")
+    al.toggle(Z, "Autoexecute", "Autoexecute", function(_)
+        if _ then
             
-            local aW = 'pcall(function() loadstring(game:HttpGet("https://raw.githubusercontent.com/kyronshaw912-collab/NameHub/main/loader.lua"))() end)'
-            local aX = { "autoexec/", "auto_exec/", "autoexecute/" }
-            local aY
-            for aZ, a_ in ipairs(aX) do
-                local a0 = pcall(b.writefile, a_ .. "NameHubJB_loader.lua", aW)
-                if a0 then aY = a_; break end
+            local aX = 'pcall(function() loadstring(game:HttpGet("https://raw.githubusercontent.com/kyronshaw912-collab/NameHub/main/loader.lua"))() end)'
+            local aY = { "autoexec/", "auto_exec/", "autoexecute/" }
+            local aZ
+            for a_, a0 in ipairs(aY) do
+                local a1 = pcall(b.writefile, a0 .. "NameHubJB_loader.lua", aX)
+                if a1 then aZ = a0; break end
             end
-            if aY then F.send("Autoexec written: " .. aY) else F.send("Autoexec unsupported by executor.") end
+            if aZ then F.send("Autoexec written: " .. aZ) else F.send("Autoexec unsupported by executor.") end
         end
     end)
-    aj.dropdown(aU, "Notification Side", "NotificationSide", v.NotifySides)
-    aj.dropdown(aU, "UI Zoom", "_ZoomPick",
+    al.dropdown(Z, "Notification Side", "NotificationSide", v.NotifySides)
+    al.dropdown(Z, "UI Zoom", "_ZoomPick",
         { "75%", "100%", "125%", "150%", "175%", "200%", "250%" },
-        function(aV)
-            local aW = tonumber((aV:gsub("%%", "")))
-            if aW and aW > 0 then
-                w.UIScale = aW / 100
+        function(aX)
+            local aY = tonumber((aX:gsub("%%", "")))
+            if aY and aY > 0 then
+                w.UIScale = aY / 100
                 if C and C.uiScale then C.uiScale.Scale = w.UIScale end
             end
         end
@@ -3309,11 +3435,11 @@ end
 
 
 C.searchBox:GetPropertyChangedSignal("Text"):Connect(function()
-    local aV = C.searchBox.Text:lower()
-    for aW, aX in pairs(z) do
-        if aX.instance and aX.label and aX.instance.Parent then
-            local aY = (aV == "") or aX.label:lower():find(aV, 1, true)
-            aX.instance.Visible = aY and true or false
+    local aX = C.searchBox.Text:lower()
+    for aY, aZ in pairs(z) do
+        if aZ.instance and aZ.label and aZ.instance.Parent then
+            local a_ = (aX == "") or aZ.label:lower():find(aX, 1, true)
+            aZ.instance.Visible = a_ and true or false
         end
     end
 end)
@@ -3321,10 +3447,10 @@ end)
 
 
 
-D.conn("ui_toggle", f.InputBegan:Connect(function(aV, aW)
-    if aW then return end
-    if aV.UserInputType ~= Enum.UserInputType.Keyboard then return end
-    if aV.KeyCode.Name == w.MenuBind then
+D.conn("ui_toggle", f.InputBegan:Connect(function(aX, aY)
+    if aY then return end
+    if aX.UserInputType ~= Enum.UserInputType.Keyboard then return end
+    if aX.KeyCode.Name == w.MenuBind then
         w.UIVisible = not w.UIVisible
         C.win.Visible = w.UIVisible
     end
@@ -3335,17 +3461,17 @@ end))
 
 D.conn("stats_tick", e.Heartbeat:Connect(function()
     if not w.Alive then return end
-    if an then an:setText("Coins Gained: " .. tostring(w.CoinsGained)) end
+    if ap then ap:setText("Coins Gained: " .. tostring(w.CoinsGained)) end
     if w.StartTime and w.StatsCounting then
-        local aV = os.time() - w.StartTime
-        if ao  then ao:setText("Time Elapsed: " .. D.fmtTime(aV)) end
-        if ap then
-            local aW = aV > 0 and (w.CoinsGained / (aV / 60)) or 0
-            ap:setText(("Rate: %.1f/min"):format(aW))
+        local aX = os.time() - w.StartTime
+        if aq  then aq:setText("Time Elapsed: " .. D.fmtTime(aX)) end
+        if ar then
+            local aY = aX > 0 and (w.CoinsGained / (aX / 60)) or 0
+            ar:setText(("Rate: %.1f/min"):format(aY))
         end
     else
-        if ao  then ao:setText("Time Elapsed: N/A") end
-        if ap then ap:setText("Rate: N/A") end
+        if aq  then aq:setText("Time Elapsed: N/A") end
+        if ar then ar:setText("Rate: N/A") end
     end
     
     if _G._JB_StatusLbl   then _G._JB_StatusLbl  :setText("Status: " .. tostring(w._FarmStatus)) end
@@ -3359,7 +3485,7 @@ end))
 
 D.conn("charadded", q.CharacterAdded:Connect(function()
     task.wait(0.2)
-    if w.Fly then Q.enable() end
+    if w.Fly then O.enable() end
     G.applySpeed()
     G.applyAnchor()
 end))
@@ -3368,26 +3494,26 @@ end))
 
 
 getgenv()._NameHubJB_Alive  = true
-getgenv()._NameHubJB_Unload = am
+getgenv()._NameHubJB_Unload = ao
 
-ad()
-X.attachAutoRespawn()
-Y.attachWatchers()
-aa.attach()
-ab.attachInterval()
-O.start()
+af()
+W.attachAutoRespawn()
+X.attachWatchers()
+ac.attach()
+ad.attachInterval()
+aa.start()
 
 
 do
-    local aV = af.getAutoload()
-    if aV ~= "" then
-        w.AutoloadConfig = aV
-        af.load(aV)
-        if aq then aq:setText("Current autoload config: " .. aV) end
+    local aX = ah.getAutoload()
+    if aX ~= "" then
+        w.AutoloadConfig = aX
+        ah.load(aX)
+        if as then as:setText("Current autoload config: " .. aX) end
     end
 end
 
-ae.apply()
+ag.apply()
 F.send(v.Brand .. " " .. v.SubBrand .. " " .. a .. " loaded.", 4)
 
 return true
