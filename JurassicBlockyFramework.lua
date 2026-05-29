@@ -11,7 +11,7 @@
 
 
 
-local a = "v2.0.1 NameHub (jb-aqua-fix-20260529)"
+local a = "v2.0.2 NameHub (jb-drag-fix-20260529)"
 
 
 
@@ -1355,31 +1355,6 @@ function ag.newWindow(X)
         TextColor3 = w.FontColor,
     })
     
-    do
-        local al, am, an
-local ao=function(ao)            
-al = true
-            am = ao.Position
-            an  = _.Position
-            ao.Changed:Connect(function()
-                if ao.UserInputState == Enum.UserInputState.End then al = false end
-            end)
-end        
-ak.InputBegan:Connect(function(ap)
-            if ap.UserInputType == Enum.UserInputType.MouseButton1 or ap.UserInputType == Enum.UserInputType.Touch then
-                ao(ap)
-            end
-        end)
-        f.InputChanged:Connect(function(ap)
-            if al and (ap.UserInputType == Enum.UserInputType.MouseMovement or ap.UserInputType == Enum.UserInputType.Touch) then
-                local aq = ap.Position - am
-                _.Position = UDim2.new(an.X.Scale, an.X.Offset + aq.X,
-                                         an.Y.Scale, an.Y.Offset + aq.Y)
-            end
-        end)
-    end
-
-    
     local al = ah("Frame", {
         Parent = _,
         Size = UDim2.new(0, 150, 1, 0),
@@ -1462,6 +1437,60 @@ ak.InputBegan:Connect(function(ap)
         TextXAlignment = Enum.TextXAlignment.Left,
         ClearTextOnFocus = false,
     })
+
+    
+    
+    
+    
+    
+    
+    do
+        local at, au, av
+local aw=function(
+aw, ax)            
+if not ax or not ax.Parent then return false end
+            local ay, az = ax.AbsolutePosition, ax.AbsoluteSize
+            return aw.X >= ay.X and aw.X <= ay.X + az.X
+               and aw.Y >= ay.Y and aw.Y <= ay.Y + az.Y
+end local ax=function(
+
+ax, ay)            
+ax.Active = true
+            ax.InputBegan:Connect(function(az)
+                if az.UserInputType ~= Enum.UserInputType.MouseButton1
+                   and az.UserInputType ~= Enum.UserInputType.Touch then return end
+                local aA = az.Position
+                if ay then
+                    for aB, aC in ipairs(ay) do
+                        if aw(aA, aC) then return end
+                    end
+                end
+                at  = true
+                au = Vector2.new(aA.X, aA.Y)
+                av  = _.Position
+                az.Changed:Connect(function()
+                    if az.UserInputState == Enum.UserInputState.End then at = false end
+                end)
+            end)
+end
+        
+ax(ak)
+        ax(am)
+        ax(ap, { aq })
+        ax(al, { an })   
+
+        f.InputChanged:Connect(function(ay)
+            if not at then return end
+            if ay.UserInputType ~= Enum.UserInputType.MouseMovement
+               and ay.UserInputType ~= Enum.UserInputType.Touch then return end
+            local az = ay.Position
+            local aA = Vector2.new(az.X, az.Y) - au
+            _.Position = UDim2.new(
+                av.X.Scale, av.X.Offset + aA.X,
+                av.Y.Scale, av.Y.Offset + aA.Y
+            )
+        end)
+    end
 
     
     local at = ah("Frame", {
