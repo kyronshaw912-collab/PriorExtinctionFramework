@@ -1,81 +1,76 @@
-# JurassicBlockyFramework
+# PriorExtinctionFramework
 
-A Roblox automation / utility framework for **Jurassic Blocky**, ported from
-`DinoFramework` (Dinosaur Simulator).
+A focused Roblox auto-farm framework for **Prior Extinction**, built by
+NameHub.
 
 ## Status
 
-- Build: `v0.1.0` — initial port, untested in-game.
-- Targets, stat names, and remote names are **best-guess keyword-based** until
-  the diagnostic buttons are run inside Jurassic Blocky.
+- Build: `v0.1.0` — initial release after pivoting away from the
+  JurassicBlocky framework.
+- Scope is intentionally **auto-farm only**. ESP, combat helpers, fly /
+  noclip etc. are not included; they can be added later as separate
+  modules once the auto-farm is proven stable.
+
+## Supported games
+
+| PlaceId | Name |
+| --- | --- |
+| 6698800091 | Prior Extinction (main) |
+| 5558588689 | Prior Extinction - Retro |
+| 8603641600 | Prior Extinction - Cretaceous Archipelago |
+
+The script refuses to run on any other PlaceId.
 
 ## Loadstring
 
 ```lua
-loadstring(game:HttpGet("https://raw.githubusercontent.com/<your-fork>/JurassicBlockyFramework/main/JurassicBlockyFramework.lua"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/kyronshaw912-collab/PriorExtinctionFramework/main/PriorExtinctionFramework.lua"))()
 ```
-
-(Update the URL to your fork; the default is a placeholder.)
 
 ## What it does
 
-- **Autofarm** — keyword-matched farm targets (berries, meat, fish, fossils,
-  eggs, wood, stone, …). Add/remove keywords from the Farm tab.
-- **Survival** — Inf Hunger / Inf Thirst / Inf Energy / Inf Oxygen via burst
-  refill of detected remotes + client-side clamp fallback.
-- **Movement** — speed boost, jump boost, infinite jump, noclip, fly,
-  free-cam, instant teleport.
-- **Combat** — auto-attack nearest player / NPC, auto-heal, target POV.
-- **Visuals** — full ESP (boxes, tracers, chams, health bars, head dots),
-  resource ESP, fullbright, no-fog, FOV slider.
-- **Misc** — anti-AFK, stat-monitor HUD, info HUD (FPS/ping/coords),
-  webhook reporting, config save/load, theme picker.
+- **Auto-farm** — picks the nearest AI dinosaur matching the chosen
+  target name (Compsognathus, Dryosaurus, Tenontosaurus, etc), moves to
+  it, swings, and auto-eats the carcass.
+- **Three movement modes** — `Teleport` (instant CFrame, fast but often
+  flagged by anti-cheat), `Fly` (BodyVelocity chase, default), `Walk`
+  (Humanoid:MoveTo, anti-cheat friendly but slow).
+- **Hybrid attack** — simulates a real left-click via `mouse1press` /
+  `VirtualUser` AND fires the discovered attack remote in parallel,
+  whichever the server actually accepts.
+- **Diagnostics tab** — live status, last target / distance, attack
+  remote, last fire result, loop tick + phase, plus a `Copy Diagnostics
+  + Remote Dump` button so you can paste a full state snapshot.
 
-## What's different from DinoFramework
+## Tuning workflow
 
-| Area | DinoFramework (DS) | JurassicBlockyFramework |
-| --- | --- | --- |
-| Anti-cheat | Aggressive AC-bypass with `__namecall` hooks, void-RE, FlingPrevention/InteriaHandler kill | Removed. Only a generic kick-bypass remains (off by default). |
-| Movement TP | Chunked CFrame TP, underwater dive path, SwimSpeed velocity-fly | Plain CFrame TP + simple speed boost. Add chunking later only if JB kicks. |
-| Farm targets | Meteorites, amber, SDNA/glass beams, diamond rocks | Berries, meat, fish, fossils, eggs, wood, stone (keyword-based, easy to extend) |
-| File layout | 3000-line monolith | Same file, but with code-review fixes applied (see CHANGES below) |
+1. Run the loadstring inside Prior Extinction.
+2. Spawn as a dinosaur capable of hunting your target (a juvenile carnivore
+   for Compsognathus, etc).
+3. Open the **Main** tab, pick a Target, switch Movement Mode to `Fly` if
+   the server kicks on teleport, and toggle **Autofarm** on.
+4. If kills aren't registering, open the **Diagnostics** tab, hit `Copy
+   Diagnostics + Remote Dump`, and share the result. The dump shows which
+   attack remote was discovered, what shape last fired, and every remote
+   the script can see.
 
-## CHANGES (over the original DS port)
+## Build pipeline
 
-- `getgenv` polyfill moved to the top of the file.
-- All `Connect()` calls go through `trackConnection` / `Library:_track`.
-- Background `task.spawn` loops respect a single `Alive` flag, so
-  `Library:Unload()` actually stops them.
-- `swimSpeedTravelToTarget` removed entirely (JB doesn't need it).
-- Velocity-fly / AlignPosition / underwater-TP code removed.
-- `Util.fireRemote` and `findRemoteByKeywords` both cache lookups; the
-  named-remote cache resolves once per server.
-- Noclip uses a per-character BasePart cache instead of walking
-  `Character:GetDescendants()` every physics step.
-- Workspace instance names randomized per session (no `_DinoFramework_*` tells).
-- `purgeStaleGuis` matches only ScreenGui names anchored at the start, not
-  any substring.
-- Hardcoded Discord webhook URL removed; the field is empty by default.
-- `_G.JBPickupDiag` keyed once-per-target with a clear button.
-
-## Tuning workflow (in-game)
-
-1. Spawn into Jurassic Blocky.
-2. Open the menu (default keybind: **Right Ctrl**).
-3. **Survival → Print Diagnostics** — dumps every stat and remote name to F9
-   and your clipboard.
-4. **Main → Farm → Dump Workspace Names** — finds collectible-like instances
-   in workspace.
-5. Tell me the names that match your stats / collectibles and I'll widen the
-   keyword lists.
+`source.lua` is the readable Luau source; `PriorExtinctionFramework.lua`
+is the darklua-processed build that ships via loadstring. The
+`obfuscate.js` script (run automatically on every `git commit` via the
+pre-commit hook) strips Luau type annotations, minifies, removes
+comments, and renames locals.
 
 ## Files
 
-- `JurassicBlockyFramework.lua` — the script. Distributable as a single
-  loadstring.
+- `source.lua` — the readable source (gitignored; the build is what ships).
+- `PriorExtinctionFramework.lua` — the build that gets `HttpGet`'d.
+- `obfuscate.js` — the build pipeline.
+- `.darklua.json` — darklua rules.
+- `.tools/darklua.exe` — the darklua binary (Windows).
 - `README.md` — this file.
-- `.gitignore` — standard editor/junk filter.
 
 ## License
 
-Personal use. Not affiliated with the Jurassic Blocky game or its devs.
+Personal use. Not affiliated with Prior Extinction or Jacys Studios.
