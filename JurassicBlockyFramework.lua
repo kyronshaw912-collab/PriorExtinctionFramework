@@ -11,7 +11,7 @@
 
 
 
-local a = "v2.0.8 NameHub (jb-test-button-20260529)"
+local a = "v2.0.9 NameHub (jb-m1-click-20260529)"
 
 
 
@@ -742,6 +742,42 @@ end
 
 function K.invalidateCache() L, M = nil, nil end
 
+
+
+
+function K.clickM1()
+    local N
+    pcall(function()
+        if mouse1press and mouse1release then
+            mouse1press()
+            task.wait(0.04)
+            mouse1release()
+            N = true
+        end
+    end)
+    if N then return true end
+    pcall(function()
+        k:Button1Down(Vector2.new(0, 0), h.CurrentCamera.CFrame)
+        task.wait(0.04)
+        k:Button1Up(Vector2.new(0, 0), h.CurrentCamera.CFrame)
+        N = true
+    end)
+    return N == true
+end
+
+
+
+
+function K.aimAt(N)
+    if not N or not N.root then return end
+    pcall(function()
+        local O = h.CurrentCamera
+        local P  = G.root()
+        if not (O and P) then return end
+        O.CFrame = CFrame.lookAt(O.CFrame.Position, N.root.Position)
+    end)
+end
+
 function K.fireAt(N)
     local O, P = K.findRemote()
     if not O or not N then return false end
@@ -934,7 +970,17 @@ while w.Alive and w.Autofarm do
                             local Y, Z = K.findRemote()
                             w._AttackRemote = Z ~= "" and Z or "(none)"
                         end)
-                        local Y, Z = R("fire attack", function()
+                        
+                        
+                        
+                        
+                        
+                        
+                        if X <= w.Range then
+                            R("aim at target", function() K.aimAt(W) end)
+                            R("click M1", function() K.clickM1() end)
+                        end
+                        local Y, Z = R("fire attack remote", function()
                             return K.fireAt(W)
                         end)
                         w._LastFire = (Y and Z) and "OK" or "FAIL"
@@ -3057,6 +3103,84 @@ do
     
     
     
+    
+    
+    
+    
+    
+    
+    al.button(aC, "Force Hit Nearest Goat", function()
+        local aK = G.root()
+        if not aK then
+            F.send("No character - spawn first.", 5)
+            return
+        end
+
+        local aL, Y
+        for Z, _ in ipairs(J.allWithHumanoid()) do
+            if J.matchesName(_.model, "Goat") then
+                local aM = D.distance(aK, _.root)
+                if not Y or aM < Y then aL, Y = _, aM end
+            end
+        end
+        if not aL then
+            F.send("No Goat found. Move closer to a goat-spawn area first.", 6)
+            return
+        end
+
+        local aM = aL.hum and aL.hum.Health or -1
+        F.send(("Force-hitting %s at %.0fm (HP %.0f)..."):format(
+            aL.model.Name, Y or 0, aM), 4)
+
+        
+        
+        pcall(function()
+            local Z = CFrame.new(aL.root.Position + Vector3.new(3, 3, 3))
+            aK.CFrame = CFrame.lookAt(Z.Position, aL.root.Position)
+        end)
+        task.wait(0.2)
+
+        
+        if D.distance(aK, aL.root) > 15 then
+            S.startFly()
+            for Z = 1, 20 do
+                if D.distance(G.root() or aK, aL.root) < 6 then break end
+                S.flyToward(aL.root.Position)
+                task.wait(0.1)
+            end
+            S.stopFly()
+        end
+
+        local Z = D.distance(G.root() or aK, aL.root)
+        local _, aN = 0, 0
+        for aO = 1, 10 do
+            K.aimAt(aL)
+            if K.clickM1() then _ = _ + 1 end
+            if K.fireAt(aL) then aN = aN + 1 end
+            task.wait(0.1)
+        end
+
+        local aO = aL.hum and aL.hum.Parent and aL.hum.Health or -1
+        local aP  = aM - aO
+
+        local aQ = {
+            "=== NameHub JB Force-Hit Test ===",
+            "Build: " .. a,
+            ("Target: %s"):format(aL.model.Name),
+            ("Final dist: %.1f studs"):format(Z),
+            ("Start HP: %.0f -> End HP: %.0f  (damage: %.0f)"):format(aM, aO, aP),
+            ("M1 clicks fired: %d / 10"):format(_),
+            ("Attack remote fired: %d / 10"):format(aN),
+            "",
+            (aP > 0)
+                and "RESULT: Damage was dealt. Autofarm should work once it gets close enough."
+                or  "RESULT: NO damage. Either (a) you need a stronger dino form, (b) the goat needs a different attack remote, or (c) JB validates more than position. Paste this in Discord.",
+        }
+        local aR = table.concat(aQ, "\n")
+        pcall(setclipboard, aR)
+        F.send(("Force-hit done. Damage: %.0f. Report copied."):format(aP), 10)
+    end)
+
     al.button(aC, "Test All Attack Remotes", function()
         local aK = G.root()
         if not aK then
@@ -3066,89 +3190,89 @@ do
 
         
         local aL = (w.FarmPriority and #w.FarmPriority > 0) and w.FarmPriority or { w.FarmTarget }
-        local Y, Z
-        for _, aM in ipairs(aL) do
-            for aN, aO in ipairs(J.allByName(aM)) do
-                local aP = D.distance(aK, aO.root)
-                if not Z or aP < Z then Y, Z = aO, aP end
+        local aM, aN
+        for aO, aP in ipairs(aL) do
+            for aQ, aR in ipairs(J.allByName(aP)) do
+                local Y = D.distance(aK, aR.root)
+                if not aN or Y < aN then aM, aN = aR, Y end
             end
         end
-        if not Y then
-            for aM, aN in ipairs(J.allWithHumanoid()) do
-                local aO = D.distance(aK, aN.root)
-                if not Z or aO < Z then Y, Z = aN, aO end
+        if not aM then
+            for aO, aP in ipairs(J.allWithHumanoid()) do
+                local aQ = D.distance(aK, aP.root)
+                if not aN or aQ < aN then aM, aN = aP, aQ end
             end
         end
-        if not Y then
+        if not aM then
             F.send("No target found anywhere - server may be empty.", 5)
             return
         end
 
-        local aM = {
+        local aO = {
             "=== NameHub JB Attack Remote Test ===",
             "Build: " .. a,
             ("Target: %s @ %.1fm  (hum=%s)"):format(
-                Y.model.Name, Z or -1,
-                Y.hum and "yes" or "no"),
+                aM.model.Name, aN or -1,
+                aM.hum and "yes" or "no"),
             "",
         }
 
         
         
         
-        local aN = 0
-        local aO  = 0
-        for aP, _ in ipairs(v.JB_AttackNames) do
-            local aQ = H.remoteByName(_)
-            if not aQ then
-                aM[#aM + 1] = ("- %s: NOT FOUND"):format(_)
+        local aP = 0
+        local aQ  = 0
+        for aR, Y in ipairs(v.JB_AttackNames) do
+            local Z = H.remoteByName(Y)
+            if not Z then
+                aO[#aO + 1] = ("- %s: NOT FOUND"):format(Y)
             else
-                aM[#aM + 1] = ("+ %s [%s] @ %s"):format(
-                    _, aQ.ClassName, aQ:GetFullName())
+                aO[#aO + 1] = ("+ %s [%s] @ %s"):format(
+                    Y, Z.ClassName, Z:GetFullName())
                 
-                local aR = {
-                    { entry = "hum",            args = { Y.hum } },
-                    { entry = "model",          args = { Y.model } },
-                    { entry = "root",           args = { Y.root } },
-                    { entry = "hum+pos",        args = { Y.hum, Y.root.Position } },
-                    { entry = "model+pos",      args = { Y.model, Y.root.Position } },
-                    { entry = "name(str)",      args = { Y.model.Name } },
-                    { entry = "{hum} (table)",  args = { { Y.hum } } },
-                    { entry = "{model}",        args = { { Y.model } } },
-                    { entry = "BasicAttack+hum",args = { "BasicAttack", Y.hum } },
-                    { entry = "Attack+{hum}",   args = { "Attack", { Y.hum } } },
-                    { entry = "hum,9999",       args = { Y.hum, 9999 } },
+                local _ = {
+                    { entry = "hum",            args = { aM.hum } },
+                    { entry = "model",          args = { aM.model } },
+                    { entry = "root",           args = { aM.root } },
+                    { entry = "hum+pos",        args = { aM.hum, aM.root.Position } },
+                    { entry = "model+pos",      args = { aM.model, aM.root.Position } },
+                    { entry = "name(str)",      args = { aM.model.Name } },
+                    { entry = "{hum} (table)",  args = { { aM.hum } } },
+                    { entry = "{model}",        args = { { aM.model } } },
+                    { entry = "BasicAttack+hum",args = { "BasicAttack", aM.hum } },
+                    { entry = "Attack+{hum}",   args = { "Attack", { aM.hum } } },
+                    { entry = "hum,9999",       args = { aM.hum, 9999 } },
                     { entry = "no args",        args = {} },
                 }
-                if Y.hum then aR[#aR + 1] = { entry = "hum table key", args = { { Target = Y.hum } } } end
+                if aM.hum then _[#_ + 1] = { entry = "hum table key", args = { { Target = aM.hum } } } end
 
-                for aS, aT in ipairs(aR) do
-                    aN = aN + 1
+                for aS, aT in ipairs(_) do
+                    aP = aP + 1
                     local aU, aV = pcall(function()
-                        if aQ:IsA("RemoteEvent") then
-                            aQ:FireServer(table.unpack(aT.args))
+                        if Z:IsA("RemoteEvent") then
+                            Z:FireServer(table.unpack(aT.args))
                         else
-                            aQ:InvokeServer(table.unpack(aT.args))
+                            Z:InvokeServer(table.unpack(aT.args))
                         end
                     end)
                     if aU then
-                        aO = aO + 1
-                        aM[#aM + 1] = ("    OK   %s"):format(aT.entry)
+                        aQ = aQ + 1
+                        aO[#aO + 1] = ("    OK   %s"):format(aT.entry)
                     else
                         local aW = tostring(aV or ""):sub(1, 80)
-                        aM[#aM + 1] = ("    FAIL %s  --  %s"):format(aT.entry, aW)
+                        aO[#aO + 1] = ("    FAIL %s  --  %s"):format(aT.entry, aW)
                     end
                 end
-                aM[#aM + 1] = ""
+                aO[#aO + 1] = ""
             end
         end
 
-        aM[#aM + 1] = ("Summary: %d/%d calls succeeded."):format(aO, aN)
-        aM[#aM + 1] = "If the target's HP dropped or coins went up while this ran, the OK shape just above the change is the winner. Paste into Discord."
+        aO[#aO + 1] = ("Summary: %d/%d calls succeeded."):format(aQ, aP)
+        aO[#aO + 1] = "If the target's HP dropped or coins went up while this ran, the OK shape just above the change is the winner. Paste into Discord."
 
-        local aP = table.concat(aM, "\n")
-        pcall(setclipboard, aP)
-        F.send(("Test complete: %d/%d remote calls succeeded. Pasted to clipboard."):format(aO, aN), 8)
+        local aR = table.concat(aO, "\n")
+        pcall(setclipboard, aR)
+        F.send(("Test complete: %d/%d remote calls succeeded. Pasted to clipboard."):format(aQ, aP), 8)
     end)
 
     al.button(aC, "Copy All Remotes to Clipboard", function()
